@@ -1,0 +1,16 @@
+{
+  "loading": "Loading...",
+  "closeModal": "Close modal",
+  "close": "Close",
+  "goBack": "Go back",
+  "cancel": "Cancel",
+  "save": "Save",
+  "syncing": "Syncing...",
+  "synced": "Synced",
+  "signOut": "Sign out",
+  "switchLanguage": "Switch language",
+  "appName": "Vocabulary Master",
+  "wordsCount": "{{count}} words",
+  "muteSounds": "Mute sounds",
+  "unmuteSounds": "Unmute sounds"
+}

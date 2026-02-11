@@ -1,0 +1,23 @@
+{
+  "greeting": "你好，{{name}}！",
+  "readyToLearn": "准备好学习新单词了吗？",
+  "welcomeDashboard": "欢迎来到你的仪表板。",
+  "adminPanel": "管理面板",
+  "adminPanelDesc": "管理用户和系统设置",
+  "parentDashboard": "家长仪表板",
+  "parentDashboardDesc": "查看孩子的学习进度",
+  "pendingLinkRequests": "待处理的关联请求",
+  "studyMode": "学习模式",
+  "studyModeDesc": "翻卡片，学单词",
+  "quizMode": "测验模式",
+  "quizModeDesc": "测试你的知识",
+  "dailyChallenge": "每日挑战",
+  "dailyChallengeDesc": "争分夺秒！",
+  "badgeDone": "已完成！",
+  "badgeNew": "新的！",
+  "yourStats": "你的统计",
+  "statsQuizzes": "测验",
+  "statsAccuracy": "正确率",
+  "statsReviewed": "已复习",
+  "statsStreak": "连续天数"
+}

@@ -1,0 +1,21 @@
+{
+  "settings": "Quiz Settings",
+  "numQuestions": "Number of Questions:",
+  "enableTimeLimit": "Enable time limit",
+  "secondsPerQuestion": "Seconds per Question:",
+  "autoAdvance": "Auto-advance after answering (2 second delay)",
+  "startQuiz": "Start Quiz",
+  "questionCount": "Question {{current}}/{{total}}",
+  "noTimeLimit": "No time limit",
+  "seeResults": "See Results",
+  "nextQuestion": "Next Question",
+  "quizComplete": "Quiz Complete!",
+  "correct": "Correct",
+  "incorrect": "Incorrect",
+  "score": "Score",
+  "wordsToReview": "Words to Review",
+  "tryAgain": "Try Again",
+  "backToHome": "Back to Home",
+  "synonym": "Synonym",
+  "definition": "Definition"
+}

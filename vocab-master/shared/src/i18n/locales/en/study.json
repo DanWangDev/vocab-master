@@ -1,0 +1,23 @@
+{
+  "title": "Study Mode",
+  "studyAllWords": "Study All Words",
+  "studyAllWordsDesc": "Review flashcards from the complete vocabulary list. Perfect for learning new words.",
+  "practiceMistakes": "Practice Mistakes",
+  "practiceMistakesLoading": "Loading your practice list...",
+  "practiceMistakesDesc": "Focus on words you've gotten wrong in quizzes. Master your weak spots!",
+  "practiceMistakesEmpty": "No mistakes yet! Take some quizzes first to identify areas to practice.",
+  "wordsToPractice": "Words to practice:",
+  "moreWords": "+{{count}} more",
+  "cardCount": "Card {{current}}/{{total}}",
+  "shuffleDeck": "Shuffle deck",
+  "previousCard": "Previous card",
+  "nextCard": "Next card",
+  "noVocabulary": "No vocabulary words available.",
+  "definition": "Definition",
+  "synonyms": "Synonyms",
+  "example": "Example",
+  "clickToFlip": "Click card to flip",
+  "clickToFlipBack": "Click card to flip back",
+  "showWord": "Show word",
+  "showDefinition": "Show definition"
+}

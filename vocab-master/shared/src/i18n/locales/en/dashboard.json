@@ -1,0 +1,23 @@
+{
+  "greeting": "Hi, {{name}}!",
+  "readyToLearn": "Ready to learn some new words?",
+  "welcomeDashboard": "Welcome to your dashboard.",
+  "adminPanel": "Admin Panel",
+  "adminPanelDesc": "Manage users and system settings",
+  "parentDashboard": "Parent Dashboard",
+  "parentDashboardDesc": "View your children's progress",
+  "pendingLinkRequests": "Pending Link Requests",
+  "studyMode": "Study Mode",
+  "studyModeDesc": "Flip cards & learn",
+  "quizMode": "Quiz Mode",
+  "quizModeDesc": "Test your knowledge",
+  "dailyChallenge": "Daily Challenge",
+  "dailyChallengeDesc": "Beat the clock!",
+  "badgeDone": "Done!",
+  "badgeNew": "New!",
+  "yourStats": "Your Stats",
+  "statsQuizzes": "Quizzes",
+  "statsAccuracy": "Accuracy",
+  "statsReviewed": "Reviewed",
+  "statsStreak": "Streak"
+}

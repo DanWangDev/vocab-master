@@ -1,0 +1,23 @@
+{
+  "title": "学习模式",
+  "studyAllWords": "学习所有单词",
+  "studyAllWordsDesc": "浏览完整词汇列表的闪卡。非常适合学习新单词。",
+  "practiceMistakes": "练习错题",
+  "practiceMistakesLoading": "正在加载练习列表...",
+  "practiceMistakesDesc": "专注于你在测验中答错的单词，攻克你的薄弱环节！",
+  "practiceMistakesEmpty": "还没有错题！先做一些测验来发现需要练习的内容。",
+  "wordsToPractice": "需要练习的单词：",
+  "moreWords": "还有 {{count}} 个",
+  "cardCount": "第 {{current}}/{{total}} 张",
+  "shuffleDeck": "洗牌",
+  "previousCard": "上一张",
+  "nextCard": "下一张",
+  "noVocabulary": "没有可用的词汇。",
+  "definition": "释义",
+  "synonyms": "同义词",
+  "example": "例句",
+  "clickToFlip": "点击卡片翻转",
+  "clickToFlipBack": "点击卡片翻回",
+  "showWord": "显示单词",
+  "showDefinition": "显示释义"
+}

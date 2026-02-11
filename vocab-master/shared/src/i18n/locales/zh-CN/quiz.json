@@ -1,0 +1,21 @@
+{
+  "settings": "测验设置",
+  "numQuestions": "题目数量：",
+  "enableTimeLimit": "启用时间限制",
+  "secondsPerQuestion": "每题秒数：",
+  "autoAdvance": "答题后自动跳转（延迟2秒）",
+  "startQuiz": "开始测验",
+  "questionCount": "第 {{current}}/{{total}} 题",
+  "noTimeLimit": "无时间限制",
+  "seeResults": "查看结果",
+  "nextQuestion": "下一题",
+  "quizComplete": "测验完成！",
+  "correct": "正确",
+  "incorrect": "错误",
+  "score": "得分",
+  "wordsToReview": "需要复习的单词",
+  "tryAgain": "再试一次",
+  "backToHome": "返回首页",
+  "synonym": "同义词",
+  "definition": "释义"
+}

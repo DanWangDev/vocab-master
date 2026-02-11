@@ -1,0 +1,16 @@
+{
+  "loading": "加载中...",
+  "closeModal": "关闭窗口",
+  "close": "关闭",
+  "goBack": "返回",
+  "cancel": "取消",
+  "save": "保存",
+  "syncing": "同步中...",
+  "synced": "已同步",
+  "signOut": "退出登录",
+  "switchLanguage": "切换语言",
+  "appName": "词汇大师",
+  "wordsCount": "{{count}} 个单词",
+  "muteSounds": "静音",
+  "unmuteSounds": "取消静音"
+}

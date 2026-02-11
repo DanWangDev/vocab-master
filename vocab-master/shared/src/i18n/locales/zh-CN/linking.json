@@ -1,0 +1,18 @@
+{
+  "linkRequestFrom": "来自 {{name}} 的关联请求",
+  "wantsToLink": "{{name}} 想要将家长账号与你的账号关联",
+  "accept": "接受",
+  "decline": "拒绝",
+  "linkStudentAccount": "关联学生账号",
+  "requestSent": "请求已发送！",
+  "requestSentDesc": "你的关联请求已发送给 {{name}}。对方会收到通知。",
+  "searchPlaceholder": "按学生用户名搜索...",
+  "minCharsToSearch": "请输入至少2个字符进行搜索",
+  "noStudentsFound": "未找到匹配 \"{{query}}\" 的学生",
+  "available": "可关联",
+  "pending": "等待中",
+  "messageOptional": "留言（可选）",
+  "messagePlaceholder": "添加一条留言...",
+  "sending": "发送中...",
+  "sendLinkRequest": "发送关联请求"
+}
