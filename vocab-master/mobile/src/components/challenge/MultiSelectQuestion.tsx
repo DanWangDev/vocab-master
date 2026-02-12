@@ -11,6 +11,7 @@ import Animated, {
   withSpring,
   ZoomIn,
 } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { Check, X, Send } from 'lucide-react-native';
 import { Button } from '../common';
@@ -171,6 +172,7 @@ export function MultiSelectQuestion({
 
   const toggleOption = (option: string) => {
     if (disabled || showResult) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     setSelectedOptions(prev => {
       const newSet = new Set(prev);

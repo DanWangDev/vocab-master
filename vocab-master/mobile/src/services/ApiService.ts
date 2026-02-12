@@ -8,7 +8,9 @@ import type {
 } from '@vocab-master/shared';
 
 const API_BASE_URL =
-  Constants.expoConfig?.extra?.apiUrl ?? 'http://localhost:3001/api';
+  process.env.EXPO_PUBLIC_API_URL ??
+  Constants.expoConfig?.extra?.apiUrl ??
+  'http://localhost:9876/api';
 
 const ACCESS_TOKEN_KEY = 'vocab_master_access_token';
 const REFRESH_TOKEN_KEY = 'vocab_master_refresh_token';

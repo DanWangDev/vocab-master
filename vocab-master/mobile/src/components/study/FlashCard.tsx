@@ -7,6 +7,7 @@ import Animated, {
   interpolate,
   Easing,
 } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import type { VocabularyWord } from '@vocab-master/shared';
 import { getRandomElement } from '@vocab-master/shared';
 import { useTranslation } from 'react-i18next';
@@ -61,7 +62,7 @@ export function FlashCard({ word, isFlipped, onFlip }: FlashCardProps) {
   });
 
   return (
-    <Pressable onPress={onFlip} style={{ height: 400 }}>
+    <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onFlip(); }} style={{ height: 400 }}>
       <View style={{ flex: 1 }}>
         {/* Front - Word */}
         <Animated.View

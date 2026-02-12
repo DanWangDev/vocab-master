@@ -6,6 +6,7 @@ import Animated, {
   withTiming,
   withSpring,
 } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { Check, X } from 'lucide-react-native';
 import { colors } from '../../theme/colors';
 
@@ -91,10 +92,16 @@ export function OptionButton({
 
   const handlePress = () => {
     if (disabled) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress();
   };
 
+  if (state === 'correct') {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }
+
   if (state === 'incorrect') {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     translateX.value = withSequence(
       withTiming(-8, { duration: 80 }),
       withTiming(8, { duration: 80 }),

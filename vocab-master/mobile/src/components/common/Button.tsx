@@ -1,5 +1,6 @@
 import { Pressable, Text, ActivityIndicator, View } from 'react-native';
 import type { ReactNode } from 'react';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme';
 
 interface ButtonProps {
@@ -38,7 +39,10 @@ export function Button({
 }: ButtonProps) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
       disabled={disabled || loading}
       className={`py-3.5 px-6 rounded-xl flex-row items-center justify-center ${variantStyles[variant]} ${
         disabled ? 'opacity-50' : ''
