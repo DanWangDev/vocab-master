@@ -110,6 +110,7 @@ export interface AdminUserStats {
   quizzes_taken: number;
   total_words_studied: number;
   last_study_date: string | null;
+  last_seen_at: string | null;
   avg_accuracy: number | null;
   current_streak: number;
   sessions_this_week: number;

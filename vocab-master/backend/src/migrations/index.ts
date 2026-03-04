@@ -8,6 +8,7 @@ import { addNotificationsAndLinkRequests } from './007_add_notifications_and_lin
 import { addLanguageSetting } from './008_add_language_setting';
 import { addWordlists } from './009_add_wordlists';
 import { addPushTokens } from './010_add_push_tokens';
+import { addLastSeen } from './011_add_last_seen';
 
 export const migrations = [
     initialSchema,
@@ -20,4 +21,5 @@ export const migrations = [
     addLanguageSetting,
     addWordlists,
     addPushTokens,
+    addLastSeen,
 ];

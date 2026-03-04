@@ -137,7 +137,7 @@ export default function AdminScreen() {
                         {t('quizzes', 'Quizzes')}: {user.quizzes_taken}
                       </Text>
                       <Text className="text-xs text-gray-400 font-nunito">
-                        {t('lastActive', 'Last')}: {formatDate(user.last_study_date)}
+                        {t('lastActive', 'Last')}: {formatDate(user.last_seen_at || user.last_study_date)}
                       </Text>
                     </View>
 

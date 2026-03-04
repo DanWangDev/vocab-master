@@ -142,7 +142,7 @@ export default function ParentDashboardScreen() {
                           {user.display_name || user.username}
                         </Text>
                         <Text className="text-xs text-gray-400 font-nunito">
-                          {t('lastActive', 'Last active')}: {formatDate(user.last_study_date)}
+                          {t('lastActive', 'Last active')}: {formatDate(user.last_seen_at || user.last_study_date)}
                         </Text>
                       </View>
                     </View>

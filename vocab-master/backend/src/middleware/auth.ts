@@ -1,6 +1,28 @@
 import { Response, NextFunction } from 'express';
 import { authService } from '../services/authService.js';
+import { db } from '../config/database.js';
 import type { AuthRequest } from '../types/index.js';
+
+// Throttle cache: userId -> last update timestamp (ms)
+const lastSeenCache = new Map<number, number>();
+const LAST_SEEN_THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
+
+function updateLastSeen(userId: number): void {
+  const now = Date.now();
+  const lastUpdate = lastSeenCache.get(userId);
+
+  if (lastUpdate && now - lastUpdate < LAST_SEEN_THROTTLE_MS) {
+    return;
+  }
+
+  lastSeenCache.set(userId, now);
+
+  try {
+    db.prepare('UPDATE users SET last_seen_at = datetime(\'now\') WHERE id = ?').run(userId);
+  } catch {
+    // Fire-and-forget: don't block the request on failure
+  }
+}
 
 export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
@@ -18,6 +40,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   try {
     const payload = authService.verifyAccessToken(token);
     req.user = payload;
+    updateLastSeen(payload.userId);
     next();
   } catch (error) {
     res.status(401).json({

@@ -81,6 +81,7 @@ router.get('/users', requireRole(['admin', 'parent']), (req: any, res) => {
       SELECT
         u.id, u.username, u.display_name, u.role, u.parent_id, u.email, u.created_at,
         us.quizzes_taken, us.total_words_studied, us.last_study_date,
+        COALESCE(u.last_seen_at, us.last_study_date) as last_seen_at,
         (SELECT AVG(correct_answers * 100.0 / total_questions)
          FROM quiz_results WHERE user_id = u.id AND total_questions > 0) as avg_accuracy
       FROM users u

@@ -10,6 +10,7 @@ export interface UserRow {
   parent_id: number | null;
   email: string | null;
   email_verified: number; // SQLite stores booleans as integers
+  last_seen_at: string | null;
   created_at: string;
 }
 

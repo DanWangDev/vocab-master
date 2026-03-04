@@ -131,7 +131,7 @@ export function AdminPanel() {
                                             <div className="text-sm text-gray-500">{t('table.quizzesTaken', { count: user.quizzes_taken })}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {user.last_study_date ? formatDate(user.last_study_date, i18n.language) : t('table.never')}
+                                            {(user.last_seen_at || user.last_study_date) ? formatDate((user.last_seen_at || user.last_study_date)!, i18n.language) : t('table.never')}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button

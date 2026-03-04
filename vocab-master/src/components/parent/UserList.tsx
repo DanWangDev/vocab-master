@@ -94,8 +94,8 @@ export function UserList({ users, onSelectUser, onResetPassword }: UserListProps
                                 <Clock className="w-3 h-3" /> {t('lastActive')}
                             </span>
                             <span className="text-sm text-gray-600">
-                                {user.last_study_date
-                                    ? formatDate(user.last_study_date, i18n.language)
+                                {(user.last_seen_at || user.last_study_date)
+                                    ? formatDate((user.last_seen_at || user.last_study_date)!, i18n.language)
                                     : t('never')}
                             </span>
                         </div>
