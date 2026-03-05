@@ -48,6 +48,15 @@ const authLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Stricter rate limiting for registration
+const registrationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 registrations per hour per IP
+  message: { error: 'Too Many Requests', message: 'Too many registration attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 // Stricter rate limiting for password reset
 const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -94,6 +103,10 @@ const importLimiter = rateLimit({
 });
 
 app.use('/api/wordlists/import', importLimiter);
+app.use('/api/auth/register', registrationLimiter);
+app.use('/api/auth/register/student', registrationLimiter);
+app.use('/api/auth/register/parent', registrationLimiter);
+app.use('/api/auth/google', registrationLimiter);
 app.use('/api/auth', authLimiter);
 app.use('/api/auth/forgot-password', passwordResetLimiter);
 app.use('/api/auth/reset-password', passwordResetLimiter);

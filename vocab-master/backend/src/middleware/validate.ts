@@ -31,7 +31,8 @@ export const registerSchema = z.object({
   displayName: z.string()
     .min(1)
     .max(50)
-    .optional()
+    .optional(),
+  turnstileToken: z.string().optional()
 });
 
 // Student registration - same as base register (no email)
@@ -46,7 +47,8 @@ export const registerStudentSchema = z.object({
   displayName: z.string()
     .min(1)
     .max(50)
-    .optional()
+    .optional(),
+  turnstileToken: z.string().optional()
 });
 
 // Parent registration - requires email
@@ -64,7 +66,8 @@ export const registerParentSchema = z.object({
   displayName: z.string()
     .min(1)
     .max(50)
-    .optional()
+    .optional(),
+  turnstileToken: z.string().optional()
 });
 
 // Forgot password - just email
@@ -91,7 +94,8 @@ export const resetUserPasswordSchema = z.object({
 
 export const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
-  password: z.string().min(1, 'Password is required')
+  password: z.string().min(1, 'Password is required'),
+  turnstileToken: z.string().optional()
 });
 
 export const refreshSchema = z.object({

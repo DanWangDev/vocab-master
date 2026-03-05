@@ -215,6 +215,7 @@ class ApiServiceClass {
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'X-Client-Platform': 'mobile',
       ...(options.headers as Record<string, string>),
     };
 
@@ -284,7 +285,7 @@ class ApiServiceClass {
   ): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/register/student`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Client-Platform': 'mobile' },
       body: JSON.stringify({ username, password, displayName }),
     });
 
@@ -309,7 +310,7 @@ class ApiServiceClass {
   ): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/register/parent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Client-Platform': 'mobile' },
       body: JSON.stringify({ username, password, email, displayName }),
     });
 
@@ -333,7 +334,7 @@ class ApiServiceClass {
   ): Promise<AuthResponse & { isNewUser: boolean }> {
     const response = await fetch(`${API_BASE_URL}/auth/google`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Client-Platform': 'mobile' },
       body: JSON.stringify({ token, tokenType, username }),
     });
 
@@ -389,7 +390,7 @@ class ApiServiceClass {
   async login(username: string, password: string): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Client-Platform': 'mobile' },
       body: JSON.stringify({ username, password }),
     });
 

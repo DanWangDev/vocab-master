@@ -29,6 +29,12 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 - Parent-to-student link requests (send, accept, reject, cancel)
 - Push notifications on mobile via Expo push tokens
 
+### Security
+- **Rate limiting** — tiered IP-based limits (registration: 5/hr, auth: 20/15min, password reset: 5/hr)
+- **Cloudflare Turnstile** — invisible bot challenge on web login and registration forms (zero user friction)
+- **Brute-force protection** — progressive per-username lockout on login (5 fails: 30s, 10: 5min, 15: 30min)
+- **Mobile bypass** — mobile clients use `X-Client-Platform` header to skip Turnstile (protected by rate limits + Google token validation)
+
 ### Internationalisation
 - English and Simplified Chinese (zh-CN) across all screens
 - Language preference persisted per user
@@ -46,7 +52,7 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 | Frontend (mobile) | React Native (Expo), Expo Router, expo-secure-store |
 | Backend | Node.js, Express, TypeScript, Zod validation |
 | Database | SQLite (via better-sqlite3), auto-migrating schema |
-| Auth | JWT (access + refresh tokens), bcrypt, Google OAuth (google-auth-library) |
+| Auth | JWT (access + refresh tokens), bcrypt, Google OAuth (google-auth-library), Cloudflare Turnstile |
 | Email | Resend (password reset, welcome emails) |
 | Icons | Lucide React |
 | i18n | i18next, react-i18next |
@@ -236,6 +242,8 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for NAS deployment instructions.
 | `GOOGLE_CLIENT_ID_ANDROID` | No | Google OAuth client ID for Android |
 | `RESEND_API_KEY` | No | Resend API key for transactional emails |
 | `EMAIL_FROM` | No | Sender email address |
+| `TURNSTILE_SECRET_KEY` | No | Cloudflare Turnstile secret key (bot protection). If unset, verification is skipped. |
+| `TURNSTILE_SITE_KEY` | No | Cloudflare Turnstile site key (passed as `VITE_TURNSTILE_SITE_KEY` build arg). If unset, widget is not rendered. |
 
 ## Database
 
