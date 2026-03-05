@@ -22,6 +22,7 @@ type AuthAction =
 interface AuthContextType {
   state: AuthState;
   login: (username: string, password: string) => Promise<void>;
+  googleLogin: (idToken: string, username?: string) => Promise<void>;
   register: (username: string, password: string, displayName?: string) => Promise<void>;
   registerStudent: (username: string, password: string, displayName?: string) => Promise<void>;
   registerParent: (username: string, password: string, email: string, displayName?: string) => Promise<void>;
@@ -122,6 +123,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dispatch({
         type: 'AUTH_FAILURE',
         payload: error instanceof Error ? error.message : 'Login failed',
+      });
+      throw error;
+    }
+  };
+
+  const googleLogin = async (accessToken: string, username?: string) => {
+    dispatch({ type: 'AUTH_START' });
+    try {
+      const response = await ApiService.googleAuth(accessToken, 'access_token', username);
+      dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
+    } catch (error) {
+      dispatch({
+        type: 'AUTH_FAILURE',
+        payload: error instanceof Error ? error.message : 'Google login failed',
       });
       throw error;
     }
@@ -236,6 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         state,
         login,
+        googleLogin,
         register,
         registerStudent,
         registerParent,

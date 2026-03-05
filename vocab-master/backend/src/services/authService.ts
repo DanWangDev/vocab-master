@@ -5,6 +5,7 @@ import { userRepository } from '../repositories/userRepository.js';
 import { tokenRepository } from '../repositories/tokenRepository.js';
 import { passwordResetRepository } from '../repositories/passwordResetRepository.js';
 import { emailService } from './emailService.js';
+import { googleAuthService } from './googleAuthService.js';
 import type { User, JWTPayload, TokenPair, UserRow } from '../types/index.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
@@ -22,6 +23,7 @@ function userRowToUser(row: UserRow): User {
     role: row.role,
     email: row.email,
     emailVerified: row.email_verified === 1,
+    authProvider: row.auth_provider || 'local',
     createdAt: row.created_at
   };
 }
@@ -245,11 +247,46 @@ export const authService = {
     return bcrypt.compare(validator, storedHash);
   },
 
+  /**
+   * Create a student account as a parent (auto-linked, no tokens returned)
+   */
+  async createStudentForParent(
+    parentId: number,
+    username: string,
+    password: string,
+    displayName?: string
+  ): Promise<{ user: User }> {
+    const parentRow = userRepository.findById(parentId);
+    if (!parentRow || parentRow.role !== 'parent') {
+      throw new Error('Only parents can create student accounts');
+    }
+
+    const existing = userRepository.findByUsername(username);
+    if (existing) {
+      throw new Error('Username already taken');
+    }
+
+    if (password.length < 6) {
+      throw new Error('Password must be at least 6 characters');
+    }
+
+    const passwordHash = await bcrypt.hash(password, PASSWORD_HASH_ROUNDS);
+    const userRow = userRepository.createStudentForParent(username, passwordHash, parentId, displayName);
+    const user = userRowToUser(userRow);
+
+    return { user };
+  },
+
   async login(username: string, password: string): Promise<{ user: User; tokens: TokenPair }> {
     // Find user
     const userRow = userRepository.findByUsername(username);
     if (!userRow) {
       throw new Error('Invalid username or password');
+    }
+
+    // Reject Google-only users
+    if (!userRow.password_hash) {
+      throw new Error('This account uses Google sign-in. Please use the Google button to log in.');
     }
 
     // Verify password
@@ -264,6 +301,59 @@ export const authService = {
     const tokens = this.generateTokens(user.id, user.username, user.role);
 
     return { user, tokens };
+  },
+
+  /**
+   * Authenticate or register a parent via Google OAuth
+   */
+  async googleAuth(
+    token: string,
+    tokenType: 'id_token' | 'access_token' = 'id_token',
+    username?: string
+  ): Promise<{ user: User; tokens: TokenPair; isNewUser: boolean }> {
+    const googleInfo = await googleAuthService.verifyToken(token, tokenType);
+
+    // 1. Check if user already linked with this Google ID
+    const existingByGoogle = userRepository.findByGoogleId(googleInfo.googleId);
+    if (existingByGoogle) {
+      const user = userRowToUser(existingByGoogle);
+      const tokens = this.generateTokens(user.id, user.username, user.role);
+      return { user, tokens, isNewUser: false };
+    }
+
+    // 2. Check if user exists with matching email → link Google account
+    const existingByEmail = userRepository.findByEmail(googleInfo.email);
+    if (existingByEmail) {
+      if (existingByEmail.role !== 'parent') {
+        throw new Error('Google sign-in is only available for parent accounts');
+      }
+      userRepository.linkGoogleAccount(existingByEmail.id, googleInfo.googleId);
+      const updatedRow = userRepository.findById(existingByEmail.id)!;
+      const user = userRowToUser(updatedRow);
+      const tokens = this.generateTokens(user.id, user.username, user.role);
+      return { user, tokens, isNewUser: false };
+    }
+
+    // 3. New user → create Google parent account
+    const derivedUsername = username || googleInfo.email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '_');
+
+    // Ensure username uniqueness
+    let finalUsername = derivedUsername;
+    let suffix = 1;
+    while (userRepository.findByUsername(finalUsername)) {
+      finalUsername = `${derivedUsername}${suffix}`;
+      suffix++;
+    }
+
+    const userRow = userRepository.createGoogleParent(
+      finalUsername,
+      googleInfo.email,
+      googleInfo.googleId,
+      googleInfo.name
+    );
+    const user = userRowToUser(userRow);
+    const tokens = this.generateTokens(user.id, user.username, user.role);
+    return { user, tokens, isNewUser: true };
   },
 
   logout(refreshToken: string): void {

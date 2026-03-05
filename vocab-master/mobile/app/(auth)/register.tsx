@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { GraduationCap, Users, ArrowLeft, UserPlus } from 'lucide-react-native';
 import { useAuth } from '../../src/contexts';
 import { TextInput, Button, ErrorMessage } from '../../src/components/common';
+import { GoogleSignInButton } from '../../src/components/auth/GoogleSignInButton';
 import { colors } from '../../src/theme';
 
 type RegisterStep = 'role' | 'student' | 'parent';
@@ -13,7 +14,7 @@ type RegisterStep = 'role' | 'student' | 'parent';
 export default function RegisterScreen() {
   const { t } = useTranslation('auth');
   const router = useRouter();
-  const { registerStudent, registerParent, state, clearError } = useAuth();
+  const { registerStudent, registerParent, googleLogin, state, clearError } = useAuth();
   const [step, setStep] = useState<RegisterStep>('role');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -141,6 +142,20 @@ export default function RegisterScreen() {
                 </Text>
               </View>
             </Pressable>
+          </View>
+
+          {/* Google Sign-In for parents */}
+          <View className="mt-2 mb-6">
+            <View className="flex-row items-center gap-3 mb-4">
+              <View className="flex-1 h-px bg-gray-200" />
+              <Text className="text-gray-400 font-nunito text-sm">{t('or', 'or')}</Text>
+              <View className="flex-1 h-px bg-gray-200" />
+            </View>
+            <GoogleSignInButton
+              onSuccess={(idToken) => {
+                googleLogin(idToken).catch(() => {});
+              }}
+            />
           </View>
 
           <Pressable

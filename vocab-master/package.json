@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.4",
     "framer-motion": "^12.26.2",
+    "google-auth-library": "^10.6.1",
     "howler": "^2.2.4",
     "i18next": "^25.8.4",
     "i18next-browser-languagedetector": "^8.2.0",

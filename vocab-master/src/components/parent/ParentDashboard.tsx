@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, LayoutDashboard, UserPlus, X, Clock, Loader2 } from 'lucide-react';
+import { LogOut, LayoutDashboard, UserPlus, Plus, X, Clock, Loader2 } from 'lucide-react';
 import { Button } from '../common';
 import { UserList } from './UserList';
 import { UserDetailModal } from './UserDetailModal';
 import { ResetStudentPasswordModal } from '../admin/ResetStudentPasswordModal';
 import { StudentSearchModal } from '../linking/StudentSearchModal';
+import { CreateStudentModal } from './CreateStudentModal';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { ApiService, type AdminUserStats } from '../../services/ApiService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,6 +23,7 @@ export function ParentDashboard() {
     const [selectedUser, setSelectedUser] = useState<AdminUserStats | null>(null);
     const [resetPasswordUser, setResetPasswordUser] = useState<AdminUserStats | null>(null);
     const [showLinkModal, setShowLinkModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const [cancellingId, setCancellingId] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -97,13 +99,23 @@ export function ParentDashboard() {
                             <h2 className="text-2xl font-bold text-gray-900">{t('studentOverview')}</h2>
                             <p className="text-gray-500">{t('studentOverviewDesc')}</p>
                         </div>
-                        <Button
-                            onClick={() => setShowLinkModal(true)}
-                            className="flex items-center gap-2"
-                        >
-                            <UserPlus className="w-4 h-4" />
-                            {t('linkStudent')}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                onClick={() => setShowCreateModal(true)}
+                                className="flex items-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" />
+                                {t('createStudent')}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowLinkModal(true)}
+                                className="flex items-center gap-2"
+                            >
+                                <UserPlus className="w-4 h-4" />
+                                {t('linkStudent')}
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Pending Link Requests */}
@@ -179,6 +191,13 @@ export function ParentDashboard() {
                     />
                 )}
             </AnimatePresence>
+
+            {/* Create Student Modal */}
+            <CreateStudentModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onSuccess={handleLinkSuccess}
+            />
 
             {/* Link Student Modal */}
             <StudentSearchModal

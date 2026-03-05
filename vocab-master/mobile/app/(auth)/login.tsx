@@ -6,12 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { LogIn, KeyRound } from 'lucide-react-native';
 import { useAuth } from '../../src/contexts';
 import { TextInput, Button, ErrorMessage } from '../../src/components/common';
+import { GoogleSignInButton } from '../../src/components/auth/GoogleSignInButton';
 import { colors } from '../../src/theme';
 
 export default function LoginScreen() {
   const { t } = useTranslation('auth');
   const router = useRouter();
-  const { login, state, clearError } = useAuth();
+  const { login, googleLogin, state, clearError } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -82,6 +83,21 @@ export default function LoginScreen() {
             >
               {state.isLoading ? t('signingIn') : t('signIn')}
             </Button>
+
+            {/* Google Sign-In */}
+            <View className="mt-4">
+              <View className="flex-row items-center gap-3 mb-4">
+                <View className="flex-1 h-px bg-gray-200" />
+                <Text className="text-gray-400 font-nunito text-sm">{t('or', 'or')}</Text>
+                <View className="flex-1 h-px bg-gray-200" />
+              </View>
+              <GoogleSignInButton
+                onSuccess={(idToken) => {
+                  googleLogin(idToken).catch(() => {});
+                }}
+                disabled={state.isLoading}
+              />
+            </View>
 
             {/* Links */}
             <View className="items-center mt-6 gap-3">

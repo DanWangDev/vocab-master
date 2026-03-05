@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, LogIn, Loader2, KeyRound } from 'lucide-react';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface LoginFormProps {
   onSubmit: (username: string, password: string) => Promise<void>;
+  onGoogleLogin?: (credential: string) => void;
   onSwitchToRegister: () => void;
   onForgotPassword?: () => void;
   isLoading: boolean;
   error: string | null;
 }
 
-export function LoginForm({ onSubmit, onSwitchToRegister, onForgotPassword, isLoading, error }: LoginFormProps) {
+export function LoginForm({ onSubmit, onGoogleLogin, onSwitchToRegister, onForgotPassword, isLoading, error }: LoginFormProps) {
   const { t } = useTranslation('auth');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -90,6 +92,20 @@ export function LoginForm({ onSubmit, onSwitchToRegister, onForgotPassword, isLo
           </>
         )}
       </button>
+
+      {onGoogleLogin && (
+        <>
+          <div className="flex items-center gap-3 my-2">
+            <div className="flex-1 h-px bg-gray-600/30" />
+            <span className="text-gray-400 text-sm">{t('or', 'or')}</span>
+            <div className="flex-1 h-px bg-gray-600/30" />
+          </div>
+
+          <GoogleSignInButton
+            onSuccess={onGoogleLogin}
+          />
+        </>
+      )}
 
       <div className="flex flex-col items-center gap-3">
         <div>

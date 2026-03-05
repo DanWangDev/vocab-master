@@ -22,6 +22,7 @@ export interface User {
   role: 'student' | 'parent' | 'admin';
   email: string | null;
   emailVerified: boolean;
+  authProvider: 'local' | 'google';
   createdAt: string;
 }
 
@@ -323,6 +324,41 @@ class ApiServiceClass {
     const data: AuthResponse = await response.json();
     await this.setTokens(data.tokens);
     return data;
+  }
+
+  async googleAuth(
+    token: string,
+    tokenType: 'id_token' | 'access_token' = 'id_token',
+    username?: string
+  ): Promise<AuthResponse & { isNewUser: boolean }> {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, tokenType, username }),
+    });
+
+    if (!response.ok) {
+      const errorData: ApiError = await response.json().catch(() => ({
+        error: 'Unknown Error',
+        message: 'Google authentication failed',
+      }));
+      throw new Error(errorData.message);
+    }
+
+    const data = await response.json();
+    await this.setTokens(data.tokens);
+    return data;
+  }
+
+  async createStudentForParent(
+    username: string,
+    password: string,
+    displayName?: string
+  ): Promise<{ success: boolean; user: User }> {
+    return this.fetchWithAuth<{ success: boolean; user: User }>('/auth/create-student', {
+      method: 'POST',
+      body: JSON.stringify({ username, password, displayName }),
+    });
   }
 
   async forgotPassword(email: string): Promise<{ message: string }> {

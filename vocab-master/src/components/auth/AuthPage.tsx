@@ -11,6 +11,8 @@ import { StudentRegisterForm } from './StudentRegisterForm';
 import { ParentRegisterForm } from './ParentRegisterForm';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
 type AuthMode = 'login' | 'register-select-role' | 'register-student' | 'register-parent' | 'forgot-password';
 
 interface LocationState {
@@ -22,7 +24,7 @@ interface LocationState {
 export function AuthPage() {
   const { t } = useTranslation('auth');
   const [mode, setMode] = useState<AuthMode>('login');
-  const { state, login, registerStudent, registerParent, forgotPassword, clearError } = useAuth();
+  const { state, login, googleLogin, registerStudent, registerParent, forgotPassword, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -56,6 +58,14 @@ export function AuthPage() {
 
   const handleLogin = async (username: string, password: string) => {
     await login(username, password);
+  };
+
+  const handleGoogleLogin = async (credential: string) => {
+    try {
+      await googleLogin(credential);
+    } catch {
+      // Error handled by context
+    }
   };
 
   const handleRegisterStudent = async (username: string, password: string, displayName?: string) => {
@@ -141,6 +151,7 @@ export function AuthPage() {
                 {mode === 'login' && (
                   <LoginForm
                     onSubmit={handleLogin}
+                    onGoogleLogin={GOOGLE_CLIENT_ID ? handleGoogleLogin : undefined}
                     onSwitchToRegister={() => switchMode('register-select-role')}
                     onForgotPassword={() => switchMode('forgot-password')}
                     isLoading={state.isLoading}

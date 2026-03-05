@@ -41,5 +41,14 @@
   "noChartData": "暂无图表数据",
   "same": "持平",
   "vsLastWeek": "对比上周 ({{count}})",
-  "resetPassword": "重置密码"
+  "resetPassword": "重置密码",
+  "createStudent": "创建学生",
+  "createStudentTitle": "创建学生账号",
+  "createStudentDesc": "创建一个新的学生账号，将自动关联到您。",
+  "confirmPassword": "确认密码",
+  "displayNameOptional": "显示名称（可选）",
+  "passwordsDoNotMatch": "两次密码不一致",
+  "creating": "创建中...",
+  "studentCreated": "学生账号创建成功！",
+  "createStudentError": "创建学生账号失败"
 }

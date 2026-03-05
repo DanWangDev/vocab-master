@@ -93,6 +93,72 @@ export const userRepository = {
   },
 
   /**
+   * Create a student account linked to a parent
+   */
+  createStudentForParent(username: string, passwordHash: string, parentId: number, displayName?: string): UserRow {
+    const stmt = db.prepare(`
+      INSERT INTO users (username, password_hash, display_name, role, parent_id)
+      VALUES (?, ?, ?, 'student', ?)
+    `);
+
+    const result = stmt.run(username, passwordHash, displayName || null, parentId);
+    const userId = result.lastInsertRowid as number;
+
+    db.prepare(`
+      INSERT INTO user_settings (user_id, sound_enabled, auto_advance, language)
+      VALUES (?, 1, 0, 'en')
+    `).run(userId);
+
+    db.prepare(`
+      INSERT INTO user_stats (user_id, total_words_studied, quizzes_taken, challenges_completed, best_challenge_score, last_study_date)
+      VALUES (?, 0, 0, 0, 0, NULL)
+    `).run(userId);
+
+    return this.findById(userId)!;
+  },
+
+  /**
+   * Find a user by Google ID
+   */
+  findByGoogleId(googleId: string): UserRow | undefined {
+    const stmt = db.prepare('SELECT * FROM users WHERE google_id = ?');
+    return stmt.get(googleId) as UserRow | undefined;
+  },
+
+  /**
+   * Create a parent account via Google OAuth (no password)
+   */
+  createGoogleParent(username: string, email: string, googleId: string, displayName?: string): UserRow {
+    const stmt = db.prepare(`
+      INSERT INTO users (username, password_hash, display_name, role, email, email_verified, google_id, auth_provider)
+      VALUES (?, NULL, ?, 'parent', ?, 1, ?, 'google')
+    `);
+
+    const result = stmt.run(username, displayName || null, email.toLowerCase(), googleId);
+    const userId = result.lastInsertRowid as number;
+
+    db.prepare(`
+      INSERT INTO user_settings (user_id, sound_enabled, auto_advance, language)
+      VALUES (?, 1, 0, 'en')
+    `).run(userId);
+
+    db.prepare(`
+      INSERT INTO user_stats (user_id, total_words_studied, quizzes_taken, challenges_completed, best_challenge_score, last_study_date)
+      VALUES (?, 0, 0, 0, 0, NULL)
+    `).run(userId);
+
+    return this.findById(userId)!;
+  },
+
+  /**
+   * Link a Google account to an existing user
+   */
+  linkGoogleAccount(userId: number, googleId: string): void {
+    const stmt = db.prepare('UPDATE users SET google_id = ?, auth_provider = ? WHERE id = ?');
+    stmt.run(googleId, 'google', userId);
+  },
+
+  /**
    * Update a user's password
    */
   updatePassword(userId: number, passwordHash: string): void {

@@ -41,5 +41,14 @@
   "noChartData": "No data available for chart",
   "same": "Same",
   "vsLastWeek": "vs last week ({{count}})",
-  "resetPassword": "Reset Password"
+  "resetPassword": "Reset Password",
+  "createStudent": "Create Student",
+  "createStudentTitle": "Create Student Account",
+  "createStudentDesc": "Create a new student account that will be automatically linked to you.",
+  "confirmPassword": "Confirm Password",
+  "displayNameOptional": "Display Name (optional)",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "creating": "Creating...",
+  "studentCreated": "Student account created successfully!",
+  "createStudentError": "Failed to create student account"
 }

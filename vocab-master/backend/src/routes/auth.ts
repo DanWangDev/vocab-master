@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { authService } from '../services/authService.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requireRole } from '../middleware/auth.js';
 import {
   validate,
   registerSchema,
@@ -9,7 +9,9 @@ import {
   loginSchema,
   refreshSchema,
   forgotPasswordSchema,
-  resetPasswordSchema
+  resetPasswordSchema,
+  createStudentByParentSchema,
+  googleAuthSchema
 } from '../middleware/validate.js';
 import type {
   AuthRequest,
@@ -18,7 +20,9 @@ import type {
   RegisterStudentRequest,
   RegisterParentRequest,
   ForgotPasswordRequest,
-  ResetPasswordRequest
+  ResetPasswordRequest,
+  CreateStudentByParentRequest,
+  GoogleAuthRequest
 } from '../types/index.js';
 
 const router = Router();
@@ -181,6 +185,53 @@ router.post('/refresh', validate(refreshSchema), async (req: AuthRequest, res: R
       error: 'Unauthorized',
       message: error instanceof Error ? error.message : 'Token refresh failed'
     });
+  }
+});
+
+// POST /api/auth/google - Google OAuth login/register for parents
+router.post('/google', validate(googleAuthSchema), async (req: AuthRequest, res: Response) => {
+  try {
+    const { token, tokenType, username } = req.body as GoogleAuthRequest;
+    const result = await authService.googleAuth(token, tokenType, username);
+
+    res.status(result.isNewUser ? 201 : 200).json({
+      user: result.user,
+      tokens: result.tokens,
+      isNewUser: result.isNewUser
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Google authentication failed';
+
+    if (message === 'Google OAuth is not configured') {
+      res.status(503).json({ error: 'Service Unavailable', message });
+    } else if (message === 'Google sign-in is only available for parent accounts') {
+      res.status(403).json({ error: 'Forbidden', message });
+    } else {
+      res.status(401).json({ error: 'Unauthorized', message });
+    }
+  }
+});
+
+// POST /api/auth/create-student - Parent creates a student account (auto-linked)
+router.post('/create-student', authMiddleware, requireRole(['parent']), validate(createStudentByParentSchema), async (req: AuthRequest, res: Response) => {
+  try {
+    const { username, password, displayName } = req.body as CreateStudentByParentRequest;
+    const result = await authService.createStudentForParent(req.user!.userId, username, password, displayName);
+
+    res.status(201).json({
+      success: true,
+      user: result.user
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to create student';
+
+    if (message === 'Username already taken') {
+      res.status(409).json({ error: 'Conflict', message });
+    } else if (message === 'Only parents can create student accounts') {
+      res.status(403).json({ error: 'Forbidden', message });
+    } else {
+      res.status(400).json({ error: 'Bad Request', message });
+    }
   }
 });
 

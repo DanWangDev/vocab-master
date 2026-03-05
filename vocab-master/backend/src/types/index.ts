@@ -4,12 +4,14 @@ import { Request } from 'express';
 export interface UserRow {
   id: number;
   username: string;
-  password_hash: string;
+  password_hash: string | null;
   display_name: string | null;
   role: 'student' | 'parent' | 'admin';
   parent_id: number | null;
   email: string | null;
   email_verified: number; // SQLite stores booleans as integers
+  google_id: string | null;
+  auth_provider: 'local' | 'google';
   last_seen_at: string | null;
   created_at: string;
 }
@@ -104,6 +106,7 @@ export interface User {
   role: 'student' | 'parent' | 'admin';
   email: string | null;
   emailVerified: boolean;
+  authProvider: 'local' | 'google';
   createdAt: string;
 }
 
@@ -174,9 +177,21 @@ export interface ResetPasswordRequest {
   password: string;
 }
 
+export interface CreateStudentByParentRequest {
+  username: string;
+  password: string;
+  displayName?: string;
+}
+
 export interface LoginRequest {
   username: string;
   password: string;
+}
+
+export interface GoogleAuthRequest {
+  token: string;
+  tokenType: 'id_token' | 'access_token';
+  username?: string;
 }
 
 export interface AuthResponse {

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Users,
   UserPlus,
+  Plus,
   Flame,
   Target,
   BookOpen,
@@ -13,6 +14,9 @@ import {
   ChevronRight,
   X,
   Search,
+  Eye,
+  EyeOff,
+  CheckCircle,
 } from 'lucide-react-native';
 import { ApiService } from '../../../src/services/ApiService';
 import { Button } from '../../../src/components/common';
@@ -28,6 +32,7 @@ export default function ParentDashboardScreen() {
   const [selectedUser, setSelectedUser] = useState<AdminUserStats | null>(null);
   const [userDetails, setUserDetails] = useState<AdminUserDetails | null>(null);
   const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -83,12 +88,20 @@ export default function ParentDashboardScreen() {
             {t('title', 'Parent Dashboard')}
           </Text>
         </View>
-        <Pressable
-          onPress={() => setShowLinkModal(true)}
-          className="w-10 h-10 items-center justify-center rounded-full bg-primary-100"
-        >
-          <UserPlus size={20} color={colors.primary[600]} />
-        </Pressable>
+        <View className="flex-row items-center gap-2">
+          <Pressable
+            onPress={() => setShowCreateModal(true)}
+            className="w-10 h-10 items-center justify-center rounded-full bg-green-100"
+          >
+            <Plus size={20} color={colors.primary[600]} />
+          </Pressable>
+          <Pressable
+            onPress={() => setShowLinkModal(true)}
+            className="w-10 h-10 items-center justify-center rounded-full bg-primary-100"
+          >
+            <UserPlus size={20} color={colors.primary[600]} />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -204,6 +217,13 @@ export default function ParentDashboardScreen() {
         }}
       />
 
+      {/* Create Student Modal */}
+      <CreateStudentModal
+        visible={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={loadUsers}
+      />
+
       {/* Link Student Modal */}
       <LinkStudentModal
         visible={showLinkModal}
@@ -309,6 +329,184 @@ function StudentDetailModal({
                   </View>
                 );
               })}
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
+function CreateStudentModal({
+  visible,
+  onClose,
+  onCreated,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { t } = useTranslation('parent');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const resetForm = () => {
+    setUsername('');
+    setPassword('');
+    setConfirmPassword('');
+    setDisplayName('');
+    setError(null);
+    setSuccess(false);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const handleCreate = async () => {
+    setError(null);
+
+    if (password !== confirmPassword) {
+      setError(t('passwordsDoNotMatch', 'Passwords do not match'));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await ApiService.createStudentForParent(
+        username.trim(),
+        password,
+        displayName.trim() || undefined
+      );
+      setSuccess(true);
+      onCreated();
+      setTimeout(handleClose, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('createStudentError', 'Failed to create student'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isValid = username.trim().length >= 3 && password.length >= 6 && password === confirmPassword;
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+          <Text className="text-lg font-nunito-bold text-gray-900">
+            {t('createStudentTitle', 'Create Student Account')}
+          </Text>
+          <Pressable onPress={handleClose} className="p-2">
+            <X size={24} color={colors.gray[600]} />
+          </Pressable>
+        </View>
+
+        <ScrollView className="flex-1 p-4" keyboardShouldPersistTaps="handled">
+          {success ? (
+            <View className="items-center py-12">
+              <CheckCircle size={48} color="#16a34a" />
+              <Text className="text-green-600 font-nunito-bold mt-4">
+                {t('studentCreated', 'Student account created!')}
+              </Text>
+            </View>
+          ) : (
+            <View className="gap-4">
+              <Text className="text-sm text-gray-500 font-nunito mb-2">
+                {t('createStudentDesc', 'Create a new student account that will be automatically linked to you.')}
+              </Text>
+
+              <View>
+                <Text className="text-sm font-nunito-bold text-gray-700 mb-1">
+                  {t('form.username', { ns: 'auth', defaultValue: 'Username' })}
+                </Text>
+                <RNTextInput
+                  value={username}
+                  onChangeText={setUsername}
+                  placeholder="student_username"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!loading}
+                  className="bg-white border border-gray-200 rounded-xl px-4 py-3 font-nunito"
+                />
+              </View>
+
+              <View>
+                <Text className="text-sm font-nunito-bold text-gray-700 mb-1">
+                  {t('form.password', { ns: 'auth', defaultValue: 'Password' })}
+                </Text>
+                <View className="flex-row items-center bg-white border border-gray-200 rounded-xl">
+                  <RNTextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="Min 6 characters"
+                    secureTextEntry={!showPassword}
+                    editable={!loading}
+                    className="flex-1 px-4 py-3 font-nunito"
+                  />
+                  <Pressable onPress={() => setShowPassword(!showPassword)} className="px-3">
+                    {showPassword
+                      ? <EyeOff size={18} color={colors.gray[400]} />
+                      : <Eye size={18} color={colors.gray[400]} />
+                    }
+                  </Pressable>
+                </View>
+              </View>
+
+              <View>
+                <Text className="text-sm font-nunito-bold text-gray-700 mb-1">
+                  {t('confirmPassword', 'Confirm Password')}
+                </Text>
+                <RNTextInput
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry={!showPassword}
+                  editable={!loading}
+                  className="bg-white border border-gray-200 rounded-xl px-4 py-3 font-nunito"
+                />
+              </View>
+
+              <View>
+                <Text className="text-sm font-nunito-bold text-gray-700 mb-1">
+                  {t('displayNameOptional', 'Display Name (optional)')}
+                </Text>
+                <RNTextInput
+                  value={displayName}
+                  onChangeText={setDisplayName}
+                  editable={!loading}
+                  className="bg-white border border-gray-200 rounded-xl px-4 py-3 font-nunito"
+                />
+              </View>
+
+              {error && (
+                <View className="p-3 bg-red-50 rounded-xl border border-red-200">
+                  <Text className="text-red-700 font-nunito text-sm">{error}</Text>
+                </View>
+              )}
+
+              <Button
+                onPress={handleCreate}
+                disabled={!isValid}
+                loading={loading}
+                color={colors.primary[600]}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Plus size={18} color="white" />
+                  <Text className="text-white font-nunito-bold">
+                    {loading
+                      ? t('creating', 'Creating...')
+                      : t('createStudent', 'Create Student')
+                    }
+                  </Text>
+                </View>
+              </Button>
             </View>
           )}
         </ScrollView>
