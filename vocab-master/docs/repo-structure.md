@@ -1,6 +1,7 @@
 # Monorepo Structure
 
-> **Related:** [mobile-migration-plan.md](./mobile-migration-plan.md)  
+> **Status:** Planned (monorepo migration not yet executed — current structure is flat)
+> **Related:** [mobile-migration-plan.md](./mobile-migration-plan.md)
 > **Date:** 2026-02-10
 
 ## Decision: Monorepo

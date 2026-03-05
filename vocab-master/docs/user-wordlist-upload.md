@@ -1,7 +1,7 @@
 # Custom Wordlist Support Plan
 
-> **Status:** Planning  
-> **Date:** 2026-02-10
+> **Status:** Implemented
+> **Date:** 2026-02-10 (plan) | 2026-03-05 (status update)
 
 ## Context
 

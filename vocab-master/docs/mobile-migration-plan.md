@@ -1,7 +1,7 @@
 # Mobile Migration Plan
 
-> **Status:** Planning  
-> **Date:** 2026-02-10  
+> **Status:** Implemented (Phases 1–6 complete)
+> **Date:** 2026-02-10 (plan) | 2026-03-05 (status update)
 > **Target:** iOS & Android via React Native (Expo)
 
 ## Background
