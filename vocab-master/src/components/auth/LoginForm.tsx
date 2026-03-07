@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, LogIn, Loader2, KeyRound } from 'lucide-react';
 import { GoogleSignInButton } from './GoogleSignInButton';
+import { TurnstileWidget } from './TurnstileWidget';
 
 interface LoginFormProps {
-  onSubmit: (username: string, password: string) => Promise<void>;
+  onSubmit: (username: string, password: string, turnstileToken?: string) => Promise<void>;
   onGoogleLogin?: (credential: string) => void;
   onSwitchToRegister: () => void;
   onForgotPassword?: () => void;
@@ -17,11 +18,12 @@ export function LoginForm({ onSubmit, onGoogleLogin, onSwitchToRegister, onForgo
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | undefined>();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) return;
-    await onSubmit(username.trim(), password);
+    await onSubmit(username.trim(), password, turnstileToken);
   };
 
   return (
@@ -92,6 +94,8 @@ export function LoginForm({ onSubmit, onGoogleLogin, onSwitchToRegister, onForgo
           </>
         )}
       </button>
+
+      <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(undefined)} />
 
       {onGoogleLogin && (
         <>

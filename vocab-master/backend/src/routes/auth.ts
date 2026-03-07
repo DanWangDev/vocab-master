@@ -14,6 +14,8 @@ import {
   googleAuthSchema,
   updateProfileSchema
 } from '../middleware/validate.js';
+import { verifyTurnstile } from '../middleware/turnstile.js';
+import { checkBruteForce, recordFailedLogin, recordSuccessfulLogin } from '../middleware/bruteForce.js';
 import type {
   AuthRequest,
   RegisterRequest,
@@ -30,7 +32,7 @@ import type {
 const router = Router();
 
 // POST /api/auth/register (legacy - creates student)
-router.post('/register', validate(registerSchema), async (req: AuthRequest, res: Response) => {
+router.post('/register', verifyTurnstile, validate(registerSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { username, password, displayName } = req.body as RegisterRequest;
     const result = await authService.register(username, password, displayName);
@@ -51,7 +53,7 @@ router.post('/register', validate(registerSchema), async (req: AuthRequest, res:
 });
 
 // POST /api/auth/register/student - Student registration (no email)
-router.post('/register/student', validate(registerStudentSchema), async (req: AuthRequest, res: Response) => {
+router.post('/register/student', verifyTurnstile, validate(registerStudentSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { username, password, displayName } = req.body as RegisterStudentRequest;
     const result = await authService.registerStudent(username, password, displayName);
@@ -72,7 +74,7 @@ router.post('/register/student', validate(registerStudentSchema), async (req: Au
 });
 
 // POST /api/auth/register/parent - Parent registration (email required)
-router.post('/register/parent', validate(registerParentSchema), async (req: AuthRequest, res: Response) => {
+router.post('/register/parent', verifyTurnstile, validate(registerParentSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { username, password, email, displayName } = req.body as RegisterParentRequest;
     const result = await authService.registerParent(username, password, email, displayName);
@@ -140,16 +142,21 @@ router.get('/validate-reset-token/:token', async (req: AuthRequest, res: Respons
 });
 
 // POST /api/auth/login
-router.post('/login', validate(loginSchema), async (req: AuthRequest, res: Response) => {
+router.post('/login', checkBruteForce, verifyTurnstile, validate(loginSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { username, password } = req.body as LoginRequest;
     const result = await authService.login(username, password);
 
+    recordSuccessfulLogin(username);
     res.json({
       user: result.user,
       tokens: result.tokens
     });
   } catch (error) {
+    const { username } = req.body as LoginRequest;
+    if (username) {
+      recordFailedLogin(username);
+    }
     res.status(401).json({
       error: 'Unauthorized',
       message: error instanceof Error ? error.message : 'Login failed'

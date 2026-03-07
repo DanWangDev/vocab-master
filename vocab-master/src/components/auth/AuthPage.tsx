@@ -56,8 +56,8 @@ export function AuthPage() {
     }
   }, [state.isAuthenticated, state.user, from, navigate]);
 
-  const handleLogin = async (username: string, password: string) => {
-    await login(username, password);
+  const handleLogin = async (username: string, password: string, turnstileToken?: string) => {
+    await login(username, password, turnstileToken);
   };
 
   const handleGoogleLogin = async (credential: string) => {
@@ -68,12 +68,12 @@ export function AuthPage() {
     }
   };
 
-  const handleRegisterStudent = async (username: string, password: string, displayName?: string) => {
-    await registerStudent(username, password, displayName);
+  const handleRegisterStudent = async (username: string, password: string, displayName?: string, turnstileToken?: string) => {
+    await registerStudent(username, password, displayName, turnstileToken);
   };
 
-  const handleRegisterParent = async (username: string, password: string, email: string, displayName?: string) => {
-    await registerParent(username, password, email, displayName);
+  const handleRegisterParent = async (username: string, password: string, email: string, displayName?: string, turnstileToken?: string) => {
+    await registerParent(username, password, email, displayName, turnstileToken);
   };
 
   const handleForgotPassword = async (email: string) => {

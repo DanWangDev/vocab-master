@@ -24,11 +24,11 @@ type AuthAction =
 
 interface AuthContextType {
   state: AuthState;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, turnstileToken?: string) => Promise<void>;
   googleLogin: (idToken: string, username?: string) => Promise<void>;
-  register: (username: string, password: string, displayName?: string) => Promise<void>;
-  registerStudent: (username: string, password: string, displayName?: string) => Promise<void>;
-  registerParent: (username: string, password: string, email: string, displayName?: string) => Promise<void>;
+  register: (username: string, password: string, displayName?: string, turnstileToken?: string) => Promise<void>;
+  registerStudent: (username: string, password: string, displayName?: string, turnstileToken?: string) => Promise<void>;
+  registerParent: (username: string, password: string, email: string, displayName?: string, turnstileToken?: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -118,10 +118,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string, turnstileToken?: string) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const response = await ApiService.login(username, password);
+      const response = await ApiService.login(username, password, turnstileToken);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
 
       // Check if we should migrate local data
@@ -155,14 +155,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (username: string, password: string, displayName?: string) => {
-    return registerStudent(username, password, displayName);
+  const register = async (username: string, password: string, displayName?: string, turnstileToken?: string) => {
+    return registerStudent(username, password, displayName, turnstileToken);
   };
 
-  const registerStudent = async (username: string, password: string, displayName?: string) => {
+  const registerStudent = async (username: string, password: string, displayName?: string, turnstileToken?: string) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const response = await ApiService.registerStudent(username, password, displayName);
+      const response = await ApiService.registerStudent(username, password, displayName, turnstileToken);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
 
       // Migrate local data after registration
@@ -176,10 +176,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const registerParent = async (username: string, password: string, email: string, displayName?: string) => {
+  const registerParent = async (username: string, password: string, email: string, displayName?: string, turnstileToken?: string) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const response = await ApiService.registerParent(username, password, email, displayName);
+      const response = await ApiService.registerParent(username, password, email, displayName, turnstileToken);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
 
       // Migrate local data after registration

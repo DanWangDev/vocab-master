@@ -281,11 +281,11 @@ class ApiServiceClass {
     return this.registerStudent(username, password, displayName);
   }
 
-  async registerStudent(username: string, password: string, displayName?: string): Promise<AuthResponse> {
+  async registerStudent(username: string, password: string, displayName?: string, turnstileToken?: string): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/register/student`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, displayName }),
+      body: JSON.stringify({ username, password, displayName, turnstileToken }),
     });
 
     if (!response.ok) {
@@ -301,11 +301,11 @@ class ApiServiceClass {
     return data;
   }
 
-  async registerParent(username: string, password: string, email: string, displayName?: string): Promise<AuthResponse> {
+  async registerParent(username: string, password: string, email: string, displayName?: string, turnstileToken?: string): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/register/parent`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, email, displayName }),
+      body: JSON.stringify({ username, password, email, displayName, turnstileToken }),
     });
 
     if (!response.ok) {
@@ -416,11 +416,11 @@ class ApiServiceClass {
     });
   }
 
-  async login(username: string, password: string): Promise<AuthResponse> {
+  async login(username: string, password: string, turnstileToken?: string): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, turnstileToken }),
     });
 
     if (!response.ok) {

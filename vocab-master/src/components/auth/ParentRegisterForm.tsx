@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, UserPlus, Loader2, ArrowLeft, Users, Mail } from 'lucide-react';
+import { TurnstileWidget } from './TurnstileWidget';
 
 interface ParentRegisterFormProps {
-  onSubmit: (username: string, password: string, email: string, displayName?: string) => Promise<void>;
+  onSubmit: (username: string, password: string, email: string, displayName?: string, turnstileToken?: string) => Promise<void>;
   onBack: () => void;
   isLoading: boolean;
   error: string | null;
@@ -18,6 +19,7 @@ export function ParentRegisterForm({ onSubmit, onBack, isLoading, error }: Paren
   const [displayName, setDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | undefined>();
 
   const validate = (): boolean => {
     if (username.length < 3) {
@@ -51,7 +53,7 @@ export function ParentRegisterForm({ onSubmit, onBack, isLoading, error }: Paren
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    await onSubmit(username.trim(), password, email.trim(), displayName.trim() || undefined);
+    await onSubmit(username.trim(), password, email.trim(), displayName.trim() || undefined, turnstileToken);
   };
 
   const displayedError = validationError || error;
@@ -174,6 +176,8 @@ export function ParentRegisterForm({ onSubmit, onBack, isLoading, error }: Paren
           autoComplete="new-password"
         />
       </div>
+
+      <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(undefined)} />
 
       {displayedError && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
