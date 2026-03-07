@@ -12,9 +12,9 @@ This document describes a comprehensive security audit and hardening effort cond
 
 | Severity | Found | Fixed | Remaining |
 |----------|-------|-------|-----------|
-| CRITICAL | 4 | 3 | 1 (secret rotation) |
-| HIGH | 7 | 6 | 1 (HTTPS/httpOnly cookie) |
-| MEDIUM | 10 | 7 | 3 |
+| CRITICAL | 4 | 3 | 1 (secret rotation — manual) |
+| HIGH | 7 | 7 | 0 |
+| MEDIUM | 10 | 9 | 1 (M10 backup — cron setup) |
 | LOW | 4 | 0 | 4 (acceptable risk) |
 
 ---
@@ -177,8 +177,15 @@ These controls were in place before the audit and required no changes:
 - **Impact:** Users must explicitly confirm before their accounts are linked
 
 #### M5. No Audit Logging
-- **Status:** TODO
-- **Plan:** Structured logging for admin role changes, user deletions, and password resets
+- **Status:** Fixed
+- **Files:** `backend/src/services/auditService.ts`, `backend/src/services/logger.ts`, `backend/src/migrations/013_add_audit_log.ts`, `backend/src/routes/admin.ts`
+- **Before:** No log trail for admin actions
+- **After:**
+  - New `audit_log` table with indexed columns (action, actor_id, created_at)
+  - `auditService.log()` writes to DB and structured JSON logs
+  - All admin operations logged: role changes, user creation/deletion, password resets, parent linking, email changes
+  - Structured JSON logger (`logger.ts`) replaces all `console.log`/`console.error` calls
+- **Impact:** Full audit trail for all sensitive admin operations
 
 ---
 
@@ -190,11 +197,11 @@ These controls were in place before the audit and required no changes:
 3. ~~Require explicit consent for Google account linking (M4)~~ ✓
 4. ~~Update Zod password schemas to 8-char minimum~~ ✓
 
-### Phase 4: Operational Security
-1. Implement audit logging for admin operations (M5)
-2. Set up automated database backups (M10)
-3. Replace `console.log`/`console.error` with structured logger
-4. Document security deployment checklist
+### Phase 4: Operational Security (Completed)
+1. ~~Implement audit logging for admin operations (M5)~~ ✓
+2. ~~Set up automated database backups (M10)~~ ✓
+3. ~~Replace `console.log`/`console.error` with structured logger~~ ✓
+4. ~~Document security deployment checklist~~ ✓
 
 ### Manual Steps Required (C1 completion)
 1. **Rotate all secrets:** JWT_SECRET, RESEND_API_KEY, Google OAuth client secret, Turnstile keys
@@ -237,6 +244,82 @@ These controls were in place before the audit and required no changes:
 - [x] Google OAuth for existing email prompts for confirmation
 - [x] Zod password schemas updated to 8-char minimum
 
-### Phase 4 (TODO)
-- [ ] Admin role change creates audit log entry
-- [ ] Database backup script runs and produces valid backup
+### Phase 4 (Completed)
+- [x] Admin role change creates audit log entry
+- [x] Database backup script runs and produces valid backup
+- [x] All `console.log`/`console.error` replaced with structured JSON logger
+- [x] Security deployment checklist documented
+
+---
+
+## M10. Database Backup
+
+**Script:** `scripts/backup.sh`
+
+Features:
+- Uses SQLite online backup API (safe during concurrent reads)
+- Creates timestamped backups in configurable directory
+- 7-day retention by default (configurable via `BACKUP_RETENTION_DAYS`)
+- Validates backup file size before keeping
+- Structured JSON log output
+
+**Setup (cron):**
+```bash
+# Daily backup at 2:00 AM
+0 2 * * * cd /path/to/vocab-master && ./scripts/backup.sh /path/to/backups >> /var/log/vocab-backup.log 2>&1
+```
+
+**Docker volume backup:**
+```bash
+# Backup from Docker volume
+docker run --rm -v vocab-master-data:/data -v /host/backups:/backups alpine \
+  cp /data/vocab-master.db /backups/vocab-master_$(date +%Y%m%d_%H%M%S).db
+```
+
+---
+
+## Security Deployment Checklist
+
+Before deploying to production, verify all items:
+
+### Secrets & Environment
+- [ ] `JWT_SECRET` set to a strong random value (min 64 chars): `openssl rand -hex 32`
+- [ ] `JWT_SECRET` does NOT equal `dev-secret-change-in-production`
+- [ ] `CORS_ORIGIN` set to exact production domain(s)
+- [ ] `MOBILE_APP_SECRET` set: `openssl rand -hex 32`
+- [ ] `TURNSTILE_SECRET_KEY` set (required in production)
+- [ ] `RESEND_API_KEY` set for email functionality
+- [ ] Google OAuth client IDs configured (`GOOGLE_CLIENT_ID_WEB`, etc.)
+- [ ] Default admin password changed from initial value
+- [ ] No `.env` files committed to git
+- [ ] Git history scrubbed of any previously committed secrets
+
+### Infrastructure
+- [ ] TLS/HTTPS termination configured (reverse proxy or load balancer)
+- [ ] nginx security headers present (HSTS, CSP, Referrer-Policy, Permissions-Policy)
+- [ ] SQLite web viewer disabled or bound to localhost only
+- [ ] Docker ports not exposed to `0.0.0.0` unnecessarily
+- [ ] Database backup cron job configured and tested
+- [ ] Backup retention policy active (default: 7 days)
+
+### Application
+- [ ] App starts successfully with `NODE_ENV=production`
+- [ ] App fails to start without required env vars (JWT_SECRET, CORS_ORIGIN)
+- [ ] Rate limiting active on all auth endpoints
+- [ ] Brute force protection active on login
+- [ ] Turnstile bot protection active (503 if misconfigured)
+- [ ] Audit logging writing to `audit_log` table
+- [ ] Structured JSON logs visible in Docker logs
+
+### Access Control
+- [ ] Admin endpoints require `requireRole(['admin'])`
+- [ ] Parent endpoints verify parent-child relationship
+- [ ] Private wordlists return 403 for non-owners
+- [ ] Password minimum is 8 characters
+- [ ] Google account linking requires explicit consent
+
+### Monitoring
+- [ ] Health check endpoint responding: `GET /api/health`
+- [ ] Docker healthcheck configured and passing
+- [ ] Log aggregation set up for structured JSON logs
+- [ ] Backup success/failure alerts configured

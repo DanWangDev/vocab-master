@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { quizResultRepository } from '../repositories/quizResultRepository';
 import { statsRepository } from '../repositories/userRepository';
 import { authMiddleware } from '../middleware/auth';
+import { logger } from '../services/logger.js';
 import type { AuthRequest } from '../types';
 
 const router = Router();
@@ -81,7 +82,7 @@ router.post('/', authMiddleware, (req: AuthRequest, res: Response) => {
             message: 'Quiz result saved successfully'
         });
     } catch (error) {
-        console.error('Error saving quiz result:', error);
+        logger.error('Error saving quiz result', { error: String(error) });
         res.status(500).json({ error: 'Failed to save quiz result' });
     }
 });
@@ -93,7 +94,7 @@ router.get('/history', authMiddleware, (req: AuthRequest, res: Response) => {
         const history = quizResultRepository.getByUserId(userId);
         res.json(history);
     } catch (error) {
-        console.error('Error fetching quiz history:', error);
+        logger.error('Error fetching quiz history', { error: String(error) });
         res.status(500).json({ error: 'Failed to fetch quiz history' });
     }
 });

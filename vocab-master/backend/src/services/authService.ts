@@ -6,6 +6,7 @@ import { tokenRepository } from '../repositories/tokenRepository.js';
 import { passwordResetRepository } from '../repositories/passwordResetRepository.js';
 import { emailService } from './emailService.js';
 import { googleAuthService } from './googleAuthService.js';
+import { logger } from './logger.js';
 import type { User, JWTPayload, TokenPair, UserRow } from '../types/index.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -107,7 +108,7 @@ export const authService = {
 
     // Send welcome email (don't await - fire and forget)
     emailService.sendWelcomeEmail(email, displayName).catch(err => {
-      console.error('[AuthService] Failed to send welcome email:', err);
+      logger.error('Failed to send welcome email', { error: String(err) });
     });
 
     return { user, tokens };

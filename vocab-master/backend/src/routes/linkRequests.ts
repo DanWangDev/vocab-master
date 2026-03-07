@@ -3,6 +3,7 @@ import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validate, createLinkRequestSchema, linkRequestActionSchema } from '../middleware/validate.js';
 import { linkRequestRepository, userRepository } from '../repositories/index.js';
 import { pushNotificationService } from '../services/index.js';
+import { logger } from '../services/logger.js';
 import type { AuthRequest, LinkRequest, CreateLinkRequestRequest, LinkRequestActionRequest } from '../types/index.js';
 
 const router = Router();
@@ -120,7 +121,7 @@ router.post('/', requireRole(['parent']), validate(createLinkRequestSchema), (re
       'New Link Request',
       `${parentName} wants to link their account with yours`,
       { type: 'link_request', linkRequestId: request.id }
-    ).catch(err => console.error('Push notification failed:', err));
+    ).catch(err => logger.error('Push notification failed', { error: String(err) }));
 
     res.status(201).json({
       success: true,
@@ -209,7 +210,7 @@ router.patch('/:id', requireRole(['student']), validate(linkRequestActionSchema)
         title,
         body,
         { type: action === 'accept' ? 'link_accepted' : 'link_rejected' }
-      ).catch(err => console.error('Push notification failed:', err));
+      ).catch(err => logger.error('Push notification failed', { error: String(err) }));
     }
 
     res.json({

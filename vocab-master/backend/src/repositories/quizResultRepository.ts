@@ -1,5 +1,6 @@
 import { db } from '../config/database';
 import type { QuizResultRow, QuizAnswerRow, StudySessionRow } from '../types';
+import { logger } from '../services/logger.js';
 
 export interface CreateQuizResultParams {
   userId: number;
@@ -140,7 +141,7 @@ export const quizResultRepository = {
         lastStudyDate: new Date().toISOString()
       });
     } catch (err) {
-      console.error('Failed to update user stats after study session:', err);
+      logger.error('Failed to update user stats after study session', { error: String(err) });
     }
 
     return result.lastInsertRowid as number;

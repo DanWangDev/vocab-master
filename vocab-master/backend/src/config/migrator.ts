@@ -1,4 +1,5 @@
 import type { Database } from 'better-sqlite3';
+import { logger } from '../services/logger.js';
 
 export interface Migration {
     name: string;
@@ -34,16 +35,16 @@ export class Migrator {
         // 3. Run pending migrations
         for (const migration of this.migrations) {
             if (!executed.has(migration.name)) {
-                console.log(`Running migration: ${migration.name}`);
+                logger.info('Running migration', { name: migration.name });
                 try {
                     // Run in transaction
                     this.db.transaction(() => {
                         migration.up(this.db);
                         this.db.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migration.name);
                     })();
-                    console.log(`Migration ${migration.name} completed.`);
+                    logger.info('Migration completed', { name: migration.name });
                 } catch (error) {
-                    console.error(`Migration ${migration.name} failed:`, error);
+                    logger.error('Migration failed', { name: migration.name, error: String(error) });
                     throw error; // Stop migration process on error
                 }
             }

@@ -13,6 +13,7 @@ import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase } from './config/database.js';
 import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
+import { logger } from './services/logger.js';
 
 const app = express();
 app.set('trust proxy', 1); // Trust first main proxy (likely Nginx/Docker)
@@ -155,7 +156,7 @@ app.use((_req, res) => {
 
 // Error handler
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error', { error: err.message, stack: err.stack });
   res.status(500).json({
     error: 'Internal Server Error',
     message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message
@@ -164,13 +165,13 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down...');
+  logger.info('SIGTERM received, shutting down...');
   closeDatabase();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down...');
+  logger.info('SIGINT received, shutting down...');
   closeDatabase();
   process.exit(0);
 });
@@ -178,8 +179,8 @@ process.on('SIGINT', () => {
 const HOST = process.env.HOST || '127.0.0.1';
 
 app.listen(Number(PORT), HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
-  console.log(`Health check: http://${HOST}:${PORT}/api/health`);
+  logger.info('Server started', { host: HOST, port: Number(PORT) });
+  logger.info('Health check available', { url: `http://${HOST}:${PORT}/api/health` });
 });
 
 export default app;

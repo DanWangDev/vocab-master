@@ -1,5 +1,6 @@
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 import { pushTokenRepository } from '../repositories/index.js';
+import { logger } from './logger.js';
 
 const expo = new Expo();
 
@@ -31,7 +32,7 @@ export const pushNotificationService = {
         const tickets: ExpoPushTicket[] = await expo.sendPushNotificationsAsync(chunk);
         this.handleTickets(tickets, tokens.map(t => t.expo_push_token));
       } catch (error) {
-        console.error('Failed to send push notifications:', error);
+        logger.error('Failed to send push notifications', { error: String(error) });
       }
     }
   },
@@ -63,7 +64,7 @@ export const pushNotificationService = {
         const tickets: ExpoPushTicket[] = await expo.sendPushNotificationsAsync(chunk);
         this.handleTickets(tickets, tokens.map(t => t.expo_push_token));
       } catch (error) {
-        console.error('Failed to send push notifications:', error);
+        logger.error('Failed to send push notifications', { error: String(error) });
       }
     }
   },
@@ -72,7 +73,7 @@ export const pushNotificationService = {
     for (let i = 0; i < tickets.length; i++) {
       const ticket = tickets[i];
       if (ticket.status === 'error') {
-        console.error('Push notification error:', ticket.message);
+        logger.error('Push notification error', { error: String(ticket.message) });
         if (ticket.details?.error === 'DeviceNotRegistered' && pushTokens[i]) {
           pushTokenRepository.deleteByToken(pushTokens[i]);
         }

@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { Migrator } from './migrator';
 import { migrations } from '../migrations';
+import { logger } from '../services/logger';
 
 const DATABASE_PATH = process.env.DATABASE_PATH || path.join(__dirname, '../../data/vocab-master.db');
 
@@ -23,9 +24,9 @@ export function initializeDatabase(): void {
   try {
     const migrator = new Migrator(db, migrations);
     migrator.migrate();
-    console.log('Database initialized successfully via migrations');
+    logger.info('Database initialized successfully via migrations');
   } catch (error) {
-    console.error('Failed to initialize database:', error);
+    logger.error('Failed to initialize database', { error: String(error) });
     process.exit(1);
   }
 }

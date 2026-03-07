@@ -37,6 +37,9 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 - **Security headers** — HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
 - **Input validation** — Zod schemas on auth endpoints and quiz results; file type validation on wordlist imports
 - **Startup checks** — app refuses to start without `JWT_SECRET` in any environment or without `CORS_ORIGIN` in production
+- **Audit logging** — all admin operations (role changes, user creation/deletion, password resets) logged to `audit_log` table with actor, target, and IP
+- **Structured logging** — JSON-formatted log output for all backend services (compatible with log aggregation tools)
+- **Database backups** — automated backup script with configurable retention (`scripts/backup.sh`)
 
 See [docs/security-hardening.md](docs/security-hardening.md) for the full security audit report.
 
@@ -71,10 +74,10 @@ vocab-master/
 │   ├── src/
 │   │   ├── config/           # Database, migration runner
 │   │   ├── middleware/       # Auth, validation, rate limiting
-│   │   ├── migrations/       # Sequential DB migrations (001–012)
+│   │   ├── migrations/       # Sequential DB migrations (001–013)
 │   │   ├── repositories/     # Data access layer (SQLite)
 │   │   ├── routes/           # Express route handlers
-│   │   ├── services/         # Business logic (auth, email, Google OAuth)
+│   │   ├── services/         # Business logic (auth, email, Google OAuth, audit, logger)
 │   │   ├── types/            # Shared TypeScript interfaces
 │   │   └── index.ts          # Server entry point
 │   └── Dockerfile
@@ -98,6 +101,7 @@ vocab-master/
 │   ├── i18n/                 # i18next config and locale files (en, zh-CN)
 │   └── services/             # ApiService, StorageService
 ├── shared/                   # Shared types and i18n locales
+├── scripts/                  # Operational scripts (backup, etc.)
 ├── docs/                     # Architecture and planning documents
 ├── docker-compose.yml        # Multi-container orchestration
 ├── frontend.Dockerfile       # Web frontend build
@@ -254,9 +258,9 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for NAS deployment instructions.
 
 ## Database
 
-SQLite with auto-running migrations on server start. Migrations are numbered sequentially (`001` through `012`) and tracked in a `migrations` table.
+SQLite with auto-running migrations on server start. Migrations are numbered sequentially (`001` through `013`) and tracked in a `migrations` table.
 
-Key tables: `users`, `user_settings`, `user_stats`, `refresh_tokens`, `password_reset_tokens`, `daily_challenges`, `quiz_results`, `quiz_answers`, `study_sessions`, `user_vocabulary`, `notifications`, `link_requests`, `wordlists`, `wordlist_words`, `user_active_wordlist`, `push_tokens`.
+Key tables: `users`, `user_settings`, `user_stats`, `refresh_tokens`, `password_reset_tokens`, `daily_challenges`, `quiz_results`, `quiz_answers`, `study_sessions`, `user_vocabulary`, `notifications`, `link_requests`, `wordlists`, `wordlist_words`, `user_active_wordlist`, `push_tokens`, `audit_log`.
 
 ## License
 

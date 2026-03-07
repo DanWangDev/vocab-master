@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { quizResultRepository } from '../repositories/quizResultRepository';
 import { authMiddleware } from '../middleware/auth';
+import { logger } from '../services/logger.js';
 import type { AuthRequest } from '../types';
 
 const router = Router();
@@ -25,7 +26,7 @@ router.post('/', authMiddleware, (req: AuthRequest, res: Response) => {
             message: 'Study session saved successfully'
         });
     } catch (error) {
-        console.error('Error saving study session:', error);
+        logger.error('Error saving study session', { error: String(error) });
         res.status(500).json({ error: 'Failed to save study session' });
     }
 });
@@ -37,7 +38,7 @@ router.get('/history', authMiddleware, (req: AuthRequest, res: Response) => {
         const history = quizResultRepository.getStudySessionsByUserId(userId);
         res.json(history);
     } catch (error) {
-        console.error('Error fetching study history:', error);
+        logger.error('Error fetching study history', { error: String(error) });
         res.status(500).json({ error: 'Failed to fetch study history' });
     }
 });

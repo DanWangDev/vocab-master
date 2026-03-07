@@ -10,6 +10,7 @@ import { addWordlists } from './009_add_wordlists';
 import { addPushTokens } from './010_add_push_tokens';
 import { addLastSeen } from './011_add_last_seen';
 import { addGoogleOauth } from './012_add_google_oauth';
+import { addAuditLog } from './013_add_audit_log';
 
 export const migrations = [
     initialSchema,
@@ -24,4 +25,5 @@ export const migrations = [
     addPushTokens,
     addLastSeen,
     addGoogleOauth,
+    addAuditLog,
 ];

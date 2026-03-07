@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { logger } from './logger.js';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const EMAIL_FROM = process.env.EMAIL_FROM || 'Vocabulary Master <noreply@example.com>';
@@ -23,7 +24,7 @@ export const emailService = {
     if (!resend) {
       // In development without Resend configured, log minimal info (not the token)
       if (process.env.NODE_ENV !== 'production') {
-        console.warn('[EmailService] Resend API key not configured. Email not sent to:', email);
+        logger.warn('Resend API key not configured, email not sent', { email });
       }
       return false;
     }
@@ -79,14 +80,14 @@ If you didn't request this password reset, you can safely ignore this email. You
       });
 
       if (error) {
-        console.error('[EmailService] Failed to send password reset email:', error);
+        logger.error('Failed to send password reset email', { error: String(error) });
         return false;
       }
 
       // Email sent successfully (don't log email in production)
       return true;
     } catch (error) {
-      console.error('[EmailService] Error sending password reset email:', error);
+      logger.error('Error sending password reset email', { error: String(error) });
       return false;
     }
   },
@@ -109,7 +110,7 @@ If you didn't request this password reset, you can safely ignore this email. You
   ): Promise<boolean> {
     if (!resend) {
       if (process.env.NODE_ENV !== 'production') {
-        console.warn('[EmailService] Resend API key not configured. Welcome email not sent to:', email);
+        logger.warn('Resend API key not configured, welcome email not sent', { email });
       }
       return false;
     }
@@ -177,13 +178,13 @@ If you have any questions, feel free to reach out. Happy learning!
       });
 
       if (error) {
-        console.error('[EmailService] Failed to send welcome email:', error);
+        logger.error('Failed to send welcome email', { error: String(error) });
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error('[EmailService] Error sending welcome email:', error);
+      logger.error('Error sending welcome email', { error: String(error) });
       return false;
     }
   },
@@ -242,14 +243,14 @@ This is an automated security notification from Vocabulary Master.
       });
 
       if (error) {
-        console.error('[EmailService] Failed to send password changed notification:', error);
+        logger.error('Failed to send password changed notification', { error: String(error) });
         return false;
       }
 
       // Notification sent successfully
       return true;
     } catch (error) {
-      console.error('[EmailService] Error sending password changed notification:', error);
+      logger.error('Error sending password changed notification', { error: String(error) });
       return false;
     }
   },

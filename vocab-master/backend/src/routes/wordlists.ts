@@ -4,6 +4,7 @@ import { parse as csvParse } from 'csv-parse/sync';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validate, createWordlistSchema, updateWordlistSchema, setActiveWordlistSchema, addWordsSchema, updateWordSchema } from '../middleware/validate.js';
 import { wordlistRepository } from '../repositories/wordlistRepository.js';
+import { logger } from '../services/logger.js';
 
 const router = Router();
 
@@ -52,7 +53,7 @@ router.get('/', authMiddleware, (req: any, res: Response) => {
     const wordlists = wordlistRepository.findAll(req.user.userId, req.user.role);
     res.json({ wordlists: wordlists.map(serializeWordlist) });
   } catch (error) {
-    console.error('List wordlists error:', error);
+    logger.error('List wordlists error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to fetch wordlists' });
   }
 });
@@ -68,7 +69,7 @@ router.get('/active', authMiddleware, (req: any, res: Response) => {
     const words = wordlistRepository.getWords(wordlist.id);
     res.json({ wordlist: serializeWordlist(wordlist), words: words.map(serializeWordlistWord) });
   } catch (error) {
-    console.error('Get active wordlist error:', error);
+    logger.error('Get active wordlist error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to fetch active wordlist' });
   }
 });
@@ -87,7 +88,7 @@ router.put('/active', authMiddleware, validate(setActiveWordlistSchema), (req: a
     wordlistRepository.setActiveWordlist(req.user.userId, wordlistId);
     res.json({ success: true, message: 'Active wordlist updated' });
   } catch (error) {
-    console.error('Set active wordlist error:', error);
+    logger.error('Set active wordlist error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to set active wordlist' });
   }
 });
@@ -109,7 +110,7 @@ router.get('/:id', authMiddleware, (req: any, res: Response) => {
 
     res.json(serializeWordlist(wordlist));
   } catch (error) {
-    console.error('Get wordlist error:', error);
+    logger.error('Get wordlist error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to fetch wordlist' });
   }
 });
@@ -132,7 +133,7 @@ router.get('/:id/words', authMiddleware, (req: any, res: Response) => {
     const words = wordlistRepository.getWords(wordlist.id);
     res.json({ words: words.map(serializeWordlistWord) });
   } catch (error) {
-    console.error('Get wordlist words error:', error);
+    logger.error('Get wordlist words error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to fetch wordlist words' });
   }
 });
@@ -152,7 +153,7 @@ router.post('/', authMiddleware, requireRole(['admin', 'parent']), validate(crea
 
     res.status(201).json({ success: true, wordlistId, message: 'Wordlist created' });
   } catch (error) {
-    console.error('Create wordlist error:', error);
+    logger.error('Create wordlist error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to create wordlist' });
   }
 });
@@ -312,7 +313,7 @@ router.post('/import', authMiddleware, requireRole(['admin', 'parent']), upload.
       errors
     });
   } catch (error) {
-    console.error('Import wordlist error:', error);
+    logger.error('Import wordlist error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to import wordlist' });
   }
 });
@@ -341,7 +342,7 @@ router.put('/:id', authMiddleware, validate(updateWordlistSchema), (req: any, re
     wordlistRepository.update(wordlistId, req.body);
     res.json({ success: true, message: 'Wordlist updated' });
   } catch (error) {
-    console.error('Update wordlist error:', error);
+    logger.error('Update wordlist error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to update wordlist' });
   }
 });
@@ -370,7 +371,7 @@ router.delete('/:id', authMiddleware, (req: any, res: Response) => {
     wordlistRepository.deleteWordlist(wordlistId);
     res.json({ success: true, message: 'Wordlist deleted' });
   } catch (error) {
-    console.error('Delete wordlist error:', error);
+    logger.error('Delete wordlist error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to delete wordlist' });
   }
 });
@@ -399,7 +400,7 @@ router.post('/:id/words', authMiddleware, validate(addWordsSchema), (req: any, r
     wordlistRepository.addWords(wordlistId, req.body.words);
     res.status(201).json({ success: true, message: 'Words added' });
   } catch (error) {
-    console.error('Add words error:', error);
+    logger.error('Add words error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to add words' });
   }
 });
@@ -435,7 +436,7 @@ router.put('/:id/words/:wordId', authMiddleware, validate(updateWordSchema), (re
     wordlistRepository.updateWord(wordId, req.body);
     res.json({ success: true, message: 'Word updated' });
   } catch (error) {
-    console.error('Update word error:', error);
+    logger.error('Update word error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to update word' });
   }
 });
@@ -471,7 +472,7 @@ router.delete('/:id/words/:wordId', authMiddleware, (req: any, res: Response) =>
     wordlistRepository.deleteWord(wordId, wordlistId);
     res.json({ success: true, message: 'Word deleted' });
   } catch (error) {
-    console.error('Delete word error:', error);
+    logger.error('Delete word error', { error: String(error) });
     res.status(500).json({ error: 'ServerError', message: 'Failed to delete word' });
   }
 });

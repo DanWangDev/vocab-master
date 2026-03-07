@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import { logger } from '../services/logger.js';
 import { authService } from '../services/authService.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import {
@@ -132,7 +133,7 @@ router.post('/forgot-password', validate(forgotPasswordSchema), async (req: Auth
     });
   } catch (error) {
     // Log but don't expose errors
-    console.error('[Auth] Password reset error:', error);
+    logger.error('Password reset error', { error: String(error) });
     res.json({
       message: 'If an account exists with this email, a password reset link has been sent.'
     });
