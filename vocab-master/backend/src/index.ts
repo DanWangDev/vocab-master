@@ -7,6 +7,7 @@ dotenv.config({ path: path.join(process.cwd(), '../.env') });
 dotenv.config();
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase } from './config/database.js';
@@ -40,6 +41,7 @@ app.use(cors({
   origin: corsOrigins,
   credentials: true
 }));
+app.use(cookieParser());
 app.use(express.json());
 
 // Rate limiting for auth endpoints

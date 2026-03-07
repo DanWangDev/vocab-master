@@ -318,8 +318,9 @@ export const authService = {
   async googleAuth(
     token: string,
     tokenType: 'id_token' | 'access_token' = 'id_token',
-    username?: string
-  ): Promise<{ user: User; tokens: TokenPair; isNewUser: boolean }> {
+    username?: string,
+    confirmLink?: boolean
+  ): Promise<{ user: User; tokens: TokenPair; isNewUser: boolean; linkPending?: undefined } | { linkPending: true; email: string; googleId: string }> {
     const googleInfo = await googleAuthService.verifyToken(token, tokenType);
 
     // 1. Check if user already linked with this Google ID
@@ -330,12 +331,18 @@ export const authService = {
       return { user, tokens, isNewUser: false };
     }
 
-    // 2. Check if user exists with matching email → link Google account
+    // 2. Check if user exists with matching email
     const existingByEmail = userRepository.findByEmail(googleInfo.email);
     if (existingByEmail) {
       if (existingByEmail.role !== 'parent') {
         throw new Error('Google sign-in is only available for parent accounts');
       }
+
+      // Require explicit consent before linking accounts
+      if (!confirmLink) {
+        return { linkPending: true, email: googleInfo.email, googleId: googleInfo.googleId };
+      }
+
       userRepository.linkGoogleAccount(existingByEmail.id, googleInfo.googleId);
       const updatedRow = userRepository.findById(existingByEmail.id)!;
       const user = userRowToUser(updatedRow);

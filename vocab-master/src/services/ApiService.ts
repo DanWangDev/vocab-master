@@ -6,7 +6,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:9876/api'
 
 // Token storage keys
 const ACCESS_TOKEN_KEY = 'vocab_master_access_token';
-const REFRESH_TOKEN_KEY = 'vocab_master_refresh_token';
 
 // Types
 export interface User {
@@ -174,32 +173,30 @@ export interface StudentSearchResult {
 
 class ApiServiceClass {
   private accessToken: string | null = null;
-  private refreshToken: string | null = null;
-  private refreshPromise: Promise<TokenPair> | null = null;
+  private refreshPromise: Promise<{ accessToken: string }> | null = null;
 
   constructor() {
-    // Load tokens from localStorage on init
+    // Load access token from localStorage on init
     this.accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-    this.refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    // Refresh token is now stored as httpOnly cookie (managed by browser)
+    // Clear any legacy refresh token from localStorage
+    localStorage.removeItem('vocab_master_refresh_token');
   }
 
   // Token management
-  setTokens(tokens: TokenPair): void {
+  setTokens(tokens: TokenPair | { accessToken: string }): void {
     this.accessToken = tokens.accessToken;
-    this.refreshToken = tokens.refreshToken;
     localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+    // Refresh token is set as httpOnly cookie by the backend
   }
 
   clearTokens(): void {
     this.accessToken = null;
-    this.refreshToken = null;
     localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
 
   hasTokens(): boolean {
-    return this.accessToken !== null && this.refreshToken !== null;
+    return this.accessToken !== null;
   }
 
   // Core fetch wrapper with auth
@@ -220,10 +217,11 @@ class ApiServiceClass {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
+      credentials: 'include',
     });
 
-    // Handle 401 - try refresh
-    if (response.status === 401 && this.refreshToken && retry) {
+    // Handle 401 - try refresh (cookie sent automatically)
+    if (response.status === 401 && retry) {
       try {
         await this.refreshAccessToken();
         return this.fetchWithAuth<T>(endpoint, options, false);
@@ -244,7 +242,7 @@ class ApiServiceClass {
     return response.json();
   }
 
-  private async refreshAccessToken(): Promise<TokenPair> {
+  private async refreshAccessToken(): Promise<{ accessToken: string }> {
     // Prevent multiple simultaneous refresh attempts
     if (this.refreshPromise) {
       return this.refreshPromise;
@@ -254,7 +252,7 @@ class ApiServiceClass {
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: this.refreshToken }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -285,6 +283,7 @@ class ApiServiceClass {
     const response = await fetch(`${API_BASE_URL}/auth/register/student`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ username, password, displayName, turnstileToken }),
     });
 
@@ -305,6 +304,7 @@ class ApiServiceClass {
     const response = await fetch(`${API_BASE_URL}/auth/register/parent`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ username, password, email, displayName, turnstileToken }),
     });
 
@@ -329,6 +329,7 @@ class ApiServiceClass {
     const response = await fetch(`${API_BASE_URL}/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ token, tokenType, username }),
     });
 
@@ -367,6 +368,7 @@ class ApiServiceClass {
     const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email }),
     });
 
@@ -385,6 +387,7 @@ class ApiServiceClass {
     const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ token, password }),
     });
 
@@ -420,6 +423,7 @@ class ApiServiceClass {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ username, password, turnstileToken }),
     });
 
@@ -437,16 +441,14 @@ class ApiServiceClass {
   }
 
   async logout(): Promise<void> {
-    if (this.refreshToken) {
-      try {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken: this.refreshToken }),
-        });
-      } catch {
-        // Ignore logout errors
-      }
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+    } catch {
+      // Ignore logout errors
     }
     this.clearTokens();
   }

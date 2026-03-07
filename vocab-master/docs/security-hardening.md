@@ -152,13 +152,29 @@ These controls were in place before the audit and required no changes:
 - **After:** Restricted to `text/csv`, `application/json`, `text/plain` or `.csv`/`.json`/`.txt` extensions
 
 #### M3. Refresh Tokens Not Hashed in DB
-- **Status:** TODO
-- **Risk:** Database leak exposes all active sessions
-- **Plan:** Hash refresh tokens with SHA-256 before storage; compare hashes on lookup
+- **Status:** Fixed
+- **File:** `backend/src/repositories/tokenRepository.ts`
+- **Before:** Raw 128-char hex tokens stored in plaintext
+- **After:** All tokens hashed with SHA-256 before storage; lookups and deletions hash the raw token before querying
+- **Impact:** Database leak no longer exposes active session tokens
+
+#### H6. Tokens Stored in localStorage (XSS Risk)
+- **Status:** Fixed
+- **Files:** `backend/src/routes/auth.ts`, `backend/src/index.ts`, `src/services/ApiService.ts`
+- **Before:** Both access and refresh tokens stored in localStorage, vulnerable to XSS
+- **After:**
+  - Refresh token set as `httpOnly`, `secure`, `sameSite=strict` cookie scoped to `/api/auth`
+  - Access token kept in memory + localStorage (short-lived, 15min)
+  - Frontend sends `credentials: 'include'` on auth requests
+  - Mobile clients can still send refresh token in request body as fallback
+- **Impact:** Refresh tokens are no longer accessible to JavaScript (XSS-safe)
 
 #### M4. Google Account Auto-Linking Without Consent
-- **Status:** TODO
-- **Plan:** Prompt user for confirmation before linking Google account to existing email
+- **Status:** Fixed
+- **Files:** `backend/src/services/authService.ts`, `backend/src/routes/auth.ts`, `backend/src/middleware/validate.ts`
+- **Before:** Auto-linked Google account to existing email without user consent
+- **After:** Returns `{ linkPending: true, email }` response; client must re-send with `confirmLink: true` to proceed
+- **Impact:** Users must explicitly confirm before their accounts are linked
 
 #### M5. No Audit Logging
 - **Status:** TODO
@@ -168,10 +184,11 @@ These controls were in place before the audit and required no changes:
 
 ## Remaining Work
 
-### Phase 3: Token & Session Security
-1. Hash refresh tokens in database (M3)
-2. Move refresh token to httpOnly cookie for web (H6)
-3. Require explicit consent for Google account linking (M4)
+### Phase 3: Token & Session Security (Completed)
+1. ~~Hash refresh tokens in database (M3)~~ ✓
+2. ~~Move refresh token to httpOnly cookie for web (H6)~~ ✓
+3. ~~Require explicit consent for Google account linking (M4)~~ ✓
+4. ~~Update Zod password schemas to 8-char minimum~~ ✓
 
 ### Phase 4: Operational Security
 1. Implement audit logging for admin operations (M5)
@@ -214,8 +231,12 @@ These controls were in place before the audit and required no changes:
 - [x] Quiz result with `correctAnswers > totalQuestions` is rejected
 - [x] `validate-reset-token` endpoint is rate-limited
 
-### Phase 3-4 (TODO)
-- [ ] Refresh tokens in DB are hashed
-- [ ] Google OAuth for existing email prompts for confirmation
+### Phase 3 (Completed)
+- [x] Refresh tokens in DB are hashed (SHA-256)
+- [x] Refresh token moved to httpOnly cookie (web); body fallback for mobile
+- [x] Google OAuth for existing email prompts for confirmation
+- [x] Zod password schemas updated to 8-char minimum
+
+### Phase 4 (TODO)
 - [ ] Admin role change creates audit log entry
 - [ ] Database backup script runs and produces valid backup

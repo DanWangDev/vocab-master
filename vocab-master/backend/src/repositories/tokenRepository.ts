@@ -1,14 +1,20 @@
+import crypto from 'crypto';
 import db from '../config/database.js';
 import type { RefreshTokenRow } from '../types/index.js';
 
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
 export const tokenRepository = {
   create(userId: number, token: string, expiresAt: Date): RefreshTokenRow {
+    const tokenHash = hashToken(token);
     const stmt = db.prepare(`
       INSERT INTO refresh_tokens (user_id, token, expires_at)
       VALUES (?, ?, ?)
     `);
 
-    const result = stmt.run(userId, token, expiresAt.toISOString());
+    const result = stmt.run(userId, tokenHash, expiresAt.toISOString());
     return this.findById(result.lastInsertRowid as number)!;
   },
 
@@ -17,14 +23,16 @@ export const tokenRepository = {
     return stmt.get(id) as RefreshTokenRow | undefined;
   },
 
-  findByToken(token: string): RefreshTokenRow | undefined {
+  findByToken(rawToken: string): RefreshTokenRow | undefined {
+    const tokenHash = hashToken(rawToken);
     const stmt = db.prepare('SELECT * FROM refresh_tokens WHERE token = ?');
-    return stmt.get(token) as RefreshTokenRow | undefined;
+    return stmt.get(tokenHash) as RefreshTokenRow | undefined;
   },
 
-  deleteByToken(token: string): void {
+  deleteByToken(rawToken: string): void {
+    const tokenHash = hashToken(rawToken);
     const stmt = db.prepare('DELETE FROM refresh_tokens WHERE token = ?');
-    stmt.run(token);
+    stmt.run(tokenHash);
   },
 
   deleteAllForUser(userId: number): void {
@@ -37,8 +45,8 @@ export const tokenRepository = {
     stmt.run(new Date().toISOString());
   },
 
-  isValid(token: string): boolean {
-    const record = this.findByToken(token);
+  isValid(rawToken: string): boolean {
+    const record = this.findByToken(rawToken);
     if (!record) {
       return false;
     }
