@@ -164,7 +164,7 @@ router.get('/users/:id/details', requireRole(['admin', 'parent']), (req: any, re
 });
 
 // Update User Role
-router.patch('/users/:id/role', (req, res) => {
+router.patch('/users/:id/role', requireRole(['admin']), (req: any, res) => {
     try {
         const { role } = req.body;
         const userId = req.params.id;
@@ -190,7 +190,7 @@ router.patch('/users/:id/role', (req, res) => {
 });
 
 // Link Student to Parent
-router.patch('/users/:id/parent', (req, res) => {
+router.patch('/users/:id/parent', requireRole(['admin']), (req: any, res) => {
     try {
         const { parentId } = req.body; // Can be null to unlink
         const userId = req.params.id;
@@ -220,7 +220,7 @@ router.patch('/users/:id/parent', (req, res) => {
 });
 
 // Create New User
-router.post('/users', async (req, res) => {
+router.post('/users', requireRole(['admin']), async (req: any, res) => {
     try {
         const { username, password, role, parentId, email } = req.body;
 

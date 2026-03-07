@@ -100,6 +100,13 @@ router.get('/:id', authMiddleware, (req: any, res: Response) => {
       res.status(404).json({ error: 'NotFound', message: 'Wordlist not found' });
       return;
     }
+
+    // Access check: private wordlists only visible to owner or admin
+    if (wordlist.visibility === 'private' && wordlist.created_by !== req.user.userId && req.user.role !== 'admin') {
+      res.status(403).json({ error: 'Forbidden', message: 'Access denied' });
+      return;
+    }
+
     res.json(serializeWordlist(wordlist));
   } catch (error) {
     console.error('Get wordlist error:', error);
@@ -115,6 +122,13 @@ router.get('/:id/words', authMiddleware, (req: any, res: Response) => {
       res.status(404).json({ error: 'NotFound', message: 'Wordlist not found' });
       return;
     }
+
+    // Access check: private wordlists only visible to owner or admin
+    if (wordlist.visibility === 'private' && wordlist.created_by !== req.user.userId && req.user.role !== 'admin') {
+      res.status(403).json({ error: 'Forbidden', message: 'Access denied' });
+      return;
+    }
+
     const words = wordlistRepository.getWords(wordlist.id);
     res.json({ words: words.map(serializeWordlistWord) });
   } catch (error) {
@@ -148,6 +162,13 @@ router.post('/import', authMiddleware, requireRole(['admin', 'parent']), upload.
   try {
     if (!req.file) {
       res.status(400).json({ error: 'ValidationError', message: 'No file uploaded' });
+      return;
+    }
+
+    const allowedMimes = ['text/csv', 'application/json', 'text/plain'];
+    const allowedExtensions = /\.(csv|json|txt)$/i;
+    if (!allowedMimes.includes(req.file.mimetype) && !allowedExtensions.test(req.file.originalname || '')) {
+      res.status(400).json({ error: 'ValidationError', message: 'Only CSV and JSON files are supported' });
       return;
     }
 

@@ -10,14 +10,19 @@ interface TurnstileResponse {
 export function verifyTurnstile(req: Request, res: Response, next: NextFunction): void {
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
-  // Graceful bypass: no secret key configured (dev mode)
+  // In development without key configured, skip verification
   if (!secretKey) {
+    if (process.env.NODE_ENV === 'production') {
+      res.status(503).json({ error: 'Service Unavailable', message: 'Bot protection not configured' });
+      return;
+    }
     next();
     return;
   }
 
-  // Mobile bypass: mobile clients rely on rate limiting + Google token validation
-  if (req.headers['x-client-platform'] === 'mobile') {
+  // Mobile clients authenticate via shared app secret instead of Turnstile
+  const mobileAppToken = req.headers['x-mobile-app-token'] as string | undefined;
+  if (mobileAppToken && process.env.MOBILE_APP_SECRET && mobileAppToken === process.env.MOBILE_APP_SECRET) {
     next();
     return;
   }

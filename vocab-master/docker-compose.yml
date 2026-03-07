@@ -50,7 +50,7 @@ services:
     image: coleifer/sqlite-web
     container_name: vocab-master-db-viewer
     ports:
-      - "8090:8080"
+      - "127.0.0.1:8090:8080"
     volumes:
       - vocab-data:/data
     command: sqlite_web -H 0.0.0.0 -p 8080 /data/vocab-master.db

@@ -29,6 +29,9 @@ setInterval(() => {
 app.use(helmet());
 
 // Parse CORS origins (supports comma-separated values)
+if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
+  throw new Error('FATAL: CORS_ORIGIN must be set in production');
+}
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
   : ['http://localhost:5173', 'http://localhost:5174'];
@@ -93,6 +96,15 @@ const linkRequestLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Token validation rate limiter
+const tokenValidationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too Many Requests', message: 'Too many token validation attempts' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 // Wordlist import rate limiter
 const importLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -110,6 +122,7 @@ app.use('/api/auth/google', registrationLimiter);
 app.use('/api/auth', authLimiter);
 app.use('/api/auth/forgot-password', passwordResetLimiter);
 app.use('/api/auth/reset-password', passwordResetLimiter);
+app.use('/api/auth/validate-reset-token', tokenValidationLimiter);
 app.use('/api/link-requests/search', studentSearchLimiter);
 app.use('/api/link-requests', linkRequestLimiter);
 app.use('/api', generalLimiter);
