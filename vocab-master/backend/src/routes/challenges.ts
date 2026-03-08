@@ -2,7 +2,6 @@ import { Router, Response } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { validate, completeChallengeSchema } from '../middleware/validate.js';
 import { challengeRepository } from '../repositories/challengeRepository.js';
-import { statsRepository } from '../repositories/userRepository.js';
 import type { AuthRequest, DailyChallenge, CompleteChallengeRequest } from '../types/index.js';
 
 const router = Router();
@@ -55,14 +54,7 @@ router.post('/complete', validate(completeChallengeSchema), (req: AuthRequest, r
     // Create challenge record
     const challenge = challengeRepository.create(userId, today, score);
 
-    // Update best score in stats if necessary
-    const currentStats = statsRepository.get(userId);
-    if (currentStats && score > currentStats.best_challenge_score) {
-      statsRepository.update(userId, { bestChallengeScore: score });
-    }
-
-    // Increment challenges completed
-    statsRepository.incrementStats(userId, { challengesCompleted: 1 });
+    // Stats are now computed from raw tables; no need to update cached counters.
 
     // Calculate new streak
     const streak = challengeRepository.calculateStreak(userId);

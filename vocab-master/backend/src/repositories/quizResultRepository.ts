@@ -124,24 +124,14 @@ export const quizResultRepository = {
       endTime.toISOString()
     );
 
-    // Update user stats with logic for UNIQUE word tracking
+    // Track unique words in user_vocabulary for computed stats
     try {
-      const { statsRepository, userRepository } = require('./userRepository');
-      let newUniqueWords = 0;
-
+      const { userRepository } = require('./userRepository');
       if (words && words.length > 0) {
-        // If words are provided, calculate how many are actually new
-        newUniqueWords = userRepository.addLearnedWords(userId, words);
-      } else {
-        newUniqueWords = 0;
+        userRepository.addLearnedWords(userId, words);
       }
-
-      statsRepository.incrementStats(userId, {
-        totalWordsStudied: newUniqueWords,
-        lastStudyDate: new Date().toISOString()
-      });
     } catch (err) {
-      logger.error('Failed to update user stats after study session', { error: String(err) });
+      logger.error('Failed to track learned words after study session', { error: String(err) });
     }
 
     return result.lastInsertRowid as number;

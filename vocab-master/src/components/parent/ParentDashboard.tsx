@@ -6,12 +6,13 @@ import { LogOut, LayoutDashboard, UserPlus, Plus, X, Clock, Loader2, Pencil } fr
 import { Button } from '../common';
 import { UserList } from './UserList';
 import { UserDetailModal } from './UserDetailModal';
+import { ThresholdSettings } from './ThresholdSettings';
 import { ResetStudentPasswordModal } from '../admin/ResetStudentPasswordModal';
 import { StudentSearchModal } from '../linking/StudentSearchModal';
 import { CreateStudentModal } from './CreateStudentModal';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { CompleteProfileModal } from '../auth/CompleteProfileModal';
-import { ApiService, type AdminUserStats } from '../../services/ApiService';
+import { ApiService, type AdminUserStats, type ParentThresholds } from '../../services/ApiService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 
@@ -28,10 +29,14 @@ export function ParentDashboard() {
     const [cancellingId, setCancellingId] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [showEditProfile, setShowEditProfile] = useState(false);
+    const [thresholds, setThresholds] = useState<ParentThresholds>({ days_per_week: 5, minutes_per_day: 20 });
 
-    // Load users on mount
+    // Load users and thresholds on mount
     useEffect(() => {
         loadUsers();
+        ApiService.getThresholds()
+            .then(setThresholds)
+            .catch(() => { /* use defaults */ });
     }, []);
 
     const loadUsers = async () => {
@@ -125,6 +130,7 @@ export function ParentDashboard() {
                             <p className="text-gray-500">{t('studentOverviewDesc')}</p>
                         </div>
                         <div className="flex items-center gap-2">
+                            <ThresholdSettings onUpdate={setThresholds} />
                             <Button
                                 onClick={() => setShowCreateModal(true)}
                                 className="flex items-center gap-2"
@@ -191,6 +197,7 @@ export function ParentDashboard() {
                             users={users}
                             onSelectUser={setSelectedUser}
                             onResetPassword={setResetPasswordUser}
+                            thresholds={thresholds}
                         />
                     )}
                 </motion.div>

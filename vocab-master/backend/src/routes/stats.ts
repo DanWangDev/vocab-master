@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { validate, updateStatsSchema } from '../middleware/validate.js';
-import { statsRepository } from '../repositories/userRepository.js';
+import { computedStatsService } from '../services/computedStatsService';
 import db from '../config/database.js';
 import type { AuthRequest, UserStats, UpdateStatsRequest } from '../types/index.js';
 
@@ -10,25 +10,11 @@ const router = Router();
 // All stats routes require authentication
 router.use(authMiddleware);
 
-// GET /api/stats
+// GET /api/stats - computed from raw activity tables
 router.get('/', (req: AuthRequest, res: Response) => {
   try {
-    let stats = statsRepository.get(req.user!.userId);
-
-    // Auto-create stats if they don't exist
-    if (!stats) {
-      stats = statsRepository.createDefault(req.user!.userId);
-    }
-
-    const response: UserStats = {
-      totalWordsStudied: stats.total_words_studied,
-      quizzesTaken: stats.quizzes_taken,
-      challengesCompleted: stats.challenges_completed,
-      bestChallengeScore: stats.best_challenge_score,
-      lastStudyDate: stats.last_study_date
-    };
-
-    res.json(response);
+    const stats = computedStatsService.getComputedStats(req.user!.userId);
+    res.json(stats);
   } catch (error) {
     res.status(500).json({
       error: 'Internal Server Error',
@@ -37,28 +23,13 @@ router.get('/', (req: AuthRequest, res: Response) => {
   }
 });
 
-// PATCH /api/stats
+// PATCH /api/stats - kept for backward compatibility, returns computed values
 router.patch('/', validate(updateStatsSchema), (req: AuthRequest, res: Response) => {
   try {
-    const updates = req.body as UpdateStatsRequest;
-
-    const stats = statsRepository.update(req.user!.userId, {
-      totalWordsStudied: updates.totalWordsStudied,
-      quizzesTaken: updates.quizzesTaken,
-      challengesCompleted: updates.challengesCompleted,
-      bestChallengeScore: updates.bestChallengeScore,
-      lastStudyDate: updates.lastStudyDate
-    });
-
-    const response: UserStats = {
-      totalWordsStudied: stats.total_words_studied,
-      quizzesTaken: stats.quizzes_taken,
-      challengesCompleted: stats.challenges_completed,
-      bestChallengeScore: stats.best_challenge_score,
-      lastStudyDate: stats.last_study_date
-    };
-
-    res.json(response);
+    // No-op write: stats are now computed from raw tables.
+    // Return current computed values for backward compatibility.
+    const stats = computedStatsService.getComputedStats(req.user!.userId);
+    res.json(stats);
   } catch (error) {
     res.status(500).json({
       error: 'Internal Server Error',
@@ -67,26 +38,13 @@ router.patch('/', validate(updateStatsSchema), (req: AuthRequest, res: Response)
   }
 });
 
-// POST /api/stats/increment
+// POST /api/stats/increment - kept for backward compatibility, returns computed values
 router.post('/increment', (req: AuthRequest, res: Response) => {
   try {
-    const { totalWordsStudied, quizzesTaken, challengesCompleted } = req.body;
-
-    const stats = statsRepository.incrementStats(req.user!.userId, {
-      totalWordsStudied,
-      quizzesTaken,
-      challengesCompleted
-    });
-
-    const response: UserStats = {
-      totalWordsStudied: stats.total_words_studied,
-      quizzesTaken: stats.quizzes_taken,
-      challengesCompleted: stats.challenges_completed,
-      bestChallengeScore: stats.best_challenge_score,
-      lastStudyDate: stats.last_study_date
-    };
-
-    res.json(response);
+    // No-op write: stats are now computed from raw tables.
+    // Return current computed values for backward compatibility.
+    const stats = computedStatsService.getComputedStats(req.user!.userId);
+    res.json(stats);
   } catch (error) {
     res.status(500).json({
       error: 'Internal Server Error',
@@ -95,7 +53,7 @@ router.post('/increment', (req: AuthRequest, res: Response) => {
   }
 });
 
-// GET /api/stats/activity - Get accurate stats from activity logs (not cached counters)
+// GET /api/stats/activity - Get accurate stats from activity logs
 router.get('/activity', (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;

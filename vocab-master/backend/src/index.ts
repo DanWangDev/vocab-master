@@ -13,6 +13,7 @@ import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase } from './config/database.js';
 import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
+import { inactivityService } from './services/inactivityService.js';
 import { logger } from './services/logger.js';
 
 const app = express();
@@ -26,6 +27,13 @@ initializeDatabase();
 setInterval(() => {
   authService.cleanupExpiredTokens();
 }, 60 * 60 * 1000);
+
+// Check for inactive students and send reminders (every 6 hours)
+setInterval(() => {
+  inactivityService.checkInactivityAndNotify().catch(err => {
+    logger.error('Inactivity check failed', { error: String(err) });
+  });
+}, 6 * 60 * 60 * 1000);
 
 // Middleware
 app.use(helmet());

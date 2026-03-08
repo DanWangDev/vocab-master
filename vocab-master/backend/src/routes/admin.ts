@@ -371,4 +371,52 @@ router.delete('/users/:id', requireRole(['admin']), (req: any, res) => {
     }
 });
 
+// GET parent thresholds
+router.get('/thresholds', requireRole(['parent']), (req: any, res) => {
+    try {
+        const parentId = req.user.userId;
+        const row = db.prepare('SELECT * FROM parent_thresholds WHERE parent_id = ?').get(parentId) as {
+            parent_id: number;
+            days_per_week: number;
+            minutes_per_day: number;
+        } | undefined;
+
+        res.json({
+            days_per_week: row?.days_per_week ?? 5,
+            minutes_per_day: row?.minutes_per_day ?? 20,
+        });
+    } catch (error) {
+        logger.error('Fetch thresholds error', { error: String(error) });
+        res.status(500).json({ error: 'Failed to fetch thresholds' });
+    }
+});
+
+// PUT parent thresholds
+router.put('/thresholds', requireRole(['parent']), (req: any, res) => {
+    try {
+        const parentId = req.user.userId;
+        const { days_per_week, minutes_per_day } = req.body;
+
+        const daysVal = Math.max(1, Math.min(7, Number(days_per_week) || 5));
+        const minutesVal = Math.max(5, Math.min(120, Number(minutes_per_day) || 20));
+
+        db.prepare(`
+            INSERT INTO parent_thresholds (parent_id, days_per_week, minutes_per_day, updated_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(parent_id) DO UPDATE SET
+                days_per_week = excluded.days_per_week,
+                minutes_per_day = excluded.minutes_per_day,
+                updated_at = CURRENT_TIMESTAMP
+        `).run(parentId, daysVal, minutesVal);
+
+        res.json({
+            days_per_week: daysVal,
+            minutes_per_day: minutesVal,
+        });
+    } catch (error) {
+        logger.error('Update thresholds error', { error: String(error) });
+        res.status(500).json({ error: 'Failed to update thresholds' });
+    }
+});
+
 export default router;

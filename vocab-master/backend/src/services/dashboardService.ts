@@ -256,8 +256,9 @@ export function getUserDetailStats(userId: number): UserDetailStats {
     JOIN quiz_results qr ON qa.quiz_result_id = qr.id
     WHERE qr.user_id = ?
     GROUP BY word
-    HAVING total_attempts >= 3 AND incorrect_count > total_attempts * 0.5
-    ORDER BY incorrect_count DESC
+    HAVING COUNT(*) >= 2
+      AND SUM(CASE WHEN is_correct = 0 THEN 1 ELSE 0 END) > COUNT(*) * 0.4
+    ORDER BY SUM(CASE WHEN is_correct = 0 THEN 1 ELSE 0 END) DESC
     LIMIT 20
   `).all(userId) as WeakWord[];
 

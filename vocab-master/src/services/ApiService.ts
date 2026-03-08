@@ -167,6 +167,11 @@ export interface AdminUserDetails {
   };
 }
 
+export interface ParentThresholds {
+  days_per_week: number;
+  minutes_per_day: number;
+}
+
 // Notification types
 export type NotificationType = 'link_request' | 'link_accepted' | 'link_rejected' | 'achievement' | 'reminder';
 
@@ -662,6 +667,18 @@ class ApiServiceClass {
   async deleteUser(userId: number): Promise<{ success: boolean; message: string }> {
     return this.fetchWithAuth<{ success: boolean; message: string }>(`/admin/users/${userId}`, {
       method: 'DELETE'
+    });
+  }
+
+  // Parent thresholds
+  async getThresholds(): Promise<ParentThresholds> {
+    return this.fetchWithAuth<ParentThresholds>('/admin/thresholds');
+  }
+
+  async updateThresholds(thresholds: ParentThresholds): Promise<ParentThresholds> {
+    return this.fetchWithAuth<ParentThresholds>('/admin/thresholds', {
+      method: 'PUT',
+      body: JSON.stringify(thresholds),
     });
   }
 

@@ -64,7 +64,6 @@ function StudyMistakesWrapper() {
 
         setFilteredWords(filtered);
       } catch (err) {
-        console.error('Failed to fetch weak words:', err);
         navigate('/study');
       } finally {
         setLoading(false);
@@ -78,6 +77,29 @@ function StudyMistakesWrapper() {
   }
 
   return <StudyMistakesMode words={filteredWords} />;
+}
+
+// Wrapper for review mode - filters vocabulary by words from URL query params
+function StudyReviewWrapper() {
+  const { vocabulary } = useApp();
+  const navigate = useNavigate();
+
+  const params = new URLSearchParams(window.location.search);
+  const wordsParam = params.get('words') || '';
+  const wordSet = new Set(
+    wordsParam.split(',').map(w => w.trim().toLowerCase()).filter(Boolean)
+  );
+
+  const filtered = vocabulary.filter(v =>
+    wordSet.has(v.targetWord.toLowerCase())
+  );
+
+  if (filtered.length === 0) {
+    navigate('/study');
+    return <PageLoader />;
+  }
+
+  return <StudyMistakesMode words={filtered} />;
 }
 
 export const router = createBrowserRouter([
@@ -114,6 +136,10 @@ export const router = createBrowserRouter([
               {
                 path: 'study/mistakes',
                 element: <StudyMistakesWrapper />,
+              },
+              {
+                path: 'study/review',
+                element: <StudyReviewWrapper />,
               },
               {
                 path: 'quiz',

@@ -59,5 +59,15 @@
   "timeSpent": "学习时间",
   "minutesShort": "分钟",
   "quizWordsToRevise": "需要复习的单词",
-  "basedOnQuizResults": "基于测验结果"
+  "basedOnQuizResults": "基于测验结果",
+  "copyPracticeLink": "复制练习链接",
+  "linkCopied": "已复制！",
+  "onTrackSettings": "目标",
+  "onTrackThresholds": "达标阈值",
+  "targetDaysPerWeek": "每周目标天数",
+  "targetMinutesPerDay": "每日目标分钟数",
+  "minutesPerDayValue": "{{count}} 分钟/天",
+  "save": "保存",
+  "onTrack": "达标",
+  "belowTarget": "未达标"
 }

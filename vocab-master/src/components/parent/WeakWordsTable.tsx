@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { Link2, Check } from 'lucide-react';
 
 interface WeakWordsTableProps {
     words: {
@@ -11,10 +13,43 @@ interface WeakWordsTableProps {
 
 export function WeakWordsTable({ words }: WeakWordsTableProps) {
     const { t } = useTranslation('parent');
+    const [copied, setCopied] = useState(false);
+
+    const handleCopyPracticeLink = async () => {
+        const wordList = words.map(w => w.word).join(',');
+        const url = `${window.location.origin}/study/review?words=${encodeURIComponent(wordList)}`;
+        try {
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            // Fallback: select text for manual copy
+        }
+    };
 
     return (
         <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">{t('quizWordsToRevise')}</h3>
+            <div className="flex items-center justify-between mb-1">
+                <h3 className="text-lg font-bold text-gray-900">{t('quizWordsToRevise')}</h3>
+                {words && words.length > 0 && (
+                    <button
+                        onClick={handleCopyPracticeLink}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
+                    >
+                        {copied ? (
+                            <>
+                                <Check className="w-3.5 h-3.5" />
+                                {t('linkCopied')}
+                            </>
+                        ) : (
+                            <>
+                                <Link2 className="w-3.5 h-3.5" />
+                                {t('copyPracticeLink')}
+                            </>
+                        )}
+                    </button>
+                )}
+            </div>
             <p className="text-xs text-gray-500 mb-4">{t('basedOnQuizResults')}</p>
 
             {!words || words.length === 0 ? (
