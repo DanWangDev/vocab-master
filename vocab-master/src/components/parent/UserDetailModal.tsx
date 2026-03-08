@@ -6,8 +6,6 @@ import { Button, Card } from '../common';
 import { TrendChart } from './TrendChart';
 import { WeakWordsTable } from './WeakWordsTable';
 import { ApiService, type AdminUserDetails } from '../../services/ApiService';
-import { logger } from '../../utils/logger';
-
 interface UserDetailModalProps {
     user: { id: number; name: string };
     onClose: () => void;
