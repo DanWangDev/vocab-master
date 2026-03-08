@@ -114,12 +114,57 @@ export interface AdminUserStats {
   avg_accuracy: number | null;
   current_streak: number;
   sessions_this_week: number;
+  days_active_this_week: number;
+  total_time_this_week_minutes: number;
+  activity_status: 'active' | 'some' | 'inactive';
+}
+
+export interface QuizHistoryItem {
+  id: number;
+  completed_at: string;
+  total_questions: number;
+  correct_answers: number;
+  accuracy: number;
+  score: number;
+  total_time_spent: number;
+  quiz_type: string;
+}
+
+export interface StudyHistoryItem {
+  id: number;
+  start_time: string;
+  end_time: string | null;
+  words_reviewed: number;
+}
+
+export interface WeakWordItem {
+  word: string;
+  incorrect_count: number;
+  total_attempts: number;
+}
+
+export interface WeeklyComparisonData {
+  days_active: number;
+  quizzes: number;
+  sessions: number;
+  words: number;
+  time_minutes: number;
+  avg_accuracy: number | null;
 }
 
 export interface AdminUserDetails {
-  quizHistory: any[];
-  studyHistory: any[];
-  weakWords: any[];
+  quizHistory: QuizHistoryItem[];
+  studyHistory: StudyHistoryItem[];
+  weakWords: WeakWordItem[];
+  weeklyComparison: {
+    this_week: WeeklyComparisonData;
+    last_week: WeeklyComparisonData;
+  };
+  summary: {
+    days_active_this_week: number;
+    total_time_this_week_minutes: number;
+    avg_accuracy: number | null;
+  };
 }
 
 // Notification types
