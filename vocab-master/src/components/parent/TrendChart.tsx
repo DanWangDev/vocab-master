@@ -113,7 +113,7 @@ export function TrendChart({
         },
         labelFormatter: shouldAggregate
             ? (val: string) => formatDateLabel(val)
-            : (_val: string, payload: any[]) => {
+            : (_val: string, payload: readonly any[]) => {
                 if (payload && payload[0]) {
                     return payload[0].payload._label || '';
                 }
