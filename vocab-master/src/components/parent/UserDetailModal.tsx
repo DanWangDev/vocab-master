@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { X, Calendar, Activity, BookOpen, Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react';
@@ -6,27 +6,9 @@ import { Button, Card } from '../common';
 import { TrendChart } from './TrendChart';
 import { WeakWordsTable } from './WeakWordsTable';
 import { ApiService, type AdminUserDetails } from '../../services/ApiService';
-
 interface UserDetailModalProps {
     user: { id: number; name: string };
     onClose: () => void;
-}
-
-// Helper to get start of week (Sunday)
-function getWeekStart(date: Date): Date {
-    const d = new Date(date);
-    const day = d.getDay();
-    d.setDate(d.getDate() - day);
-    d.setHours(0, 0, 0, 0);
-    return d;
-}
-
-// Helper to check if a date is within a week range
-function isInWeek(dateStr: string, weekStart: Date): boolean {
-    const date = new Date(dateStr);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 7);
-    return date >= weekStart && date < weekEnd;
 }
 
 export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
@@ -34,43 +16,13 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
     const [details, setDetails] = useState<AdminUserDetails | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // Calculate weekly comparison
-    const weeklyStats = useMemo(() => {
-        if (!details) return null;
-
-        const now = new Date();
-        const thisWeekStart = getWeekStart(now);
-        const lastWeekStart = new Date(thisWeekStart);
-        lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-
-        // This week stats
-        const thisWeekQuizzes = details.quizHistory.filter(q => isInWeek(q.completed_at, thisWeekStart)).length;
-        const thisWeekStudy = details.studyHistory.filter(s => isInWeek(s.start_time, thisWeekStart)).length;
-        const thisWeekWords = details.studyHistory
-            .filter(s => isInWeek(s.start_time, thisWeekStart))
-            .reduce((acc, s) => acc + s.words_reviewed, 0);
-
-        // Last week stats
-        const lastWeekQuizzes = details.quizHistory.filter(q => isInWeek(q.completed_at, lastWeekStart)).length;
-        const lastWeekStudy = details.studyHistory.filter(s => isInWeek(s.start_time, lastWeekStart)).length;
-        const lastWeekWords = details.studyHistory
-            .filter(s => isInWeek(s.start_time, lastWeekStart))
-            .reduce((acc, s) => acc + s.words_reviewed, 0);
-
-        return {
-            thisWeek: { quizzes: thisWeekQuizzes, sessions: thisWeekStudy, words: thisWeekWords },
-            lastWeek: { quizzes: lastWeekQuizzes, sessions: lastWeekStudy, words: lastWeekWords }
-        };
-    }, [details]);
-
     useEffect(() => {
         const fetchDetails = async () => {
             try {
                 const data = await ApiService.getAdminUserDetails(user.id);
-                console.log('Fetched details:', data);
                 setDetails(data);
-            } catch (err) {
-                console.error('Failed to load user details:', err);
+            } catch {
+                // Error already logged by ApiService
             } finally {
                 setLoading(false);
             }
@@ -79,6 +31,14 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
     }, [user.id]);
 
     if (!user) return null;
+
+    const hasQuizData = details && details.quizHistory.length > 0;
+    const avgAccuracy = hasQuizData
+        ? Math.round(
+            details.quizHistory.reduce((acc, curr) => acc + (curr.accuracy || 0), 0) /
+            details.quizHistory.length
+        )
+        : null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -110,64 +70,50 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                         </div>
                     ) : details ? (
                         <div className="space-y-6">
-                            {/* Stats Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <StatusCard
-                                    icon={BookOpen}
-                                    label={t('totalQuizzes')}
-                                    value={details.quizHistory.length.toString()}
-                                    color="text-blue-600"
-                                    bg="bg-blue-50"
-                                />
-                                <StatusCard
-                                    icon={Activity}
-                                    label={t('avgAccuracy')}
-                                    value={`${Math.round(
-                                        details.quizHistory.reduce((acc: number, curr: any) => acc + (curr.accuracy || 0), 0) /
-                                        (details.quizHistory.length || 1)
-                                    )}%`}
-                                    color="text-green-600"
-                                    bg="bg-green-50"
-                                />
-                                <StatusCard
-                                    icon={Clock}
-                                    label={t('studySessions')}
-                                    value={details.studyHistory.length.toString()}
-                                    color="text-orange-600"
-                                    bg="bg-orange-50"
-                                />
-                                <StatusCard
-                                    icon={Calendar}
-                                    label={t('wordsReviewed')}
-                                    value={details.studyHistory.reduce((acc: number, curr: any) => acc + curr.words_reviewed, 0).toString()}
-                                    color="text-purple-600"
-                                    bg="bg-purple-50"
-                                />
-                            </div>
+                            {/* This Week Summary */}
+                            <Card variant="default" padding="md">
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">{t('thisWeekSummary')}</h3>
+                                <p className="text-gray-600">
+                                    {t('weeklySummaryNarrative', {
+                                        name: user.name,
+                                        daysActive: details.summary.days_active_this_week,
+                                        timeMinutes: details.summary.total_time_this_week_minutes,
+                                    })}
+                                </p>
+                            </Card>
 
                             {/* Weekly Comparison */}
-                            {weeklyStats && (
-                                <Card variant="default" padding="md">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4">{t('weeklyProgress')}</h3>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <WeeklyComparisonItem
-                                            label={t('quizzes')}
-                                            thisWeek={weeklyStats.thisWeek.quizzes}
-                                            lastWeek={weeklyStats.lastWeek.quizzes}
-                                        />
-                                        <WeeklyComparisonItem
-                                            label={t('studySessions')}
-                                            thisWeek={weeklyStats.thisWeek.sessions}
-                                            lastWeek={weeklyStats.lastWeek.sessions}
-                                        />
-                                        <WeeklyComparisonItem
-                                            label={t('wordsReviewed')}
-                                            thisWeek={weeklyStats.thisWeek.words}
-                                            lastWeek={weeklyStats.lastWeek.words}
-                                        />
-                                    </div>
-                                </Card>
-                            )}
+                            <Card variant="default" padding="md">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('weeklyProgress')}</h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                    <WeeklyComparisonItem
+                                        label={t('daysActive')}
+                                        thisWeek={details.weeklyComparison.this_week.days_active}
+                                        lastWeek={details.weeklyComparison.last_week.days_active}
+                                    />
+                                    <WeeklyComparisonItem
+                                        label={t('quizzes')}
+                                        thisWeek={details.weeklyComparison.this_week.quizzes}
+                                        lastWeek={details.weeklyComparison.last_week.quizzes}
+                                    />
+                                    <WeeklyComparisonItem
+                                        label={t('studySessions')}
+                                        thisWeek={details.weeklyComparison.this_week.sessions}
+                                        lastWeek={details.weeklyComparison.last_week.sessions}
+                                    />
+                                    <WeeklyComparisonItem
+                                        label={t('timeSpent')}
+                                        thisWeek={details.weeklyComparison.this_week.time_minutes}
+                                        lastWeek={details.weeklyComparison.last_week.time_minutes}
+                                        suffix={t('minutesShort')}
+                                    />
+                                </div>
+                            </Card>
+
+                            {/* Weak Words - Promoted up */}
+                            <Card variant="default" padding="md">
+                                <WeakWordsTable words={details.weakWords} />
+                            </Card>
 
                             {/* Graphical Analysis */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -196,12 +142,37 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                                 </Card>
                             </div>
 
-                            {/* Weak Words */}
-                            <Card variant="default" padding="md">
-                                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('conceptsNeedingPractice')}</h3>
-                                <WeakWordsTable words={details.weakWords} />
-                            </Card>
-
+                            {/* Stats Cards - De-emphasized at bottom */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <StatusCard
+                                    icon={BookOpen}
+                                    label={t('totalQuizzes')}
+                                    value={details.quizHistory.length.toString()}
+                                    color="text-blue-600"
+                                    bg="bg-blue-50"
+                                />
+                                <StatusCard
+                                    icon={Activity}
+                                    label={t('avgAccuracy')}
+                                    value={avgAccuracy !== null ? `${avgAccuracy}%` : '-'}
+                                    color="text-green-600"
+                                    bg="bg-green-50"
+                                />
+                                <StatusCard
+                                    icon={Clock}
+                                    label={t('studySessions')}
+                                    value={details.studyHistory.length.toString()}
+                                    color="text-orange-600"
+                                    bg="bg-orange-50"
+                                />
+                                <StatusCard
+                                    icon={Calendar}
+                                    label={t('wordsReviewed')}
+                                    value={details.studyHistory.reduce((acc, curr) => acc + curr.words_reviewed, 0).toString()}
+                                    color="text-purple-600"
+                                    bg="bg-purple-50"
+                                />
+                            </div>
                         </div>
                     ) : (
                         <div className="text-center py-12 text-gray-500">{t('failedToLoadData')}</div>
@@ -217,7 +188,13 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
     );
 }
 
-function StatusCard({ icon: Icon, label, value, color, bg }: any) {
+function StatusCard({ icon: Icon, label, value, color, bg }: {
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+    value: string;
+    color: string;
+    bg: string;
+}) {
     return (
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
             <div className={`p-3 rounded-lg ${bg}`}>
@@ -231,7 +208,12 @@ function StatusCard({ icon: Icon, label, value, color, bg }: any) {
     );
 }
 
-function WeeklyComparisonItem({ label, thisWeek, lastWeek }: { label: string; thisWeek: number; lastWeek: number; }) {
+function WeeklyComparisonItem({ label, thisWeek, lastWeek, suffix }: {
+    label: string;
+    thisWeek: number;
+    lastWeek: number;
+    suffix?: string;
+}) {
     const { t } = useTranslation('parent');
     const diff = thisWeek - lastWeek;
     const percentChange = lastWeek > 0 ? Math.round((diff / lastWeek) * 100) : (thisWeek > 0 ? 100 : 0);
@@ -250,10 +232,12 @@ function WeeklyComparisonItem({ label, thisWeek, lastWeek }: { label: string; th
         bgColor = 'bg-red-50';
     }
 
+    const displayValue = suffix ? `${thisWeek}${suffix}` : thisWeek.toString();
+
     return (
         <div className="text-center p-4 bg-gray-50 rounded-xl">
             <p className="text-xs text-gray-500 font-medium mb-2">{label}</p>
-            <p className="text-2xl font-bold text-gray-900">{thisWeek}</p>
+            <p className="text-2xl font-bold text-gray-900">{displayValue}</p>
             <div className={`inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-full ${bgColor}`}>
                 <TrendIcon className={`w-3 h-3 ${trendColor}`} />
                 <span className={`text-xs font-medium ${trendColor}`}>

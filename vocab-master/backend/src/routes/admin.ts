@@ -6,74 +6,12 @@ import { validate, resetUserPasswordSchema } from '../middleware/validate';
 import { authService } from '../services/authService';
 import { auditService } from '../services/auditService';
 import { logger } from '../services/logger';
+import { dashboardService } from '../services/dashboardService';
 
 const router = Router();
 
 // Middleware: All admin routes require authentication
 router.use(authMiddleware);
-
-// Routes accessible by Admin and Parent
-// Helper function to calculate streak for a user
-function calculateStreak(userId: number): number {
-    // Get all unique activity dates (from study sessions and quiz results)
-    const activityDates = db.prepare(`
-        SELECT DISTINCT date(start_time) as activity_date FROM study_sessions WHERE user_id = ?
-        UNION
-        SELECT DISTINCT date(completed_at) as activity_date FROM quiz_results WHERE user_id = ?
-        ORDER BY activity_date DESC
-    `).all(userId, userId) as { activity_date: string }[];
-
-    if (activityDates.length === 0) return 0;
-
-    let streak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Check if there's activity today or yesterday (streak is still active)
-    const mostRecentDate = new Date(activityDates[0].activity_date);
-    const diffFromToday = Math.floor((today.getTime() - mostRecentDate.getTime()) / (1000 * 60 * 60 * 24));
-
-    // If no activity today or yesterday, streak is broken
-    if (diffFromToday > 1) return 0;
-
-    // Count consecutive days
-    let expectedDate = mostRecentDate;
-    for (const { activity_date } of activityDates) {
-        const currentDate = new Date(activity_date);
-        const diff = Math.floor((expectedDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
-
-        if (diff === 0) {
-            streak++;
-            expectedDate = new Date(currentDate);
-            expectedDate.setDate(expectedDate.getDate() - 1);
-        } else if (diff === 1) {
-            // Same as expected, continue
-            streak++;
-            expectedDate = new Date(currentDate);
-            expectedDate.setDate(expectedDate.getDate() - 1);
-        } else {
-            // Gap in dates, streak ends
-            break;
-        }
-    }
-
-    return streak;
-}
-
-// Helper function to get sessions this week
-function getSessionsThisWeek(userId: number): number {
-    const result = db.prepare(`
-        SELECT COUNT(*) as count FROM (
-            SELECT id FROM study_sessions
-            WHERE user_id = ? AND date(start_time) >= date('now', 'weekday 0', '-7 days')
-            UNION ALL
-            SELECT id FROM quiz_results
-            WHERE user_id = ? AND date(completed_at) >= date('now', 'weekday 0', '-7 days')
-        )
-    `).get(userId, userId) as { count: number };
-
-    return result?.count || 0;
-}
 
 // GET users with stats
 router.get('/users', requireRole(['admin', 'parent']), (req: any, res) => {
@@ -82,10 +20,8 @@ router.get('/users', requireRole(['admin', 'parent']), (req: any, res) => {
         let query = `
       SELECT
         u.id, u.username, u.display_name, u.role, u.parent_id, u.email, u.created_at,
-        us.quizzes_taken, us.total_words_studied, us.last_study_date,
-        COALESCE(u.last_seen_at, us.last_study_date) as last_seen_at,
-        (SELECT AVG(correct_answers * 100.0 / total_questions)
-         FROM quiz_results WHERE user_id = u.id AND total_questions > 0) as avg_accuracy
+        us.last_study_date,
+        COALESCE(u.last_seen_at, us.last_study_date) as last_seen_at
       FROM users u
       LEFT JOIN user_stats us ON u.id = us.user_id
     `;
@@ -102,12 +38,14 @@ router.get('/users', requireRole(['admin', 'parent']), (req: any, res) => {
 
         const users = db.prepare(query).all(...params) as any[];
 
-        // Add streak and weekly stats for each user
-        const usersWithStats = users.map(u => ({
-            ...u,
-            current_streak: calculateStreak(u.id),
-            sessions_this_week: getSessionsThisWeek(u.id)
-        }));
+        // Add dashboard stats for each user
+        const usersWithStats = users.map(u => {
+            const stats = dashboardService.getUserDashboardStats(u.id);
+            return {
+                ...u,
+                ...stats,
+            };
+        });
 
         res.json(usersWithStats);
     } catch (error) {
@@ -132,33 +70,8 @@ router.get('/users/:id/details', requireRole(['admin', 'parent']), (req: any, re
             }
         }
 
-        // Quiz History with calculated accuracy
-        const quizHistory = db.prepare(`
-      SELECT *,
-        ROUND(correct_answers * 100.0 / total_questions, 1) as accuracy
-      FROM quiz_results WHERE user_id = ? ORDER BY completed_at DESC LIMIT 50
-    `).all(userId);
-
-        // Study History
-        const studyHistory = db.prepare(`
-      SELECT * FROM study_sessions WHERE user_id = ? ORDER BY start_time DESC LIMIT 50
-    `).all(userId);
-
-        // Weak Words (wrong more than correct)
-        const weakWords = db.prepare(`
-      SELECT word, 
-        SUM(CASE WHEN is_correct = 0 THEN 1 ELSE 0 END) as incorrect_count,
-        COUNT(*) as total_attempts
-      FROM quiz_answers qa
-      JOIN quiz_results qr ON qa.quiz_result_id = qr.id
-      WHERE qr.user_id = ?
-      GROUP BY word
-      HAVING incorrect_count > total_attempts * 0.5
-      ORDER BY incorrect_count DESC
-      LIMIT 20
-    `).all(userId);
-
-        res.json({ quizHistory, studyHistory, weakWords });
+        const details = dashboardService.getUserDetailStats(userId);
+        res.json(details);
     } catch (error) {
         logger.error('Fetch user details error', { error: String(error) });
         res.status(500).json({ error: 'Failed to fetch user details' });

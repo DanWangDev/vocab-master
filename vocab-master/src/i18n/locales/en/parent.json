@@ -17,6 +17,7 @@
   "never": "Never",
   "days_one": "{{count}} day",
   "days_other": "{{count}} days",
+  "daysOfSeven": "{{count}}/7 days",
   "sessions_one": "{{count}} session",
   "sessions_other": "{{count}} sessions",
   "wordsStudied": "{{count}} words",
@@ -51,5 +52,12 @@
   "creating": "Creating...",
   "studentCreated": "Student account created successfully!",
   "createStudentError": "Failed to create student account",
-  "editProfile": "Edit Profile"
+  "editProfile": "Edit Profile",
+  "thisWeekSummary": "This Week",
+  "weeklySummaryNarrative": "{{name}} studied {{daysActive}} out of 7 days this week, spending about {{timeMinutes}} minutes total.",
+  "daysActive": "Days Active",
+  "timeSpent": "Time Spent",
+  "minutesShort": "m",
+  "quizWordsToRevise": "Quiz Words to Revise",
+  "basedOnQuizResults": "Based on quiz results"
 }

@@ -17,6 +17,7 @@
   "never": "从未",
   "days_one": "{{count}} 天",
   "days_other": "{{count}} 天",
+  "daysOfSeven": "{{count}}/7 天",
   "sessions_one": "{{count}} 次",
   "sessions_other": "{{count}} 次",
   "wordsStudied": "{{count}} 个单词",
@@ -51,5 +52,12 @@
   "creating": "创建中...",
   "studentCreated": "学生账号创建成功！",
   "createStudentError": "创建学生账号失败",
-  "editProfile": "编辑资料"
+  "editProfile": "编辑资料",
+  "thisWeekSummary": "本周概况",
+  "weeklySummaryNarrative": "{{name}}本周学习了{{daysActive}}/7天，总计约{{timeMinutes}}分钟。",
+  "daysActive": "活跃天数",
+  "timeSpent": "学习时间",
+  "minutesShort": "分钟",
+  "quizWordsToRevise": "需要复习的单词",
+  "basedOnQuizResults": "基于测验结果"
 }

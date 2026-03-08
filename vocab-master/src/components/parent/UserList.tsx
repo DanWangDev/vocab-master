@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Trophy, Clock, Flame, Calendar, KeyRound } from 'lucide-react';
+import { Flame, Calendar, Clock, KeyRound } from 'lucide-react';
 import type { AdminUserStats } from '../../services/ApiService';
-import { formatDate } from '../../utils/formatters';
+import { formatRelativeTime } from '../../utils/formatters';
 
 interface UserListProps {
     users: AdminUserStats[];
@@ -10,16 +11,43 @@ interface UserListProps {
     onResetPassword?: (user: AdminUserStats) => void;
 }
 
+function ActivityDot({ status }: { status: 'active' | 'some' | 'inactive' }) {
+    const colors = {
+        active: 'bg-green-500',
+        some: 'bg-amber-500',
+        inactive: 'bg-red-400',
+    };
+
+    return (
+        <span
+            className={`inline-block w-2.5 h-2.5 rounded-full ${colors[status]}`}
+            title={status}
+        />
+    );
+}
+
 export function UserList({ users, onSelectUser, onResetPassword }: UserListProps) {
     const { t, i18n } = useTranslation('parent');
 
-    if (users.length === 0) {
+    // Sort by urgency: inactive first, then by last_seen_at ascending
+    const sortedUsers = useMemo(() => {
+        const statusOrder = { inactive: 0, some: 1, active: 2 };
+        return [...users].sort((a, b) => {
+            const statusDiff = statusOrder[a.activity_status] - statusOrder[b.activity_status];
+            if (statusDiff !== 0) return statusDiff;
+            const aTime = a.last_seen_at ? new Date(a.last_seen_at).getTime() : 0;
+            const bTime = b.last_seen_at ? new Date(b.last_seen_at).getTime() : 0;
+            return aTime - bTime;
+        });
+    }, [users]);
+
+    if (sortedUsers.length === 0) {
         return <div className="text-center text-gray-500 py-8">{t('noUsersFound')}</div>;
     }
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {users.map((user, index) => (
+            {sortedUsers.map((user, index) => (
                 <motion.button
                     key={user.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -30,15 +58,22 @@ export function UserList({ users, onSelectUser, onResetPassword }: UserListProps
                 >
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg group-hover:scale-110 transition-transform">
-                                {user.display_name?.[0]?.toUpperCase() || user.username[0].toUpperCase()}
+                            <div className="relative">
+                                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg group-hover:scale-110 transition-transform">
+                                    {user.display_name?.[0]?.toUpperCase() || user.username[0].toUpperCase()}
+                                </div>
+                                <span className="absolute -bottom-0.5 -right-0.5">
+                                    <ActivityDot status={user.activity_status} />
+                                </span>
                             </div>
                             <div>
                                 <h3 className="font-bold text-gray-900">
                                     {user.display_name || user.username}
                                 </h3>
                                 <p className="text-xs text-gray-500">
-                                    {t('joined', { date: formatDate(user.created_at, i18n.language) })}
+                                    {(user.last_seen_at || user.last_study_date)
+                                        ? formatRelativeTime((user.last_seen_at || user.last_study_date)!, i18n.language)
+                                        : t('never')}
                                 </p>
                             </div>
                         </div>
@@ -69,24 +104,10 @@ export function UserList({ users, onSelectUser, onResetPassword }: UserListProps
                             <span className="text-xs text-gray-400 flex items-center gap-1">
                                 <Calendar className="w-3 h-3" /> {t('thisWeek')}
                             </span>
-                            <span className={`font-semibold ${user.sessions_this_week > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
-                                {user.sessions_this_week > 0 ? t('sessions', { count: user.sessions_this_week }) : '-'}
-                            </span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <span className="text-xs text-gray-400 flex items-center gap-1">
-                                <Trophy className="w-3 h-3" /> {t('accuracy')}
-                            </span>
-                            <span className="font-semibold text-gray-700">
-                                {user.avg_accuracy ? `${Math.round(user.avg_accuracy)}%` : '-'}
-                            </span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <span className="text-xs text-gray-400 flex items-center gap-1">
-                                <BookOpen className="w-3 h-3" /> {t('studied')}
-                            </span>
-                            <span className="font-semibold text-gray-700">
-                                {t('wordsStudied', { count: user.total_words_studied })}
+                            <span className={`font-semibold ${user.days_active_this_week > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                {user.days_active_this_week > 0
+                                    ? t('daysOfSeven', { count: user.days_active_this_week })
+                                    : '-'}
                             </span>
                         </div>
                         <div className="col-span-2 flex flex-col gap-1 mt-1 pt-3 border-t border-gray-50">
@@ -95,7 +116,7 @@ export function UserList({ users, onSelectUser, onResetPassword }: UserListProps
                             </span>
                             <span className="text-sm text-gray-600">
                                 {(user.last_seen_at || user.last_study_date)
-                                    ? formatDate((user.last_seen_at || user.last_study_date)!, i18n.language)
+                                    ? formatRelativeTime((user.last_seen_at || user.last_study_date)!, i18n.language)
                                     : t('never')}
                             </span>
                         </div>
