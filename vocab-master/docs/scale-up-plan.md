@@ -9,7 +9,7 @@ Vocab Master is running on a NAS via Docker, used by ~15 users (family + friends
 | Phase | Name | Size | Depends On | Status | Key Outcome |
 |-------|------|------|------------|--------|-------------|
 | 1 | Infrastructure Foundation | L | - | DONE | Repo abstraction, pagination, cache, job queue, API split |
-| 2 | Gamification & Social | L | P1 | Planned | Achievements, leaderboards, enhanced streaks |
+| 2 | Gamification & Social | L | P1 | DONE | Achievements, leaderboards, enhanced streaks |
 | 3 | Multi-Class/Group Mgmt | L | P1 | Planned | Classes, group wordlists, group stats |
 | 4 | Analytics & Reports | M | P1, P2 | Planned | Word mastery, CSV/PDF export, email digests |
 | 5 | Richer Learning Modes | L | P4 | Planned | SRS, flashcards, audio, sentence building |
@@ -90,34 +90,45 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 
 ---
 
-## Phase 2: Gamification & Social
+## Phase 2: Gamification & Social (DONE)
 
-### Database Schema (Migrations 015-016)
+**Branch:** `feature/phase2-gamification`
+**PR:** #10
+**Tests:** 274 backend + 218 frontend = 492 total
+
+### Database Schema (Migrations 015-016) (DONE)
 
 **015_add_achievements.ts:**
 - `achievements` table: id, slug (unique), name, description, icon, category, threshold, sort_order
 - `user_achievements` table: user_id, achievement_id, earned_at (unique per user+achievement)
-- Seed ~15 achievements: first_quiz, quizzes_10/50, streak_3/7/14/30, words_10/50/100/500, perfect_quiz, speed_demon
+- Seeded 15 achievements across 5 categories: quiz (first_quiz, quizzes_10, quizzes_50, perfect_quiz, speed_demon), streak (streak_3, streak_7, streak_14, streak_30), words (words_10, words_50, words_100, words_500), challenge (challenge_first, challenge_10)
 
 **016_add_leaderboards.ts:**
 - `leaderboard_entries` table: user_id, period (weekly/monthly/alltime), period_key, score, quizzes_completed, words_mastered, streak_days
+- Composite unique index on (user_id, period, period_key)
 
-### Backend
+### Backend (DONE)
 
-- New repositories: `achievementRepository.ts`, `leaderboardRepository.ts` (with interfaces)
-- New services: `achievementService.ts` (check & award after quiz/study/challenge), `leaderboardService.ts` (score recalculation)
-- New routes: `achievements.ts` (GET /achievements, GET /achievements/mine), `leaderboards.ts` (GET /leaderboards?period=weekly, GET /leaderboards/me)
-- Background job: recalculate leaderboard scores every 15 minutes
-- Achievement triggers: hook into existing quiz and challenge flows
+- **Repositories:** `IAchievementRepository` + `SqliteAchievementRepository`, `ILeaderboardRepository` + `SqliteLeaderboardRepository`
+- **Services:** `achievementService.ts` (evaluates all achievements against user stats, awards new ones, creates notifications), `leaderboardService.ts` (period key generation, score recalculation)
+- **Routes:** `achievements.ts` (GET /, GET /mine, POST /check), `leaderboards.ts` (GET /?period=weekly, GET /me)
+- **Achievement triggers:** hooked into `quizResults.ts` (after quiz creation) and `challenges.ts` (after challenge completion), returning `newAchievements` in response
+- **Background job:** leaderboard recalculation every 15 minutes via job queue
+- **Score formula:** `quizzes * avg_score * 0.5 + words * 2 + streak * 10`
 
-### Frontend
+### Frontend (DONE)
 
-- New components: `achievements/AchievementBadge.tsx`, `AchievementList.tsx`, `AchievementUnlockedToast.tsx`
-- New components: `leaderboard/LeaderboardPage.tsx`, `LeaderboardRow.tsx`, `PeriodSelector.tsx`
-- Enhanced: `dashboard/StreakDisplay.tsx` with flame animation (Framer Motion) and 90-day calendar heatmap
-- New API modules: `achievementApi.ts`, `leaderboardApi.ts`
-- Achievement unlock toast via context provider (global)
-- Leaderboard as new page in student navigation
+- **Achievement components:** `AchievementBadge.tsx` (emoji icons, earned/locked states, size variants), `AchievementList.tsx` (grouped by category, progress bar), `AchievementUnlockedToast.tsx` (Framer Motion slide-in, auto-dismiss 5s)
+- **Leaderboard components:** `LeaderboardPage.tsx` (period tabs, rank display, current user highlighting), `LeaderboardRow.tsx` (rank badges 🥇🥈🥉, avatar, stats, score)
+- **Dashboard:** new Achievement (violet) and Leaderboard (sky blue) mode cards for students
+- **API modules:** `achievementApi.ts`, `leaderboardApi.ts` with barrel exports
+- **Routes:** lazy-loaded `/achievements` and `/leaderboard` as student-only routes
+- **i18n:** English + Chinese translations for both `achievements` and `leaderboard` namespaces, plus dashboard keys
+
+### Deferred Items
+
+- `StreakDisplay.tsx` flame animation and 90-day calendar heatmap — deferred to Phase 4 (Analytics)
+- Achievement unlock toast context provider (global) — toast component exists, context wiring deferred
 
 ---
 
