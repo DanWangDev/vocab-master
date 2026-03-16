@@ -337,3 +337,42 @@ export interface UserActiveWordlistRow {
   user_id: number;
   wordlist_id: number;
 }
+
+// Push token types
+export interface PushTokenRow {
+  id: number;
+  user_id: number;
+  expo_push_token: string;
+  platform: string;
+  created_at: string;
+}
+
+// Quiz result parameter types
+export interface CreateQuizResultParams {
+  userId: number;
+  quizType: 'quiz' | 'challenge';
+  totalQuestions: number;
+  correctAnswers: number;
+  score: number;
+  timePerQuestion: number | null;
+  totalTimeSpent: number;
+  pointsEarned: number;
+  answers: ReadonlyArray<{
+    questionIndex: number;
+    word: string;
+    promptType: string;
+    questionFormat: string;
+    correctAnswer: string;
+    selectedAnswer: string | null;
+    isCorrect: boolean;
+    timeSpent: number;
+  }>;
+}
+
+export interface CreateStudySessionParams {
+  userId: number;
+  wordsReviewed: number;
+  startTime: Date;
+  endTime: Date;
+  words?: string[];
+}

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
 // Load environment variables from parent directory if available
 dotenv.config({ path: path.join(process.cwd(), '../.env') });
@@ -10,12 +11,13 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { initializeDatabase, closeDatabase } from './config/database.js';
+import { initializeDatabase, closeDatabase, db } from './config/database.js';
 import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
 import { inactivityService } from './services/inactivityService.js';
 import { logger } from './services/logger.js';
 import { AppError } from './errors/AppError.js';
+import { jobQueue } from './jobs/jobQueue.js';
 
 const app = express();
 app.set('trust proxy', 1); // Trust first main proxy (likely Nginx/Docker)
@@ -24,17 +26,17 @@ const PORT = process.env.PORT || 9876;
 // Initialize database
 initializeDatabase();
 
-// Cleanup expired tokens periodically (every hour)
-setInterval(() => {
+// Register background jobs
+jobQueue.register('token-cleanup', () => {
   authService.cleanupExpiredTokens();
-}, 60 * 60 * 1000);
+}, 60 * 60 * 1000); // Every hour
 
-// Check for inactive students and send reminders (every 6 hours)
-setInterval(() => {
-  inactivityService.checkInactivityAndNotify().catch(err => {
-    logger.error('Inactivity check failed', { error: String(err) });
-  });
-}, 6 * 60 * 60 * 1000);
+jobQueue.register('inactivity-check', async () => {
+  await inactivityService.checkInactivityAndNotify();
+}, 6 * 60 * 60 * 1000); // Every 6 hours
+
+// Start all jobs
+jobQueue.startAll();
 
 // Middleware
 app.use(helmet());
@@ -155,7 +157,46 @@ app.use('/api/push-tokens', pushTokensRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  try {
+    // Test DB connectivity
+    const dbCheck = db.prepare('SELECT 1').get();
+
+    // Get DB file size
+    const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '../data/vocab-master.db');
+    let dbSizeBytes = 0;
+    try {
+      const stats = fs.statSync(dbPath);
+      dbSizeBytes = stats.size;
+    } catch {
+      // DB file might not exist in test env
+    }
+
+    const memUsage = process.memoryUsage();
+
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: Math.floor(process.uptime()),
+      version: process.env.npm_package_version || '1.0.0',
+      database: {
+        connected: !!dbCheck,
+        sizeBytes: dbSizeBytes,
+        sizeMB: Math.round(dbSizeBytes / 1024 / 1024 * 100) / 100
+      },
+      memory: {
+        heapUsedMB: Math.round(memUsage.heapUsed / 1024 / 1024 * 100) / 100,
+        heapTotalMB: Math.round(memUsage.heapTotal / 1024 / 1024 * 100) / 100,
+        rssMB: Math.round(memUsage.rss / 1024 / 1024 * 100) / 100
+      },
+      jobs: jobQueue.getStatus()
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      error: 'Health check failed'
+    });
+  }
 });
 
 // 404 handler
@@ -186,12 +227,14 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down...');
+  jobQueue.stopAll();
   closeDatabase();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   logger.info('SIGINT received, shutting down...');
+  jobQueue.stopAll();
   closeDatabase();
   process.exit(0);
 });

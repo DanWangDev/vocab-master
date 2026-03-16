@@ -20,6 +20,9 @@ export const db: DatabaseType = new Database(DATABASE_PATH);
 // Enable foreign keys
 db.pragma('foreign_keys = ON');
 
+// Enable WAL mode for better concurrent read performance
+db.pragma('journal_mode = WAL');
+
 export function initializeDatabase(): void {
   try {
     const migrator = new Migrator(db, migrations);
