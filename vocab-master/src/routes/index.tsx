@@ -23,6 +23,7 @@ const LeaderboardPage = lazy(() => import('../components/leaderboard/Leaderboard
 const GroupList = lazy(() => import('../components/groups/GroupList').then(m => ({ default: m.GroupList })));
 const GroupDetailPage = lazy(() => import('../components/groups/GroupDetail').then(m => ({ default: m.GroupDetail })));
 const CreateGroupPage = lazy(() => import('../components/groups/CreateGroupPage').then(m => ({ default: m.CreateGroupPage })));
+const ReportsPage = lazy(() => import('../components/reports/ReportsPage').then(m => ({ default: m.ReportsPage })));
 
 // Loading fallback component — not exported, used internally for Suspense
 // eslint-disable-next-line react-refresh/only-export-components
@@ -164,6 +165,10 @@ export const router = createBrowserRouter([
               {
                 path: 'leaderboard',
                 element: withSuspense(LeaderboardPage),
+              },
+              {
+                path: 'reports',
+                element: withSuspense(ReportsPage),
               },
             ],
           },

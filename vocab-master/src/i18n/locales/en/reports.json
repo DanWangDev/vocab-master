@@ -1,0 +1,19 @@
+{
+  "title": "My Progress",
+  "masteryBreakdown": "Word Mastery",
+  "noMasteryData": "Complete some quizzes to see your mastery data",
+  "level_mastered": "Mastered",
+  "level_familiar": "Familiar",
+  "level_learning": "Learning",
+  "level_new": "New",
+  "totalWords": "Total words",
+  "learningTrend": "Learning Trend (30 days)",
+  "noTrendData": "No activity data yet",
+  "accuracy": "Accuracy",
+  "quizzes": "Quizzes",
+  "wordsStudied": "Words Studied",
+  "weakWords": "Words to Practice",
+  "strongWords": "Well Known Words",
+  "weakWordsHint": "Focus on these words in your next study session",
+  "exportCsv": "Export CSV"
+}

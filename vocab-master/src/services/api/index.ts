@@ -14,4 +14,5 @@ export { wordlistApi } from './wordlistApi';
 export { achievementApi } from './achievementApi';
 export { leaderboardApi } from './leaderboardApi';
 export { groupApi } from './groupApi';
+export { reportApi } from './reportApi';
 export * from './types';

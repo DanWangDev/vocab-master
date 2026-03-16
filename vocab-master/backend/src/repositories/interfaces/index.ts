@@ -10,3 +10,4 @@ export type { IQuizResultRepository } from './IQuizResultRepository.js';
 export type { IAchievementRepository, UserAchievementWithDetails } from './IAchievementRepository.js';
 export type { ILeaderboardRepository } from './ILeaderboardRepository.js';
 export type { IGroupRepository } from './IGroupRepository.js';
+export type { IWordMasteryRepository } from './IWordMasteryRepository.js';

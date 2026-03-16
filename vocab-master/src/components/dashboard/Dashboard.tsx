@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp } from 'lucide-react';
 import { ModeCard } from './ModeCard';
 import { UserMenu } from '../common/UserMenu';
 import { NotificationBell } from '../notifications/NotificationBell';
@@ -246,6 +246,15 @@ export function Dashboard() {
                 icon={Users}
                 color="groups"
                 onClick={() => navigate('/groups')}
+              />
+
+              {/* My Progress / Reports */}
+              <ModeCard
+                title={t('myProgress')}
+                description={t('myProgressDesc')}
+                icon={TrendingUp}
+                color="reports"
+                onClick={() => navigate('/reports')}
               />
             </>
           )}

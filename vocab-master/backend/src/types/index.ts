@@ -448,3 +448,66 @@ export interface CreateStudySessionParams {
   endTime: Date;
   words?: string[];
 }
+
+// Word Mastery types
+export interface WordMasteryRow {
+  id: number;
+  user_id: number;
+  word: string;
+  wordlist_id: number | null;
+  correct_count: number;
+  incorrect_count: number;
+  last_correct_at: string | null;
+  last_incorrect_at: string | null;
+  mastery_level: number;
+  next_review_at: string | null;
+  srs_interval_days: number;
+  srs_ease_factor: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmailDigestPreferencesRow {
+  id: number;
+  user_id: number;
+  frequency: 'daily' | 'weekly' | 'never';
+  last_sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MasteryBreakdown {
+  new: number;
+  learning: number;
+  familiar: number;
+  mastered: number;
+  total: number;
+}
+
+export interface WordMasterySummary {
+  word: string;
+  correctCount: number;
+  incorrectCount: number;
+  masteryLevel: number;
+  accuracy: number;
+  lastPracticed: string | null;
+}
+
+export interface StudentReportSummary {
+  userId: number;
+  username: string;
+  displayName: string | null;
+  masteryBreakdown: MasteryBreakdown;
+  recentAccuracy: number;
+  totalQuizzes: number;
+  totalStudySessions: number;
+  currentStreak: number;
+  weakWords: WordMasterySummary[];
+  strongWords: WordMasterySummary[];
+  learningTrend: Array<{
+    date: string;
+    quizzes: number;
+    accuracy: number;
+    wordsStudied: number;
+  }>;
+}
