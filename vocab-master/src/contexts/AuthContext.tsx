@@ -231,12 +231,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProfile = async (data: { username?: string; displayName?: string }) => {
-    try {
-      const response = await ApiService.updateProfile(data);
-      dispatch({ type: 'UPDATE_USER', payload: response.user });
-    } catch (error) {
-      throw error;
-    }
+    const response = await ApiService.updateProfile(data);
+    dispatch({ type: 'UPDATE_USER', payload: response.user });
   };
 
   const clearNewGoogleUser = () => {
@@ -296,6 +292,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 // Hook
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {

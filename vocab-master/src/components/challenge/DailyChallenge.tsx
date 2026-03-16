@@ -20,34 +20,13 @@ import { calculatePoints, isMultiSelectCorrect, getTodayString } from '../../uti
 
 const CHALLENGE_QUESTIONS = 20;
 const TIME_PER_QUESTION = 25;
+const STREAK_MILESTONES = [5, 10, 15, 20];
 
 export function DailyChallenge() {
   const { t } = useTranslation(['challenge', 'wordlists']);
   const { vocabulary, loadUserData } = useApp();
   const { playSuccess, playError, playClick, playWarning, playComplete } = useAudio();
   const navigate = useNavigate();
-
-  // Guard: need at least 4 words for challenge
-  if (vocabulary.length < 4) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-challenge-light/30 to-gray-50">
-        <TopBar onBack={() => navigate('/')} title={t('challenge:title')} />
-        <main className="max-w-md mx-auto px-4 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-sm p-8 text-center"
-          >
-            <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-            <p className="text-gray-700 font-medium mb-6">{t('wordlists:minWordsChallenge')}</p>
-            <Button variant="challenge" onClick={() => navigate('/')}>
-              {t('challenge:backToHome', 'Back to Home')}
-            </Button>
-          </motion.div>
-        </main>
-      </div>
-    );
-  }
 
   const [state, setState] = useState<DailyChallengeState>({
     questions: [],
@@ -64,8 +43,6 @@ export function DailyChallenge() {
 
   const answerTimeRef = useRef(Date.now());
   const [milestoneStreak, setMilestoneStreak] = useState<number | null>(null);
-
-  const STREAK_MILESTONES = [5, 10, 15, 20];
 
   // Timer
   const timer = useTimer({
@@ -110,6 +87,7 @@ export function DailyChallenge() {
     } else {
       timer.pause();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.status, state.currentIndex]);
 
   // Handle time up
@@ -179,7 +157,7 @@ export function DailyChallenge() {
     } else {
       playError();
     }
-  }, [state.status, state.streak, currentQuestion, timer, playSuccess, playError, STREAK_MILESTONES]);
+  }, [state.status, state.streak, currentQuestion, timer, playSuccess, playError]);
 
   // Handle next question
   const handleNext = useCallback(() => {
@@ -239,6 +217,28 @@ export function DailyChallenge() {
     }
     navigate('/');
   };
+
+  // Guard: need at least 4 words for challenge
+  if (vocabulary.length < 4) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-challenge-light/30 to-gray-50">
+        <TopBar onBack={() => navigate('/')} title={t('challenge:title')} />
+        <main className="max-w-md mx-auto px-4 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-sm p-8 text-center"
+          >
+            <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+            <p className="text-gray-700 font-medium mb-6">{t('wordlists:minWordsChallenge')}</p>
+            <Button variant="challenge" onClick={() => navigate('/')}>
+              {t('challenge:backToHome', 'Back to Home')}
+            </Button>
+          </motion.div>
+        </main>
+      </div>
+    );
+  }
 
   // Intro screen
   if (state.status === 'intro') {

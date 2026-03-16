@@ -171,6 +171,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useNotifications(): NotificationContextType {
   const context = useContext(NotificationContext);
   if (!context) {

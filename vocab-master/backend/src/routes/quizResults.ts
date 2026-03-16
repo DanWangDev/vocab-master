@@ -4,6 +4,7 @@ import { quizResultRepository } from '../repositories/quizResultRepository';
 import { authMiddleware } from '../middleware/auth';
 import { logger } from '../services/logger.js';
 import { checkAndAwardAchievements } from '../services/achievementService.js';
+import { wordMasteryService } from '../services/wordMasteryService.js';
 import type { AuthRequest } from '../types';
 
 const router = Router();
@@ -63,6 +64,12 @@ router.post('/', authMiddleware, (req: AuthRequest, res: Response) => {
             pointsEarned,
             answers
         });
+
+        // Update word mastery from quiz answers
+        wordMasteryService.recordQuizAnswers(
+          userId,
+          answers.map(a => ({ word: a.word, isCorrect: a.isCorrect }))
+        );
 
         // Check achievements after quiz completion
         const newlyEarned = checkAndAwardAchievements(userId, {

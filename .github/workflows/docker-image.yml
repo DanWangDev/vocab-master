@@ -15,23 +15,23 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
 
     - name: Login to Docker Hub
       if: github.event_name != 'pull_request'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build and push Backend
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: ./vocab-master/backend
         file: ./vocab-master/backend/Dockerfile
@@ -41,7 +41,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push Frontend
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: ./vocab-master
         file: ./vocab-master/frontend.Dockerfile

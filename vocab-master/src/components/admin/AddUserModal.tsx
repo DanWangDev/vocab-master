@@ -46,9 +46,8 @@ export function AddUserModal({ allUsers, onClose, onSave }: AddUserModalProps) {
             });
             onSave();
             onClose();
-        } catch (err: any) {
-            console.error('Failed to create user', err);
-            setError(err.message || 'Failed to create user');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to create user');
         } finally {
             setLoading(false);
         }

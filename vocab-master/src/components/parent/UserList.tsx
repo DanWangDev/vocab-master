@@ -56,13 +56,16 @@ export function UserList({ users, onSelectUser, onResetPassword, thresholds }: U
                 const onTrack = thresholds ? isOnTrack(user, thresholds) : null;
 
                 return (
-                    <motion.button
+                    <motion.div
                         key={user.id}
+                        role="button"
+                        tabIndex={0}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                         onClick={() => onSelectUser(user)}
-                        className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all text-left group border border-gray-100 hover:border-purple-200"
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectUser(user); } }}
+                        className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all text-left group border border-gray-100 hover:border-purple-200 cursor-pointer"
                     >
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
@@ -144,7 +147,7 @@ export function UserList({ users, onSelectUser, onResetPassword, thresholds }: U
                                 </span>
                             </div>
                         </div>
-                    </motion.button>
+                    </motion.div>
                 );
             })}
         </div>

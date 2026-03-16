@@ -22,28 +22,6 @@ export function QuizMode() {
   const { playSuccess, playError, playClick, playWarning } = useAudio();
   const navigate = useNavigate();
 
-  // Guard: need at least 4 words for MCQ
-  if (vocabulary.length < 4) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-quiz-light/30 to-gray-50">
-        <TopBar onBack={() => navigate('/')} title={t('quiz:settings')} />
-        <main className="max-w-md mx-auto px-4 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-sm p-8 text-center"
-          >
-            <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-            <p className="text-gray-700 font-medium mb-6">{t('wordlists:minWordsQuiz')}</p>
-            <Button variant="quiz" onClick={() => navigate('/')}>
-              {t('quiz:backToHome', 'Back to Home')}
-            </Button>
-          </motion.div>
-        </main>
-      </div>
-    );
-  }
-
   const [config, setConfig] = useState<QuizConfig>({
     totalQuestions: 10,
     timePerQuestion: 30,
@@ -86,6 +64,7 @@ export function QuizMode() {
     } else {
       timer.pause();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.status, state.currentIndex, config.timePerQuestion]);
 
   // Save results when quiz is complete
@@ -125,6 +104,7 @@ export function QuizMode() {
 
       saveResults();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.status]);
 
   // Handle answer submission
@@ -147,7 +127,8 @@ export function QuizMode() {
         handleNext();
       }, 2000);
     }
-  }, [state.status, submitAnswer, config.autoAdvance, playSuccess, playError, timer]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.status, submitAnswer, config.autoAdvance, playSuccess, playError]);
 
   // Handle next question
   const handleNext = useCallback(() => {
@@ -196,6 +177,28 @@ export function QuizMode() {
   const currentAnswer = state.answers.find(
     a => a.questionId === currentQuestion?.id
   );
+
+  // Guard: need at least 4 words for MCQ
+  if (vocabulary.length < 4) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-quiz-light/30 to-gray-50">
+        <TopBar onBack={() => navigate('/')} title={t('quiz:settings')} />
+        <main className="max-w-md mx-auto px-4 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-sm p-8 text-center"
+          >
+            <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+            <p className="text-gray-700 font-medium mb-6">{t('wordlists:minWordsQuiz')}</p>
+            <Button variant="quiz" onClick={() => navigate('/')}>
+              {t('quiz:backToHome', 'Back to Home')}
+            </Button>
+          </motion.div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-quiz-light/30 to-gray-50">

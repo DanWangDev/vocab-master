@@ -25,5 +25,7 @@
   "leaderboard": "Leaderboard",
   "leaderboardDesc": "See who's on top",
   "groups": "Groups",
-  "groupsDesc": "Classes & study groups"
+  "groupsDesc": "Classes & study groups",
+  "myProgress": "My Progress",
+  "myProgressDesc": "Mastery & learning trends"
 }

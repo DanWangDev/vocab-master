@@ -4,14 +4,24 @@ import { render, userEvent } from '../../../test/utils'
 import { UserList } from '../UserList'
 import type { AdminUserStats, ParentThresholds } from '../../../services/ApiService'
 
-// Mock framer-motion to render plain elements
+// Filter Framer Motion props to avoid React DOM warnings
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function filterMotionProps(props: Record<string, any>) {
+  const motionKeys = ['initial', 'animate', 'exit', 'transition', 'whileHover', 'whileTap', 'whileFocus', 'whileDrag', 'whileInView', 'variants', 'layout', 'layoutId']
+  const filtered: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(props)) {
+    if (!motionKeys.includes(k)) filtered[k] = v
+  }
+  return filtered
+}
+
 vi.mock('framer-motion', () => ({
   motion: {
     button: ({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) => (
-      <button {...props}>{children}</button>
+      <button {...filterMotionProps(props)}>{children}</button>
     ),
     div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
+      <div {...filterMotionProps(props)}>{children}</div>
     ),
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
@@ -150,11 +160,11 @@ describe('UserList', () => {
       <UserList users={users} onSelectUser={vi.fn()} />
     )
 
-    const buttons = screen.getAllByRole('button')
+    const cards = screen.getAllByRole('button')
     // First card should be the inactive user
-    expect(buttons[0]).toHaveTextContent('Inactive')
-    expect(buttons[1]).toHaveTextContent('Some')
-    expect(buttons[2]).toHaveTextContent('Active')
+    expect(cards[0]).toHaveTextContent('Inactive')
+    expect(cards[1]).toHaveTextContent('Some')
+    expect(cards[2]).toHaveTextContent('Active')
   })
 
   it('shows on-track badge when thresholds are provided and user meets them', () => {

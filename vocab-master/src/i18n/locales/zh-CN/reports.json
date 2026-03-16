@@ -1,0 +1,19 @@
+{
+  "title": "我的进步",
+  "masteryBreakdown": "单词掌握度",
+  "noMasteryData": "完成一些测验后即可查看掌握度数据",
+  "level_mastered": "已掌握",
+  "level_familiar": "熟悉",
+  "level_learning": "学习中",
+  "level_new": "新词",
+  "totalWords": "总词数",
+  "learningTrend": "学习趋势（30天）",
+  "noTrendData": "暂无活动数据",
+  "accuracy": "准确率",
+  "quizzes": "测验",
+  "wordsStudied": "学习单词数",
+  "weakWords": "需要练习的单词",
+  "strongWords": "已熟练的单词",
+  "weakWordsHint": "下次学习时重点关注这些单词",
+  "exportCsv": "导出CSV"
+}

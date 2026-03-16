@@ -4,14 +4,24 @@ import { render, userEvent } from '../../../test/utils'
 import { UserDetailModal } from '../UserDetailModal'
 import { ApiService, type AdminUserDetails } from '../../../services/ApiService'
 
-// Mock framer-motion
+// Filter Framer Motion props to avoid React DOM warnings
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function filterMotionProps(props: Record<string, any>) {
+  const motionKeys = ['initial', 'animate', 'exit', 'transition', 'whileHover', 'whileTap', 'whileFocus', 'whileDrag', 'whileInView', 'variants', 'layout', 'layoutId']
+  const filtered: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(props)) {
+    if (!motionKeys.includes(k)) filtered[k] = v
+  }
+  return filtered
+}
+
 vi.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
+      <div {...filterMotionProps(props)}>{children}</div>
     ),
     button: ({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) => (
-      <button {...props}>{children}</button>
+      <button {...filterMotionProps(props)}>{children}</button>
     ),
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,

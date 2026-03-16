@@ -51,6 +51,7 @@ export function StudyMode() {
         },
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCard]);
 
   const handleFlip = () => {

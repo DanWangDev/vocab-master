@@ -56,6 +56,7 @@ export function StudyMistakesMode({ words }: StudyMistakesModeProps) {
         },
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCard]);
 
   const handleFlip = () => {

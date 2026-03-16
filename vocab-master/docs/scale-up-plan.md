@@ -11,7 +11,7 @@ Vocab Master is running on a NAS via Docker, used by ~15 users (family + friends
 | 1 | Infrastructure Foundation | L | - | DONE | Repo abstraction, pagination, cache, job queue, API split |
 | 2 | Gamification & Social | L | P1 | DONE | Achievements, leaderboards, enhanced streaks |
 | 3 | Multi-Class/Group Mgmt | L | P1 | DONE | Classes, group wordlists, group stats |
-| 4 | Analytics & Reports | M | P1, P2 | Planned | Word mastery, CSV/PDF export, email digests |
+| 4 | Analytics & Reports | M | P1, P2 | DONE | Word mastery, CSV export, learning trends |
 | 5 | Richer Learning Modes | L | P4 | Planned | SRS, flashcards, audio, sentence building |
 | 6 | PvP Challenges & Polish | M | P2, P3 | Planned | Head-to-head quizzes, code splitting, offline |
 
@@ -172,28 +172,60 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 
 ---
 
-## Phase 4: Analytics & Reports
+## Phase 4: Analytics & Reports (DONE)
 
-### Database Schema (Migration 019)
+**Branch:** `feature/phase4-analytics-reports`
+**Tests:** 300 backend + 224 frontend = 524 total
+
+### Database Schema (Migration 019) (DONE)
 
 **019_add_word_mastery.ts:**
 - `word_mastery` table: user_id, word, wordlist_id, correct_count, incorrect_count, last_correct/incorrect_at, mastery_level (0=new, 1=learning, 2=familiar, 3=mastered), SRS columns (next_review_at, srs_interval_days, srs_ease_factor) — pre-created for Phase 5
 - `email_digest_preferences` table: user_id, frequency (daily/weekly/never), last_sent_at
 
-### Backend
+### Backend (DONE)
 
-- New: `wordMasteryRepository.ts`, `wordMasteryService.ts` — mastery level calculation
-- Modify: quiz answer saving to update `word_mastery` per word answered
-- New: `reportService.ts`, `routes/reports.ts` — student summary (JSON), CSV export (Node streams), PDF export (pdfkit)
-- New: `digestService.ts`, `jobs/emailDigestJob.ts` — weekly parent email digest (Mondays) via existing Resend integration
-- Endpoints: GET /reports/student/:id/summary, /export?format=csv|pdf, GET/PATCH /settings/digest
+**Files created:**
+- `backend/src/migrations/019_add_word_mastery.ts` — word mastery + email digest tables
+- `backend/src/repositories/interfaces/IWordMasteryRepository.ts` — interface with upsert, breakdown, trend queries
+- `backend/src/repositories/sqlite/SqliteWordMasteryRepository.ts` — SQLite implementation with mastery level computation
+- `backend/src/services/wordMasteryService.ts` — service wrapping repository methods
+- `backend/src/services/reportService.ts` — student summary generation and CSV export
+- `backend/src/routes/reports.ts` — 5 endpoints
 
-### Frontend
+**Files modified:**
+- `backend/src/routes/quizResults.ts` — integrated word mastery recording on quiz answer save
+- `backend/src/repositories/index.ts` — wired word mastery repository
+- `backend/src/index.ts` — registered reports routes
 
-- New: `reports/ReportDownloadButton.tsx`, `MasteryBreakdown.tsx`, `LearningTrendChart.tsx`
-- New: `parent/DigestSettings.tsx`
-- Integrate mastery breakdown into existing `UserDetailModal.tsx`
-- New: `reportApi.ts`
+**Endpoints:**
+- `GET /api/reports/mastery` — current user's mastery breakdown, weak/strong words
+- `GET /api/reports/trend?days=30` — learning trend data (accuracy, quizzes, words per day)
+- `GET /api/reports/student/:id/summary` — full student report (parent/admin only)
+- `GET /api/reports/student/:id/export` — CSV export of mastery data (parent/admin only)
+- `GET /api/reports/my/export` — CSV export of own mastery data
+
+### Frontend (DONE)
+
+**Files created:**
+- `src/components/reports/ReportsPage.tsx` — main reports page with mastery + trends
+- `src/components/reports/MasteryBreakdown.tsx` — animated progress bar with level breakdown
+- `src/components/reports/LearningTrendChart.tsx` — bar charts for accuracy, quizzes, words
+- `src/components/reports/WordMasteryList.tsx` — weak/strong word list display
+- `src/services/api/reportApi.ts` — API module for reports endpoints
+- `src/i18n/locales/en/reports.json` + `zh-CN/reports.json` — translations
+
+**Files modified:**
+- `src/components/dashboard/Dashboard.tsx` — added "My Progress" card for students
+- `src/components/dashboard/ModeCard.tsx` — added 'reports' color variant
+- `src/routes/index.tsx` — lazy-loaded /reports route for students
+
+### Deferred Items
+
+- PDF export (pdfkit) — deferred, CSV sufficient for now
+- Email digest service — deferred to future iteration (requires Resend API key)
+- Parent `DigestSettings.tsx` — deferred with email digests
+- Mastery integration into `UserDetailModal.tsx` — can add when parent view is enhanced
 
 ---
 
