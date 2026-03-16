@@ -20,7 +20,7 @@ export function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(true); // eslint-disable-line react-hooks/set-state-in-effect
     Promise.all([
       leaderboardApi.getLeaderboard(period),
       leaderboardApi.getMyRanking(period),

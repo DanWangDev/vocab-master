@@ -30,7 +30,7 @@ export function MultiSelectQuestion({
 
   // Reset selections when question changes
   useEffect(() => {
-    setSelectedOptions(new Set());
+    setSelectedOptions(new Set()); // eslint-disable-line react-hooks/set-state-in-effect
   }, [question.id]);
 
   const correctAnswers = question.correctAnswers || [question.correctAnswer];

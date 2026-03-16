@@ -178,6 +178,7 @@ describe('adminApi', () => {
       const thresholds = { maxStudents: 10, maxWordlists: 20 };
       mockFetchWithAuth.mockResolvedValueOnce(thresholds);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await adminApi.updateThresholds(thresholds as any);
 
       expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/thresholds', {

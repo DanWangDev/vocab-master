@@ -48,6 +48,7 @@ describe('quizApi', () => {
       const mockResponse = { success: true, resultId: 42 };
       mockFetchWithAuth.mockResolvedValueOnce(mockResponse);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await quizApi.saveQuizResult(data as any);
 
       expect(mockFetchWithAuth).toHaveBeenCalledWith('/quiz-results', {
@@ -69,6 +70,7 @@ describe('quizApi', () => {
       const mockResponse = { success: true, sessionId: 7 };
       mockFetchWithAuth.mockResolvedValueOnce(mockResponse);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await quizApi.saveStudySession(data as any);
 
       expect(mockFetchWithAuth).toHaveBeenCalledWith('/study-stats', {
@@ -92,6 +94,7 @@ describe('quizApi', () => {
       };
       mockFetchWithAuth.mockResolvedValueOnce(mockResponse);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await quizApi.importData(data as any);
 
       expect(mockFetchWithAuth).toHaveBeenCalledWith('/migrate/import', {

@@ -28,7 +28,7 @@ export function TypeQuestion({
 
   // Focus input when question changes
   useEffect(() => {
-    setInputValue('');
+    setInputValue(''); // eslint-disable-line react-hooks/set-state-in-effect
     if (!showResult && inputRef.current) {
       inputRef.current.focus();
     }

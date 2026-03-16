@@ -24,7 +24,8 @@ const GroupList = lazy(() => import('../components/groups/GroupList').then(m => 
 const GroupDetailPage = lazy(() => import('../components/groups/GroupDetail').then(m => ({ default: m.GroupDetail })));
 const CreateGroupPage = lazy(() => import('../components/groups/CreateGroupPage').then(m => ({ default: m.CreateGroupPage })));
 
-// Loading fallback component
+// Loading fallback component — not exported, used internally for Suspense
+// eslint-disable-next-line react-refresh/only-export-components
 function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -46,6 +47,7 @@ function withSuspense(Component: React.LazyExoticComponent<React.ComponentType>)
 }
 
 // Wrapper for practice mistakes mode - fetches weak words and filters vocabulary
+// eslint-disable-next-line react-refresh/only-export-components
 function StudyMistakesWrapper() {
   const { vocabulary } = useApp();
   const navigate = useNavigate();
@@ -68,7 +70,7 @@ function StudyMistakesWrapper() {
         }
 
         setFilteredWords(filtered);
-      } catch (err) {
+      } catch {
         navigate('/study');
       } finally {
         setLoading(false);
@@ -85,6 +87,7 @@ function StudyMistakesWrapper() {
 }
 
 // Wrapper for review mode - filters vocabulary by words from URL query params
+// eslint-disable-next-line react-refresh/only-export-components
 function StudyReviewWrapper() {
   const { vocabulary } = useApp();
   const navigate = useNavigate();
