@@ -17,6 +17,7 @@ import { addLeaderboards } from './016_add_leaderboards';
 import { addGroups } from './017_add_groups';
 import { addGroupWordlists } from './018_add_group_wordlists';
 import { addWordMastery } from './019_add_word_mastery';
+import { addPvpChallenges } from './020_add_pvp_challenges';
 
 export const migrations = [
     initialSchema,
@@ -38,4 +39,5 @@ export const migrations = [
     addGroups,
     addGroupWordlists,
     addWordMastery,
+    addPvpChallenges,
 ];

@@ -16,3 +16,4 @@ export { default as groupsRoutes } from './groups';
 export { default as reportsRoutes } from './reports';
 export { default as srsRoutes } from './srs';
 export { default as exercisesRoutes } from './exercises';
+export { default as pvpRoutes } from './pvp';

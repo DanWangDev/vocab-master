@@ -31,5 +31,7 @@
   "flashcards": "Flashcard Review",
   "flashcardsDesc": "Spaced repetition review",
   "sentenceBuild": "Sentence Builder",
-  "sentenceBuildDesc": "Build sentences from words"
+  "sentenceBuildDesc": "Build sentences from words",
+  "pvpChallenges": "PvP Challenges",
+  "pvpChallengesDesc": "Challenge friends to vocab battles"
 }

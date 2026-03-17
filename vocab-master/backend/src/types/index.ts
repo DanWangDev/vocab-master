@@ -511,3 +511,42 @@ export interface StudentReportSummary {
     wordsStudied: number;
   }>;
 }
+
+// PvP Challenge types
+export type PvpStatus = 'pending' | 'active' | 'completed' | 'expired' | 'declined';
+
+export interface PvpChallengeRow {
+  id: number;
+  challenger_id: number;
+  opponent_id: number;
+  wordlist_id: number;
+  status: PvpStatus;
+  challenger_score: number | null;
+  opponent_score: number | null;
+  winner_id: number | null;
+  question_count: number;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PvpChallengeWithUsers extends PvpChallengeRow {
+  challenger_username: string;
+  challenger_display_name: string | null;
+  opponent_username: string;
+  opponent_display_name: string | null;
+  wordlist_name: string;
+}
+
+export interface PvpAnswerRow {
+  id: number;
+  challenge_id: number;
+  user_id: number;
+  question_index: number;
+  word: string;
+  correct_answer: string;
+  selected_answer: string | null;
+  is_correct: number;
+  time_spent: number;
+  created_at: string;
+}

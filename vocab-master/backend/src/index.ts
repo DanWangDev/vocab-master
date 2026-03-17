@@ -12,13 +12,14 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase, db } from './config/database.js';
-import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes, achievementsRoutes, leaderboardsRoutes, groupsRoutes, reportsRoutes, srsRoutes, exercisesRoutes } from './routes/index.js';
+import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes, achievementsRoutes, leaderboardsRoutes, groupsRoutes, reportsRoutes, srsRoutes, exercisesRoutes, pvpRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
 import { inactivityService } from './services/inactivityService.js';
 import { logger } from './services/logger.js';
 import { AppError } from './errors/AppError.js';
 import { jobQueue } from './jobs/jobQueue.js';
 import { recalculateLeaderboards } from './services/leaderboardService.js';
+import { pvpService } from './services/pvpService.js';
 
 const app = express();
 app.set('trust proxy', 1); // Trust first main proxy (likely Nginx/Docker)
@@ -39,6 +40,10 @@ jobQueue.register('inactivity-check', async () => {
 jobQueue.register('leaderboard-recalc', () => {
   recalculateLeaderboards();
 }, 15 * 60 * 1000); // Every 15 minutes
+
+jobQueue.register('pvp-expiration', () => {
+  pvpService.expireChallenges();
+}, 60 * 60 * 1000); // Every hour
 
 // Start all jobs
 jobQueue.startAll();
@@ -165,6 +170,7 @@ app.use('/api/groups', groupsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/srs', srsRoutes);
 app.use('/api/exercises', exercisesRoutes);
+app.use('/api/pvp', pvpRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

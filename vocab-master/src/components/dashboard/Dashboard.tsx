@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp, Layers, PenTool } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp, Layers, PenTool, Swords } from 'lucide-react';
 import { ModeCard } from './ModeCard';
 import { UserMenu } from '../common/UserMenu';
 import { NotificationBell } from '../notifications/NotificationBell';
@@ -264,6 +264,15 @@ export function Dashboard() {
                 icon={PenTool}
                 color="exercises"
                 onClick={() => navigate('/exercises/sentence-build')}
+              />
+
+              {/* PvP Challenges */}
+              <ModeCard
+                title={t('pvpChallenges')}
+                description={t('pvpChallengesDesc')}
+                icon={Swords}
+                color="pvp"
+                onClick={() => navigate('/pvp')}
               />
 
               {/* My Progress / Reports */}

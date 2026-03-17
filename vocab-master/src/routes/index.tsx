@@ -26,6 +26,9 @@ const CreateGroupPage = lazy(() => import('../components/groups/CreateGroupPage'
 const ReportsPage = lazy(() => import('../components/reports/ReportsPage').then(m => ({ default: m.ReportsPage })));
 const FlashcardSession = lazy(() => import('../components/flashcard/FlashcardSession').then(m => ({ default: m.FlashcardSession })));
 const SentenceBuildSession = lazy(() => import('../components/exercises/SentenceBuildSession').then(m => ({ default: m.SentenceBuildSession })));
+const ChallengeList = lazy(() => import('../components/pvp/ChallengeList').then(m => ({ default: m.ChallengeList })));
+const ChallengeQuiz = lazy(() => import('../components/pvp/ChallengeQuiz').then(m => ({ default: m.ChallengeQuiz })));
+const ChallengeResults = lazy(() => import('../components/pvp/ChallengeResults').then(m => ({ default: m.ChallengeResults })));
 
 // Loading fallback component — not exported, used internally for Suspense
 // eslint-disable-next-line react-refresh/only-export-components
@@ -179,6 +182,18 @@ export const router = createBrowserRouter([
               {
                 path: 'exercises/sentence-build',
                 element: withSuspense(SentenceBuildSession),
+              },
+              {
+                path: 'pvp',
+                element: withSuspense(ChallengeList),
+              },
+              {
+                path: 'pvp/:id/play',
+                element: withSuspense(ChallengeQuiz),
+              },
+              {
+                path: 'pvp/:id/results',
+                element: withSuspense(ChallengeResults),
               },
             ],
           },

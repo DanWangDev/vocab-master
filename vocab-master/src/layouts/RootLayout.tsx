@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AppProvider } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
 export function RootLayout() {
   const { state: authState } = useAuth();
@@ -36,7 +37,9 @@ export function RootLayout() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <Outlet />
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
           </motion.div>
         </AnimatePresence>
       </div>

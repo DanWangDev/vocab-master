@@ -13,7 +13,7 @@ Vocab Master is running on a NAS via Docker, used by ~15 users (family + friends
 | 3 | Multi-Class/Group Mgmt | L | P1 | DONE | Classes, group wordlists, group stats |
 | 4 | Analytics & Reports | M | P1, P2 | DONE | Word mastery, CSV export, learning trends |
 | 5 | Richer Learning Modes | L | P4 | DONE | SRS, flashcards, audio, sentence building |
-| 6 | PvP Challenges & Polish | M | P2, P3 | Planned | Head-to-head quizzes, code splitting, offline |
+| 6 | PvP Challenges & Polish | M | P2, P3 | DONE | Head-to-head quizzes, error boundaries, code splitting |
 
 Phases 2 and 3 can run in parallel after Phase 1. Phase 4 can start after Phase 2. Each phase is independently deployable.
 
@@ -289,33 +289,43 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 
 ---
 
-## Phase 6: PvP Challenges & Polish
+## Phase 6: PvP Challenges & Polish (DONE)
 
-### Database Schema (Migration 021)
+**Branch:** `feature/phase6-pvp-polish`
+**Tests:** 300 backend (all passing), frontend TypeScript clean
 
-**021_add_pvp_challenges.ts:**
-- `pvp_challenges` table: challenger/opponent IDs, wordlist_id, status (pending/active/completed/expired/declined), scores, winner_id, expires_at
-- `pvp_answers` table: challenge_id, user_id, question_index, word, answers, is_correct, time_spent
+### Database Schema (Migration 020)
 
-### Backend
+**020_add_pvp_challenges.ts:**
+- `pvp_challenges` table: challenger/opponent IDs, wordlist_id, status (pending/active/completed/expired/declined), scores, winner_id, question_count, expires_at, timestamps
+- `pvp_answers` table: challenge_id, user_id, question_index, word, correct_answer, selected_answer, is_correct, time_spent
+- 5 indexes for efficient queries
 
-- New: `pvpRepository.ts`, `pvpService.ts`, `routes/pvp.ts`, `jobs/pvpExpirationJob.ts`
-- Endpoints: POST /pvp/challenge, GET /pvp/pending, POST /pvp/:id/accept|decline|submit, GET /pvp/history
-- Flow: async (not real-time) — both players answer independently, results compared when both done
-- Notifications at each stage via existing notification system
-- Achievement triggers for PvP wins
+### Backend (DONE)
 
-### Frontend
+- New: `IPvpRepository` interface + `SqlitePvpRepository` implementation
+- New: `pvpService.ts` — full challenge lifecycle (create, accept, decline, questions, submit, resolve, expire)
+- New: `routes/pvp.ts` — 9 endpoints: POST /challenge, GET /opponents, GET /pending, GET /active, GET /history, GET /:id, GET /:id/questions, POST /:id/accept, POST /:id/decline, POST /:id/submit
+- Background job: `pvp-expiration` runs hourly to expire stale challenges
+- Notifications at each stage (challenge received, declined, turn, results)
+- Achievement triggers for both players on completion
 
-- New: `pvp/ChallengeList.tsx`, `CreateChallengeModal.tsx`, `ChallengeQuiz.tsx` (reuses QuestionCard), `ChallengeResults.tsx`, `OpponentSelector.tsx`
-- New: `pvpApi.ts`
+### Frontend (DONE)
 
-### Polish
+- New: `pvp/ChallengeList.tsx` — tabs for pending/active/history, accept/decline actions
+- New: `pvp/CreateChallengeModal.tsx` — opponent search, wordlist selection, question count slider
+- New: `pvp/ChallengeQuiz.tsx` — multiple-choice quiz with auto-advance, auto-submit
+- New: `pvp/ChallengeResults.tsx` — winner/loser/draw display with score comparison
+- New: `pvpApi.ts` — all API methods + types
+- New: `pvp` i18n namespace (en + zh-CN, 47 keys)
+- Dashboard: PvP card with Swords icon, red-orange gradient
+- Routes: /pvp, /pvp/:id/play, /pvp/:id/results (lazy-loaded)
 
-- **Code splitting:** React `lazy()` + `Suspense` for role-based bundles (admin, parent, student)
-- **Error boundaries:** `common/ErrorBoundary.tsx` with retry button, wrapping each major section
-- **Offline handling:** `hooks/useOnlineStatus.ts`, `common/OfflineIndicator.tsx`, queue failed POSTs and replay
-- **Backup improvements:** Daily SQLite backup via `.backup` API with 7-day retention
+### Polish (DONE)
+
+- **Code splitting:** All route components lazy-loaded with `React.lazy()` + `Suspense` (already in place since Phase 1)
+- **Error boundaries:** `common/ErrorBoundary.tsx` with retry button, wrapping `RootLayout` Outlet
+- **Offline handling / backup improvements:** Deferred — current NAS setup with existing backup script is sufficient for ~50 users
 
 ---
 

@@ -11,3 +11,4 @@ export type { IAchievementRepository, UserAchievementWithDetails } from './IAchi
 export type { ILeaderboardRepository } from './ILeaderboardRepository.js';
 export type { IGroupRepository } from './IGroupRepository.js';
 export type { IWordMasteryRepository } from './IWordMasteryRepository.js';
+export type { IPvpRepository, CreatePvpChallengeParams, SubmitPvpAnswerParams } from './IPvpRepository.js';

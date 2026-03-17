@@ -16,6 +16,7 @@ import { SqliteAchievementRepository } from './sqlite/SqliteAchievementRepositor
 import { SqliteLeaderboardRepository } from './sqlite/SqliteLeaderboardRepository.js';
 import { SqliteGroupRepository } from './sqlite/SqliteGroupRepository.js';
 import { SqliteWordMasteryRepository } from './sqlite/SqliteWordMasteryRepository.js';
+import { SqlitePvpRepository } from './sqlite/SqlitePvpRepository.js';
 
 import type {
   IUserRepository,
@@ -33,6 +34,7 @@ import type {
   ILeaderboardRepository,
   IGroupRepository,
   IWordMasteryRepository,
+  IPvpRepository,
 } from './interfaces/index.js';
 
 // Create notification repo first since linkRequest depends on it
@@ -54,3 +56,4 @@ export const achievementRepository: IAchievementRepository = new SqliteAchieveme
 export const leaderboardRepository: ILeaderboardRepository = new SqliteLeaderboardRepository(db);
 export const groupRepository: IGroupRepository = new SqliteGroupRepository(db);
 export const wordMasteryRepository: IWordMasteryRepository = new SqliteWordMasteryRepository(db);
+export const pvpRepository: IPvpRepository = new SqlitePvpRepository(db);

@@ -31,5 +31,7 @@
   "flashcards": "闪卡复习",
   "flashcardsDesc": "间隔重复复习",
   "sentenceBuild": "造句练习",
-  "sentenceBuildDesc": "用单词组成句子"
+  "sentenceBuildDesc": "用单词组成句子",
+  "pvpChallenges": "PvP 挑战",
+  "pvpChallengesDesc": "挑战好友进行词汇对战"
 }

@@ -17,6 +17,7 @@ import type groupsEn from './locales/en/groups.json'
 import type reportsEn from './locales/en/reports.json'
 import type flashcardEn from './locales/en/flashcard.json'
 import type exercisesEn from './locales/en/exercises.json'
+import type pvpEn from './locales/en/pvp.json'
 
 declare module 'i18next' {
   interface CustomTypeOptions {
@@ -39,6 +40,7 @@ declare module 'i18next' {
       reports: typeof reportsEn
       flashcard: typeof flashcardEn
       exercises: typeof exercisesEn
+      pvp: typeof pvpEn
     }
   }
 }
