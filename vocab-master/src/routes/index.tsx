@@ -7,28 +7,44 @@ import { useApp } from '../contexts/AppContext';
 import ApiService from '../services/ApiService';
 import { StudyMistakesMode } from '../components/study/StudyMistakesMode';
 
-// Lazy load route components (using named exports)
-const AuthPage = lazy(() => import('../components/auth/AuthPage').then(m => ({ default: m.AuthPage })));
-const ResetPasswordPage = lazy(() => import('../components/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
-const Dashboard = lazy(() => import('../components/dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
-const StudyLanding = lazy(() => import('../components/study/StudyLanding').then(m => ({ default: m.StudyLanding })));
-const StudyMode = lazy(() => import('../components/study/StudyMode').then(m => ({ default: m.StudyMode })));
-const QuizMode = lazy(() => import('../components/quiz/QuizMode').then(m => ({ default: m.QuizMode })));
-const DailyChallenge = lazy(() => import('../components/challenge/DailyChallenge').then(m => ({ default: m.DailyChallenge })));
-const ParentDashboard = lazy(() => import('../components/parent/ParentDashboard').then(m => ({ default: m.ParentDashboard })));
-const AdminPanel = lazy(() => import('../components/admin/AdminPanel').then(m => ({ default: m.AdminPanel })));
-const WordlistManager = lazy(() => import('../components/wordlists/WordlistManager').then(m => ({ default: m.WordlistManager })));
-const AchievementList = lazy(() => import('../components/achievements/AchievementList').then(m => ({ default: m.AchievementList })));
-const LeaderboardPage = lazy(() => import('../components/leaderboard/LeaderboardPage').then(m => ({ default: m.LeaderboardPage })));
-const GroupList = lazy(() => import('../components/groups/GroupList').then(m => ({ default: m.GroupList })));
-const GroupDetailPage = lazy(() => import('../components/groups/GroupDetail').then(m => ({ default: m.GroupDetail })));
-const CreateGroupPage = lazy(() => import('../components/groups/CreateGroupPage').then(m => ({ default: m.CreateGroupPage })));
-const ReportsPage = lazy(() => import('../components/reports/ReportsPage').then(m => ({ default: m.ReportsPage })));
-const FlashcardSession = lazy(() => import('../components/flashcard/FlashcardSession').then(m => ({ default: m.FlashcardSession })));
-const SentenceBuildSession = lazy(() => import('../components/exercises/SentenceBuildSession').then(m => ({ default: m.SentenceBuildSession })));
-const ChallengeList = lazy(() => import('../components/pvp/ChallengeList').then(m => ({ default: m.ChallengeList })));
-const ChallengeQuiz = lazy(() => import('../components/pvp/ChallengeQuiz').then(m => ({ default: m.ChallengeQuiz })));
-const ChallengeResults = lazy(() => import('../components/pvp/ChallengeResults').then(m => ({ default: m.ChallengeResults })));
+// Retry dynamic imports on failure (handles stale chunk hashes after deploys)
+function lazyWithRetry<T extends Record<string, unknown>>(
+  factory: () => Promise<T>,
+  retries = 1
+): Promise<T> {
+  return factory().catch((error: unknown) => {
+    if (retries > 0 && error instanceof TypeError && String(error.message).includes('dynamically imported module')) {
+      // Force reload to get fresh asset manifest
+      window.location.reload();
+      // Return a never-resolving promise since we're reloading
+      return new Promise<T>(() => {});
+    }
+    throw error;
+  });
+}
+
+// Lazy load route components (using named exports, with stale-chunk retry)
+const AuthPage = lazy(() => lazyWithRetry(() => import('../components/auth/AuthPage')).then(m => ({ default: m.AuthPage })));
+const ResetPasswordPage = lazy(() => lazyWithRetry(() => import('../components/auth/ResetPasswordPage')).then(m => ({ default: m.ResetPasswordPage })));
+const Dashboard = lazy(() => lazyWithRetry(() => import('../components/dashboard/Dashboard')).then(m => ({ default: m.Dashboard })));
+const StudyLanding = lazy(() => lazyWithRetry(() => import('../components/study/StudyLanding')).then(m => ({ default: m.StudyLanding })));
+const StudyMode = lazy(() => lazyWithRetry(() => import('../components/study/StudyMode')).then(m => ({ default: m.StudyMode })));
+const QuizMode = lazy(() => lazyWithRetry(() => import('../components/quiz/QuizMode')).then(m => ({ default: m.QuizMode })));
+const DailyChallenge = lazy(() => lazyWithRetry(() => import('../components/challenge/DailyChallenge')).then(m => ({ default: m.DailyChallenge })));
+const ParentDashboard = lazy(() => lazyWithRetry(() => import('../components/parent/ParentDashboard')).then(m => ({ default: m.ParentDashboard })));
+const AdminPanel = lazy(() => lazyWithRetry(() => import('../components/admin/AdminPanel')).then(m => ({ default: m.AdminPanel })));
+const WordlistManager = lazy(() => lazyWithRetry(() => import('../components/wordlists/WordlistManager')).then(m => ({ default: m.WordlistManager })));
+const AchievementList = lazy(() => lazyWithRetry(() => import('../components/achievements/AchievementList')).then(m => ({ default: m.AchievementList })));
+const LeaderboardPage = lazy(() => lazyWithRetry(() => import('../components/leaderboard/LeaderboardPage')).then(m => ({ default: m.LeaderboardPage })));
+const GroupList = lazy(() => lazyWithRetry(() => import('../components/groups/GroupList')).then(m => ({ default: m.GroupList })));
+const GroupDetailPage = lazy(() => lazyWithRetry(() => import('../components/groups/GroupDetail')).then(m => ({ default: m.GroupDetail })));
+const CreateGroupPage = lazy(() => lazyWithRetry(() => import('../components/groups/CreateGroupPage')).then(m => ({ default: m.CreateGroupPage })));
+const ReportsPage = lazy(() => lazyWithRetry(() => import('../components/reports/ReportsPage')).then(m => ({ default: m.ReportsPage })));
+const FlashcardSession = lazy(() => lazyWithRetry(() => import('../components/flashcard/FlashcardSession')).then(m => ({ default: m.FlashcardSession })));
+const SentenceBuildSession = lazy(() => lazyWithRetry(() => import('../components/exercises/SentenceBuildSession')).then(m => ({ default: m.SentenceBuildSession })));
+const ChallengeList = lazy(() => lazyWithRetry(() => import('../components/pvp/ChallengeList')).then(m => ({ default: m.ChallengeList })));
+const ChallengeQuiz = lazy(() => lazyWithRetry(() => import('../components/pvp/ChallengeQuiz')).then(m => ({ default: m.ChallengeQuiz })));
+const ChallengeResults = lazy(() => lazyWithRetry(() => import('../components/pvp/ChallengeResults')).then(m => ({ default: m.ChallengeResults })));
 
 // Loading fallback component — not exported, used internally for Suspense
 // eslint-disable-next-line react-refresh/only-export-components

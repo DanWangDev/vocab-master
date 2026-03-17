@@ -28,10 +28,11 @@
   "groupsDesc": "Classes & study groups",
   "myProgress": "My Progress",
   "myProgressDesc": "Mastery & learning trends",
-  "flashcards": "Flashcard Review",
+  "flashcards": "Flashcards",
   "flashcardsDesc": "Spaced repetition review",
-  "sentenceBuild": "Sentence Builder",
+  "sentenceBuild": "Sentences",
   "sentenceBuildDesc": "Build sentences from words",
-  "pvpChallenges": "PvP Challenges",
-  "pvpChallengesDesc": "Challenge friends to vocab battles"
+  "pvpChallenges": "PvP",
+  "pvpChallengesDesc": "Challenge friends to vocab battles",
+  "moreActivities": "More Activities"
 }
