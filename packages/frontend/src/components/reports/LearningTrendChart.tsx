@@ -64,7 +64,7 @@ export function LearningTrendChart({ trend }: LearningTrendChartProps) {
       </div>
 
       {/* Activity summary (quizzes + words) */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-3 h-3 rounded-full bg-violet-500" />

@@ -181,7 +181,7 @@ export function FlashcardSession() {
 
       {/* Card area */}
       <div className="flex-1 flex items-center justify-center p-4">
-        <div className="relative w-full max-w-lg" style={{ height: '400px' }}>
+        <div className="relative w-full max-w-lg" style={{ height: 'min(400px, 60vh)' }}>
           <AnimatePresence>
             {items[currentIndex] && (
               <FlashcardCard

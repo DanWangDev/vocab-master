@@ -229,10 +229,10 @@ export function ChallengeList() {
                   : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              {t2 === 'pending' && <Clock size={14} className="inline mr-1" />}
-              {t2 === 'active' && <Swords size={14} className="inline mr-1" />}
-              {t2 === 'history' && <Trophy size={14} className="inline mr-1" />}
-              {t2 === 'pending' ? t('pendingChallenges') : t2 === 'active' ? t('activeChallenges') : t('challengeHistory')}
+              {t2 === 'pending' && <Clock size={14} className="hidden sm:inline mr-1" />}
+              {t2 === 'active' && <Swords size={14} className="hidden sm:inline mr-1" />}
+              {t2 === 'history' && <Trophy size={14} className="hidden sm:inline mr-1" />}
+              <span className="truncate">{t2 === 'pending' ? t('pendingChallenges') : t2 === 'active' ? t('activeChallenges') : t('challengeHistory')}</span>
             </button>
           ))}
         </div>

@@ -13,6 +13,7 @@ import { StreakMilestone } from './StreakMilestone';
 import { useApp } from '../../contexts/AppContext';
 import { useTimer } from '../../hooks/useTimer';
 import { useAudio } from '../../hooks/useAudio';
+import { useAchievements } from '../../contexts/AchievementContext';
 import type { DailyChallengeState, AnswerRecord } from '../../types';
 import { generateDailyChallengeQuestions } from '../../services/QuizGenerator';
 import { StorageService } from '../../services/StorageService';
@@ -26,6 +27,7 @@ export function DailyChallenge() {
   const { t } = useTranslation(['challenge', 'wordlists']);
   const { vocabulary, loadUserData } = useApp();
   const { playSuccess, playError, playClick, playWarning, playComplete } = useAudio();
+  const { showAchievements } = useAchievements();
   const navigate = useNavigate();
 
   const [state, setState] = useState<DailyChallengeState>({
@@ -171,10 +173,10 @@ export function DailyChallenge() {
         StorageService.setDailyChallengeDate(getTodayString());
 
         // Save to backend (stats are updated by backend automatically)
-        import('../../services/ApiService').then(({ default: api }) => {
+        import('../../services/ApiService').then(async ({ default: api }) => {
           const totalTimeSpent = prev.answers.reduce((acc, curr) => acc + curr.timeSpent, 0);
 
-          api.saveQuizResult({
+          const result = await api.saveQuizResult({
             quizType: 'challenge',
             totalQuestions: prev.totalQuestions,
             correctAnswers: prev.score,
@@ -195,8 +197,11 @@ export function DailyChallenge() {
                 timeSpent: a.timeSpent
               };
             })
-          }).catch(err => console.error('Failed to save challenge results:', err));
-        });
+          });
+          if (result.newAchievements && result.newAchievements.length > 0) {
+            showAchievements(result.newAchievements);
+          }
+        }).catch(err => console.error('Failed to save challenge results:', err));
 
         return { ...prev, status: 'complete', todayCompleted: true };
       }

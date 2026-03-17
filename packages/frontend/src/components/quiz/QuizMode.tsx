@@ -14,12 +14,14 @@ import { useApp } from '../../contexts/AppContext';
 import { useQuiz } from '../../hooks/useQuiz';
 import { useTimer } from '../../hooks/useTimer';
 import { useAudio } from '../../hooks/useAudio';
+import { useAchievements } from '../../contexts/AchievementContext';
 import type { QuizConfig } from '../../types';
 
 export function QuizMode() {
   const { t } = useTranslation(['quiz', 'wordlists']);
   const { vocabulary, loadUserData } = useApp();
   const { playSuccess, playError, playClick, playWarning } = useAudio();
+  const { showAchievements } = useAchievements();
   const navigate = useNavigate();
 
   const [config, setConfig] = useState<QuizConfig>({
@@ -75,20 +77,21 @@ export function QuizMode() {
           // Calculate total time
           const totalTimeSpent = state.answers.reduce((acc, curr) => acc + curr.timeSpent, 0);
 
-          await import('../../services/ApiService').then(({ default: api }) => api.saveQuizResult({
+          const { default: api } = await import('../../services/ApiService');
+          const result = await api.saveQuizResult({
             quizType: 'quiz',
             totalQuestions: state.totalQuestions,
-            correctAnswers: state.score, // Score tracks correct answers in useQuiz
-            score: state.score, // Simple count for now
+            correctAnswers: state.score,
+            score: state.score,
             timePerQuestion: config.timePerQuestion,
             totalTimeSpent,
-            pointsEarned: 0, // Quiz mode simple scoring
+            pointsEarned: 0,
             answers: state.answers.map(a => {
               const q = state.questions.find(q => q.id === a.questionId)!;
               return {
                 questionIndex: state.questions.indexOf(q),
                 word: q.word.targetWord,
-                promptType: 'definition', // Assuming standard quiz uses definition prompt
+                promptType: 'definition',
                 questionFormat: q.format || 'multiple-choice',
                 correctAnswer: q.correctAnswer,
                 selectedAnswer: a.selectedAnswer,
@@ -96,7 +99,10 @@ export function QuizMode() {
                 timeSpent: a.timeSpent
               };
             })
-          }));
+          });
+          if (result.newAchievements && result.newAchievements.length > 0) {
+            showAchievements(result.newAchievements);
+          }
         } catch (error) {
           console.error('Failed to save quiz results:', error);
         }

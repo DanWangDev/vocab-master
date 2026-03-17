@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AppProvider } from '../contexts/AppContext';
+import { AchievementProvider } from '../contexts/AchievementContext';
 import { useAuth } from '../contexts/AuthContext';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
@@ -38,7 +39,9 @@ export function RootLayout() {
             transition={{ duration: 0.2 }}
           >
             <ErrorBoundary>
-              <Outlet />
+              <AchievementProvider>
+                <Outlet />
+              </AchievementProvider>
             </ErrorBoundary>
           </motion.div>
         </AnimatePresence>

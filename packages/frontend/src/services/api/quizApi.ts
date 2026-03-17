@@ -7,10 +7,11 @@ import type {
   UserSettings,
   UserStats,
 } from './types';
+import type { NewlyEarnedAchievement } from './achievementApi';
 
 export const quizApi = {
-  async saveQuizResult(data: SaveQuizResultRequest): Promise<{ success: boolean; resultId: number }> {
-    return baseApi.fetchWithAuth<{ success: boolean; resultId: number }>('/quiz-results', {
+  async saveQuizResult(data: SaveQuizResultRequest): Promise<{ success: boolean; resultId: number; newAchievements?: NewlyEarnedAchievement[] }> {
+    return baseApi.fetchWithAuth<{ success: boolean; resultId: number; newAchievements?: NewlyEarnedAchievement[] }>('/quiz-results', {
       method: 'POST',
       body: JSON.stringify(data),
     });

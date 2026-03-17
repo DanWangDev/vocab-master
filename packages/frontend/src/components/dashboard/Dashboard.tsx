@@ -198,7 +198,7 @@ export function Dashboard() {
               {/* Quick Stats - Inline */}
               {activityStats && (
                 <div className="bg-white rounded-2xl p-4 border border-primary-100/50 shadow-sm">
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     <div className="flex flex-col items-center">
                       <div className="w-8 h-8 rounded-lg bg-quiz-light flex items-center justify-center mb-1 text-quiz-dark">
                         <Brain size={14} strokeWidth={3} />
@@ -260,7 +260,7 @@ export function Dashboard() {
                 <h3 className="text-xs font-black text-primary-400 uppercase tracking-widest mb-3">
                   {t('moreActivities')}
                 </h3>
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                   <CompactCard
                     title={t('flashcards')}
                     icon={Layers}
