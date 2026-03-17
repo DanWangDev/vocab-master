@@ -21,7 +21,7 @@ export function ChallengeQuiz() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const startTimeRef = useRef(Date.now());
+  const startTimeRef = useRef(0);
 
   useEffect(() => {
     if (!challengeId) return;
@@ -29,7 +29,7 @@ export function ChallengeQuiz() {
       .then(data => {
         setQuestions(data.questions);
         setLoading(false);
-        startTimeRef.current = Date.now();
+        startTimeRef.current = performance.now();
       })
       .catch(err => {
         setError(err instanceof Error ? err.message : 'Failed to load questions');
@@ -44,7 +44,8 @@ export function ChallengeQuiz() {
     setSelectedAnswer(answer);
     setShowResult(true);
 
-    const timeSpent = Date.now() - startTimeRef.current;
+    // eslint-disable-next-line react-hooks/purity -- event handler, not render
+    const timeSpent = Math.round(performance.now() - startTimeRef.current);
     const isCorrect = answer === currentQuestion.correctAnswer;
 
     const pvpAnswer: PvpAnswer = {
@@ -64,7 +65,7 @@ export function ChallengeQuiz() {
         setCurrentIndex(prev => prev + 1);
         setSelectedAnswer(null);
         setShowResult(false);
-        startTimeRef.current = Date.now();
+        startTimeRef.current = performance.now();
       } else {
         submitAllAnswers([...answers, pvpAnswer]);
       }

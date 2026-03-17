@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp, Layers, PenTool, Swords } from 'lucide-react';
 import { ModeCard } from './ModeCard';
+import { CompactCard } from './CompactCard';
 import { UserMenu } from '../common/UserMenu';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { LinkRequestCard } from '../linking/LinkRequestCard';
@@ -193,7 +194,44 @@ export function Dashboard() {
                   ))}
                 </div>
               )}
-              {/* Study Mode */}
+
+              {/* Quick Stats - Inline */}
+              {activityStats && (
+                <div className="bg-white rounded-2xl p-4 border border-primary-100/50 shadow-sm">
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-lg bg-quiz-light flex items-center justify-center mb-1 text-quiz-dark">
+                        <Brain size={14} strokeWidth={3} />
+                      </div>
+                      <p className="text-lg font-black text-gray-800">{activityStats.quizCount}</p>
+                      <p className="text-[9px] text-gray-500 font-bold">{t('statsQuizzes')}</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mb-1 text-green-600">
+                        <Trophy size={14} strokeWidth={3} />
+                      </div>
+                      <p className="text-lg font-black text-gray-800">{activityStats.avgAccuracy}%</p>
+                      <p className="text-[9px] text-gray-500 font-bold">{t('statsAccuracy')}</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-lg bg-study-light flex items-center justify-center mb-1 text-study-dark">
+                        <BookOpen size={14} strokeWidth={3} />
+                      </div>
+                      <p className="text-lg font-black text-gray-800">{activityStats.wordsReviewed}</p>
+                      <p className="text-[9px] text-gray-500 font-bold">{t('statsReviewed')}</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-lg bg-challenge-light flex items-center justify-center mb-1 text-challenge-dark">
+                        <Flame size={14} strokeWidth={3} />
+                      </div>
+                      <p className="text-lg font-black text-gray-800">{activityStats.currentStreak}</p>
+                      <p className="text-[9px] text-gray-500 font-bold">{t('statsStreak')}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Primary actions - Full-width cards */}
               <ModeCard
                 title={t('studyMode')}
                 description={t('studyModeDesc')}
@@ -201,8 +239,6 @@ export function Dashboard() {
                 color="study"
                 onClick={() => handleModeSelect('study')}
               />
-
-              {/* Quiz Mode */}
               <ModeCard
                 title={t('quizMode')}
                 description={t('quizModeDesc')}
@@ -210,8 +246,6 @@ export function Dashboard() {
                 color="quiz"
                 onClick={() => handleModeSelect('quiz')}
               />
-
-              {/* Daily Challenge */}
               <ModeCard
                 title={t('dailyChallenge')}
                 description={t('dailyChallengeDesc')}
@@ -221,128 +255,60 @@ export function Dashboard() {
                 badge={hasTodayChallenge ? t('badgeDone') : t('badgeNew')}
               />
 
-              {/* Achievements */}
-              <ModeCard
-                title={t('achievements')}
-                description={t('achievementsDesc')}
-                icon={Award}
-                color="achievement"
-                onClick={() => navigate('/achievements')}
-              />
-
-              {/* Leaderboard */}
-              <ModeCard
-                title={t('leaderboard')}
-                description={t('leaderboardDesc')}
-                icon={BarChart3}
-                color="leaderboard"
-                onClick={() => navigate('/leaderboard')}
-              />
-
-              {/* Groups */}
-              <ModeCard
-                title={t('groups')}
-                description={t('groupsDesc')}
-                icon={Users}
-                color="groups"
-                onClick={() => navigate('/groups')}
-              />
-
-              {/* Flashcard Review */}
-              <ModeCard
-                title={t('flashcards')}
-                description={t('flashcardsDesc')}
-                icon={Layers}
-                color="flashcard"
-                onClick={() => navigate('/flashcards')}
-              />
-
-              {/* Sentence Building */}
-              <ModeCard
-                title={t('sentenceBuild')}
-                description={t('sentenceBuildDesc')}
-                icon={PenTool}
-                color="exercises"
-                onClick={() => navigate('/exercises/sentence-build')}
-              />
-
-              {/* PvP Challenges */}
-              <ModeCard
-                title={t('pvpChallenges')}
-                description={t('pvpChallengesDesc')}
-                icon={Swords}
-                color="pvp"
-                onClick={() => navigate('/pvp')}
-              />
-
-              {/* My Progress / Reports */}
-              <ModeCard
-                title={t('myProgress')}
-                description={t('myProgressDesc')}
-                icon={TrendingUp}
-                color="reports"
-                onClick={() => navigate('/reports')}
-              />
+              {/* More activities - Compact 2-column grid */}
+              <div>
+                <h3 className="text-xs font-black text-primary-400 uppercase tracking-widest mb-3">
+                  {t('moreActivities')}
+                </h3>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <CompactCard
+                    title={t('flashcards')}
+                    icon={Layers}
+                    color="bg-gradient-to-br from-fuchsia-500 to-pink-600 shadow-[rgba(217,70,239,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/flashcards')}
+                  />
+                  <CompactCard
+                    title={t('sentenceBuild')}
+                    icon={PenTool}
+                    color="bg-gradient-to-br from-lime-500 to-green-600 shadow-[rgba(132,204,22,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/exercises/sentence-build')}
+                  />
+                  <CompactCard
+                    title={t('pvpChallenges')}
+                    icon={Swords}
+                    color="bg-gradient-to-br from-red-500 to-orange-600 shadow-[rgba(239,68,68,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/pvp')}
+                  />
+                  <CompactCard
+                    title={t('leaderboard')}
+                    icon={BarChart3}
+                    color="bg-gradient-to-br from-sky-500 to-blue-600 shadow-[rgba(14,165,233,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/leaderboard')}
+                  />
+                  <CompactCard
+                    title={t('achievements')}
+                    icon={Award}
+                    color="bg-gradient-to-br from-violet-500 to-purple-600 shadow-[rgba(139,92,246,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/achievements')}
+                  />
+                  <CompactCard
+                    title={t('myProgress')}
+                    icon={TrendingUp}
+                    color="bg-gradient-to-br from-indigo-500 to-blue-600 shadow-[rgba(99,102,241,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/reports')}
+                  />
+                  <CompactCard
+                    title={t('groups')}
+                    icon={Users}
+                    color="bg-gradient-to-br from-cyan-500 to-teal-600 shadow-[rgba(6,182,212,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/groups')}
+                  />
+                </div>
+              </div>
             </>
           )}
 
         </motion.div>
-
-        {/* Stats summary - Only for Students */}
-        {userRole === 'student' && activityStats && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-8 p-6 bg-white rounded-3xl border-2 border-primary-100/50 shadow-xl shadow-primary-100/50"
-          >
-            <h2 className="text-sm font-black text-primary-400 uppercase tracking-widest mb-4 text-center">
-              {t('yourStats')}
-            </h2>
-            <div className="grid grid-cols-4 gap-3">
-              {/* Quizzes */}
-              <div className="flex flex-col items-center">
-                <div className="w-10 h-10 rounded-xl bg-quiz-light flex items-center justify-center mb-1.5 text-quiz-dark">
-                  <Brain size={18} strokeWidth={3} />
-                </div>
-                <p className="text-xl font-black text-gray-800">
-                  {activityStats.quizCount}
-                </p>
-                <p className="text-[10px] text-gray-500 font-bold">{t('statsQuizzes')}</p>
-              </div>
-              {/* Accuracy */}
-              <div className="flex flex-col items-center">
-                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mb-1.5 text-green-600">
-                  <Trophy size={18} strokeWidth={3} />
-                </div>
-                <p className="text-xl font-black text-gray-800">
-                  {activityStats.avgAccuracy}%
-                </p>
-                <p className="text-[10px] text-gray-500 font-bold">{t('statsAccuracy')}</p>
-              </div>
-              {/* Words Reviewed */}
-              <div className="flex flex-col items-center">
-                <div className="w-10 h-10 rounded-xl bg-study-light flex items-center justify-center mb-1.5 text-study-dark">
-                  <BookOpen size={18} strokeWidth={3} />
-                </div>
-                <p className="text-xl font-black text-gray-800">
-                  {activityStats.wordsReviewed}
-                </p>
-                <p className="text-[10px] text-gray-500 font-bold">{t('statsReviewed')}</p>
-              </div>
-              {/* Streak */}
-              <div className="flex flex-col items-center">
-                <div className="w-10 h-10 rounded-xl bg-challenge-light flex items-center justify-center mb-1.5 text-challenge-dark">
-                  <Flame size={18} strokeWidth={3} />
-                </div>
-                <p className="text-xl font-black text-gray-800">
-                  {activityStats.currentStreak}
-                </p>
-                <p className="text-[10px] text-gray-500 font-bold">{t('statsStreak')}</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
       </main>
 
       {/* Wordlist Selector Modal */}

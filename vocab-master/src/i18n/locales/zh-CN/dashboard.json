@@ -28,10 +28,11 @@
   "groupsDesc": "班级和学习小组",
   "myProgress": "我的进步",
   "myProgressDesc": "掌握度和学习趋势",
-  "flashcards": "闪卡复习",
+  "flashcards": "闪卡",
   "flashcardsDesc": "间隔重复复习",
-  "sentenceBuild": "造句练习",
+  "sentenceBuild": "造句",
   "sentenceBuildDesc": "用单词组成句子",
-  "pvpChallenges": "PvP 挑战",
-  "pvpChallengesDesc": "挑战好友进行词汇对战"
+  "pvpChallenges": "PvP",
+  "pvpChallengesDesc": "挑战好友进行词汇对战",
+  "moreActivities": "更多活动"
 }
