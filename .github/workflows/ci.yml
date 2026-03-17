@@ -17,22 +17,22 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: |
-            vocab-master/package-lock.json
-            vocab-master/backend/package-lock.json
+            packages/frontend/package-lock.json
+            packages/backend/package-lock.json
       - name: Install frontend dependencies
-        working-directory: vocab-master
+        working-directory: packages/frontend
         run: npm ci
       - name: Install backend dependencies
-        working-directory: vocab-master/backend
+        working-directory: packages/backend
         run: npm ci
       - name: TypeScript check (frontend)
-        working-directory: vocab-master
+        working-directory: packages/frontend
         run: npx tsc --noEmit -p tsconfig.app.json
       - name: TypeScript check (backend)
-        working-directory: vocab-master/backend
+        working-directory: packages/backend
         run: npx tsc --noEmit
       - name: ESLint
-        working-directory: vocab-master
+        working-directory: packages/frontend
         continue-on-error: true
         run: npx eslint src/
 
@@ -45,15 +45,15 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: vocab-master/backend/package-lock.json
+          cache-dependency-path: packages/backend/package-lock.json
       - name: Install dependencies
-        working-directory: vocab-master/backend
+        working-directory: packages/backend
         run: npm ci
       - name: Run tests
-        working-directory: vocab-master/backend
+        working-directory: packages/backend
         run: npm test
       - name: Run coverage
-        working-directory: vocab-master/backend
+        working-directory: packages/backend
         run: npm run test:coverage
 
   test-frontend:
@@ -65,15 +65,15 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: vocab-master/package-lock.json
+          cache-dependency-path: packages/frontend/package-lock.json
       - name: Install dependencies
-        working-directory: vocab-master
+        working-directory: packages/frontend
         run: npm ci
       - name: Run tests
-        working-directory: vocab-master
+        working-directory: packages/frontend
         run: npm test
       - name: Run coverage
-        working-directory: vocab-master
+        working-directory: packages/frontend
         run: npm run test:coverage
 
   build:
@@ -87,19 +87,19 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: |
-            vocab-master/package-lock.json
-            vocab-master/backend/package-lock.json
+            packages/frontend/package-lock.json
+            packages/backend/package-lock.json
       - name: Install frontend dependencies
-        working-directory: vocab-master
+        working-directory: packages/frontend
         run: npm ci
       - name: Build frontend
-        working-directory: vocab-master
+        working-directory: packages/frontend
         run: npm run build
       - name: Install backend dependencies
-        working-directory: vocab-master/backend
+        working-directory: packages/backend
         run: npm ci
       - name: Build backend
-        working-directory: vocab-master/backend
+        working-directory: packages/backend
         run: npm run build
 
   docker:
@@ -109,5 +109,4 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Build Docker images
-        working-directory: vocab-master
         run: docker compose build

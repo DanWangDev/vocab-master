@@ -33,8 +33,8 @@ jobs:
     - name: Build and push Backend
       uses: docker/build-push-action@v6
       with:
-        context: ./vocab-master/backend
-        file: ./vocab-master/backend/Dockerfile
+        context: ./packages/backend
+        file: ./packages/backend/Dockerfile
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/vocab-master-backend:latest
         cache-from: type=gha
@@ -43,8 +43,8 @@ jobs:
     - name: Build and push Frontend
       uses: docker/build-push-action@v6
       with:
-        context: ./vocab-master
-        file: ./vocab-master/frontend.Dockerfile
+        context: ./packages/frontend
+        file: ./packages/frontend/frontend.Dockerfile
         push: ${{ github.event_name != 'pull_request' }}
         build-args: |
           VITE_API_URL=/api
