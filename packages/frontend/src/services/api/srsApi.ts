@@ -26,10 +26,21 @@ export const srsApi = {
     return baseApi.fetchWithAuth(`/srs/review-queue?limit=${limit}`);
   },
 
-  async submitReview(wordMasteryId: number, quality: number): Promise<SrsReviewResult> {
+  async submitReview(
+    wordMasteryId: number,
+    quality: number,
+    options?: { word?: string; wordlistId?: number | null },
+  ): Promise<SrsReviewResult> {
+    const body: Record<string, unknown> = { wordMasteryId, quality };
+    if (wordMasteryId < 0 && options?.word) {
+      body.word = options.word;
+      if (options.wordlistId != null) {
+        body.wordlistId = options.wordlistId;
+      }
+    }
     return baseApi.fetchWithAuth('/srs/review', {
       method: 'POST',
-      body: JSON.stringify({ wordMasteryId, quality }),
+      body: JSON.stringify(body),
     });
   },
 

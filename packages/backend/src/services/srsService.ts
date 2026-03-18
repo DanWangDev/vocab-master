@@ -1,4 +1,7 @@
-import { wordMasteryRepository } from '../repositories/index.js';
+import {
+  wordMasteryRepository,
+  wordlistRepository,
+} from '../repositories/index.js';
 import type { WordMasteryRow } from '../types/index.js';
 
 function computeSrsMasteryLevel(intervalDays: number): number {
@@ -17,7 +20,48 @@ export interface SrsReviewResult {
 
 export const srsService = {
   getReviewQueue(userId: number, limit = 20): WordMasteryRow[] {
-    return wordMasteryRepository.getReviewQueue(userId, limit);
+    const queue = wordMasteryRepository.getReviewQueue(userId, limit);
+    if (queue.length > 0) {
+      return queue;
+    }
+
+    return this.getNewCardsFromActiveWordlist(userId, limit);
+  },
+
+  getNewCardsFromActiveWordlist(
+    userId: number,
+    limit: number,
+  ): WordMasteryRow[] {
+    const activeWordlist = wordlistRepository.getActiveWordlist(userId);
+    if (!activeWordlist) {
+      return [];
+    }
+
+    const allWords = wordlistRepository.getWords(activeWordlist.id);
+    const existingMastery = wordMasteryRepository.getByUserId(userId);
+    const masteredWords = new Set(existingMastery.map((m) => m.word));
+
+    const now = new Date().toISOString();
+
+    return allWords
+      .filter((w) => !masteredWords.has(w.target_word))
+      .slice(0, limit)
+      .map((w, index) => ({
+        id: -(index + 1),
+        user_id: userId,
+        word: w.target_word,
+        wordlist_id: activeWordlist.id,
+        correct_count: 0,
+        incorrect_count: 0,
+        last_correct_at: null,
+        last_incorrect_at: null,
+        mastery_level: 0,
+        next_review_at: null,
+        srs_interval_days: 0,
+        srs_ease_factor: 2.5,
+        created_at: now,
+        updated_at: now,
+      }));
   },
 
   getReviewCount(userId: number): number {
@@ -28,9 +72,14 @@ export const srsService = {
    * Process a review using SM-2 algorithm variant.
    * quality: 0-5 (0-2 = incorrect, 3-5 = correct)
    */
-  processReview(userId: number, wordMasteryId: number, quality: number): SrsReviewResult {
-    const existing = wordMasteryRepository.getByUserId(userId)
-      .find(r => r.id === wordMasteryId);
+  processReview(
+    userId: number,
+    wordMasteryId: number,
+    quality: number,
+  ): SrsReviewResult {
+    const existing = wordMasteryRepository
+      .getByUserId(userId)
+      .find((r) => r.id === wordMasteryId);
 
     if (!existing) {
       throw new Error('Word mastery record not found');
@@ -53,7 +102,10 @@ export const srsService = {
         newInterval = Math.round(oldInterval * oldEase * 10) / 10;
       }
       // Adjust ease factor
-      newEase = Math.max(1.3, oldEase + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+      newEase = Math.max(
+        1.3,
+        oldEase + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02),
+      );
     } else {
       // Reset interval on failure
       newInterval = 1;
@@ -64,7 +116,9 @@ export const srsService = {
 
     // Compute next review date
     const now = new Date();
-    const nextReview = new Date(now.getTime() + newInterval * 24 * 60 * 60 * 1000);
+    const nextReview = new Date(
+      now.getTime() + newInterval * 24 * 60 * 60 * 1000,
+    );
     const nextReviewAt = nextReview.toISOString();
 
     // Update SRS schedule
@@ -76,7 +130,12 @@ export const srsService = {
     });
 
     // Also update correct/incorrect counts
-    wordMasteryRepository.upsertFromAnswer(userId, existing.word, isCorrect, existing.wordlist_id ?? undefined);
+    wordMasteryRepository.upsertFromAnswer(
+      userId,
+      existing.word,
+      isCorrect,
+      existing.wordlist_id ?? undefined,
+    );
 
     return {
       nextReviewAt,
@@ -89,7 +148,11 @@ export const srsService = {
   /**
    * Initialize SRS tracking for a word (used when flashcard encounters untracked word)
    */
-  initializeWord(userId: number, word: string, wordlistId?: number): WordMasteryRow {
+  initializeWord(
+    userId: number,
+    word: string,
+    wordlistId?: number,
+  ): WordMasteryRow {
     const existing = wordMasteryRepository.findByUserAndWord(userId, word);
     if (existing) return existing;
 

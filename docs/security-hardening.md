@@ -254,7 +254,7 @@ These controls were in place before the audit and required no changes:
 
 ## M10. Database Backup
 
-**Script:** `scripts/backup.sh`
+**Script:** `packages/backend/scripts/backup.sh`
 
 Features:
 - Uses SQLite online backup API (safe during concurrent reads)
@@ -266,7 +266,7 @@ Features:
 **Setup (cron):**
 ```bash
 # Daily backup at 2:00 AM
-0 2 * * * cd /path/to/vocab-master && ./scripts/backup.sh /path/to/backups >> /var/log/vocab-backup.log 2>&1
+0 2 * * * cd /path/to/vocab-master && ./packages/backend/scripts/backup.sh /path/to/backups >> /var/log/vocab-backup.log 2>&1
 ```
 
 **Docker volume backup:**

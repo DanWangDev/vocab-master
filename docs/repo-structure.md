@@ -59,7 +59,6 @@ WordCardShffle/
 ├── docs/                    # Architecture, security, deployment docs
 ├── deploy/                  # NAS deployment scripts and prod compose
 ├── archive/                 # Legacy word extraction scripts and design assets
-├── scripts/                 # Operational scripts (backup, etc.)
 ├── .github/                 # GitHub Actions workflows
 │
 ├── docker-compose.yml       # Multi-container orchestration

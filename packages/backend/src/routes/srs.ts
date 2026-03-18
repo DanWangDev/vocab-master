@@ -15,38 +15,79 @@ router.use(authMiddleware);
 router.get('/review-queue', (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 20, 1), 50);
+    const limit = Math.min(
+      Math.max(parseInt(req.query.limit as string) || 20, 1),
+      50,
+    );
 
     const queue = srsService.getReviewQueue(userId, limit);
 
     // Enrich with word details from wordlist_words
-    const items = queue.map(item => {
+    const items = queue.map((item) => {
       let definitions: string[] = [];
       let synonyms: string[] = [];
       let exampleSentences: string[] = [];
 
       if (item.wordlist_id) {
-        const wordRow = db.prepare(
-          'SELECT definitions, synonyms, example_sentences FROM wordlist_words WHERE wordlist_id = ? AND target_word = ? LIMIT 1'
-        ).get(item.wordlist_id, item.word) as Pick<WordlistWordRow, 'definitions' | 'synonyms' | 'example_sentences'> | undefined;
+        const wordRow = db
+          .prepare(
+            'SELECT definitions, synonyms, example_sentences FROM wordlist_words WHERE wordlist_id = ? AND target_word = ? LIMIT 1',
+          )
+          .get(item.wordlist_id, item.word) as
+          | Pick<
+              WordlistWordRow,
+              'definitions' | 'synonyms' | 'example_sentences'
+            >
+          | undefined;
 
         if (wordRow) {
-          try { definitions = JSON.parse(wordRow.definitions); } catch { /* empty */ }
-          try { synonyms = JSON.parse(wordRow.synonyms); } catch { /* empty */ }
-          try { exampleSentences = JSON.parse(wordRow.example_sentences); } catch { /* empty */ }
+          try {
+            definitions = JSON.parse(wordRow.definitions);
+          } catch {
+            /* empty */
+          }
+          try {
+            synonyms = JSON.parse(wordRow.synonyms);
+          } catch {
+            /* empty */
+          }
+          try {
+            exampleSentences = JSON.parse(wordRow.example_sentences);
+          } catch {
+            /* empty */
+          }
         }
       }
 
       // Fallback: search across all wordlists if no wordlist_id or not found
       if (definitions.length === 0) {
-        const fallback = db.prepare(
-          'SELECT definitions, synonyms, example_sentences FROM wordlist_words WHERE target_word = ? LIMIT 1'
-        ).get(item.word) as Pick<WordlistWordRow, 'definitions' | 'synonyms' | 'example_sentences'> | undefined;
+        const fallback = db
+          .prepare(
+            'SELECT definitions, synonyms, example_sentences FROM wordlist_words WHERE target_word = ? LIMIT 1',
+          )
+          .get(item.word) as
+          | Pick<
+              WordlistWordRow,
+              'definitions' | 'synonyms' | 'example_sentences'
+            >
+          | undefined;
 
         if (fallback) {
-          try { definitions = JSON.parse(fallback.definitions); } catch { /* empty */ }
-          try { synonyms = JSON.parse(fallback.synonyms); } catch { /* empty */ }
-          try { exampleSentences = JSON.parse(fallback.example_sentences); } catch { /* empty */ }
+          try {
+            definitions = JSON.parse(fallback.definitions);
+          } catch {
+            /* empty */
+          }
+          try {
+            synonyms = JSON.parse(fallback.synonyms);
+          } catch {
+            /* empty */
+          }
+          try {
+            exampleSentences = JSON.parse(fallback.example_sentences);
+          } catch {
+            /* empty */
+          }
         }
       }
 
@@ -68,31 +109,54 @@ router.get('/review-queue', (req: AuthRequest, res: Response) => {
   } catch (error) {
     res.status(500).json({
       error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Failed to get review queue',
+      message:
+        error instanceof Error
+          ? error.message
+          : 'Failed to get review queue',
     });
   }
 });
 
 const reviewSchema = z.object({
-  wordMasteryId: z.number().int().positive(),
+  wordMasteryId: z.number().int(),
   quality: z.number().int().min(0).max(5),
+  word: z.string().optional(),
+  wordlistId: z.number().int().positive().optional(),
 });
 
 // POST /api/srs/review
-router.post('/review', validate(reviewSchema), (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.user!.userId;
-    const { wordMasteryId, quality } = req.body;
+router.post(
+  '/review',
+  validate(reviewSchema),
+  (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const { wordMasteryId, quality, word, wordlistId } = req.body;
 
-    const result = srsService.processReview(userId, wordMasteryId, quality);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Failed to process review',
-    });
-  }
-});
+      // New card (negative ID from fallback): initialize mastery record first
+      let resolvedId = wordMasteryId;
+      if (wordMasteryId < 0 && word) {
+        const initialized = srsService.initializeWord(
+          userId,
+          word,
+          wordlistId ?? undefined,
+        );
+        resolvedId = initialized.id;
+      }
+
+      const result = srsService.processReview(userId, resolvedId, quality);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to process review',
+      });
+    }
+  },
+);
 
 // GET /api/srs/count
 router.get('/count', (req: AuthRequest, res: Response) => {
@@ -103,7 +167,10 @@ router.get('/count', (req: AuthRequest, res: Response) => {
   } catch (error) {
     res.status(500).json({
       error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Failed to get review count',
+      message:
+        error instanceof Error
+          ? error.message
+          : 'Failed to get review count',
     });
   }
 });

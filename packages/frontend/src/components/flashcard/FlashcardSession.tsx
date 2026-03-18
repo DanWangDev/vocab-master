@@ -52,9 +52,14 @@ export function FlashcardSession() {
     }
 
     // Submit review (fire-and-forget)
-    srsApi.submitReview(item.id, quality).catch(() => {
-      // Silently fail — the review is still tracked locally
-    });
+    srsApi
+      .submitReview(item.id, quality, {
+        word: item.word,
+        wordlistId: item.wordlistId,
+      })
+      .catch(() => {
+        // Silently fail — the review is still tracked locally
+      });
 
     setCurrentIndex(prev => prev + 1);
   }, [items, currentIndex]);
