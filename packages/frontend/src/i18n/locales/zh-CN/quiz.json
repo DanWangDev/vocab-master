@@ -17,5 +17,6 @@
   "tryAgain": "再试一次",
   "backToHome": "返回首页",
   "synonym": "同义词",
-  "definition": "释义"
+  "definition": "释义",
+  "saveError": "哎呀！测验结果没能保存成功。别担心，你可以再试一次！"
 }

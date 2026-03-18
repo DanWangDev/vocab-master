@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, LayoutDashboard, UserPlus, Plus, X, Clock, Loader2, Pencil } from 'lucide-react';
+import { LogOut, LayoutDashboard, UserPlus, Plus, X, Clock, Loader2, Pencil, XCircle } from 'lucide-react';
 import { Button } from '../common';
 import { UserList } from './UserList';
 import { UserDetailModal } from './UserDetailModal';
@@ -28,6 +28,7 @@ export function ParentDashboard() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [cancellingId, setCancellingId] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
+    const [loadError, setLoadError] = useState(false);
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [thresholds, setThresholds] = useState<ParentThresholds>({ days_per_week: 5, minutes_per_day: 20 });
 
@@ -41,11 +42,13 @@ export function ParentDashboard() {
 
     const loadUsers = async () => {
         setLoading(true);
+        setLoadError(false);
         try {
             const data = await ApiService.getAdminUsers();
             setUsers(data);
         } catch (err) {
             console.error('Failed to load users', err);
+            setLoadError(true);
         } finally {
             setLoading(false);
         }
@@ -192,6 +195,16 @@ export function ParentDashboard() {
                         <div className="flex justify-center py-12">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
                         </div>
+                    ) : loadError ? (
+                        <motion.button
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            onClick={loadUsers}
+                            className="w-full p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center gap-2 text-sm text-red-700 cursor-pointer hover:bg-red-100 transition-colors"
+                        >
+                            <XCircle className="w-5 h-5 flex-shrink-0" />
+                            <span>{t('loadError')}</span>
+                        </motion.button>
                     ) : (
                         <UserList
                             users={users}

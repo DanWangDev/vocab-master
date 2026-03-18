@@ -32,5 +32,6 @@
   "synonym": "Synonym",
   "definition": "Definition",
   "typeTheWord": "Type the word...",
-  "correctAnswer": "Correct answer:"
+  "correctAnswer": "Correct answer:",
+  "saveError": "Oops! Your challenge results couldn't be saved. Don't worry, try again tomorrow!"
 }

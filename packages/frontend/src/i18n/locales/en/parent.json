@@ -69,5 +69,6 @@
   "minutesPerDayValue": "{{count}} min/day",
   "save": "Save",
   "onTrack": "On Track",
-  "belowTarget": "Below Target"
+  "belowTarget": "Below Target",
+  "loadError": "Failed to load student data. Please try again."
 }

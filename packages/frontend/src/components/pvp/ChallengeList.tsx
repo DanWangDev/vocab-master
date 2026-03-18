@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Clock, Trophy, Plus, Check, X, Play, Eye, Loader2 } from 'lucide-react';
+import { Swords, Clock, Trophy, Plus, Check, X, Play, Eye, Loader2, XCircle } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
 import { UserMenu } from '../common/UserMenu';
 import { NotificationBell } from '../notifications/NotificationBell';
@@ -24,10 +24,12 @@ export function ChallengeList() {
   const [active, setActive] = useState<PvpChallenge[]>([]);
   const [history, setHistory] = useState<PvpChallenge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const [p, a, h] = await Promise.all([
         pvpApi.getPending(),
@@ -38,11 +40,11 @@ export function ChallengeList() {
       setActive(a.challenges);
       setHistory(h.challenges);
     } catch {
-      // silently fail
+      setError(t('loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadData();
@@ -53,7 +55,7 @@ export function ChallengeList() {
       await pvpApi.acceptChallenge(id);
       loadData();
     } catch {
-      // error handled
+      setError(t('acceptError'));
     }
   };
 
@@ -62,7 +64,7 @@ export function ChallengeList() {
       await pvpApi.declineChallenge(id);
       loadData();
     } catch {
-      // error handled
+      setError(t('declineError'));
     }
   };
 
@@ -216,6 +218,19 @@ export function ChallengeList() {
           <Plus size={20} />
           {t('createChallenge')}
         </motion.button>
+
+        {/* Error banner */}
+        {error && (
+          <motion.button
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={loadData}
+            className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-sm text-red-700 cursor-pointer hover:bg-red-100 transition-colors"
+          >
+            <XCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{error}</span>
+          </motion.button>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-2 mb-4">

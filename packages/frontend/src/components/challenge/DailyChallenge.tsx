@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, Flame, Trophy } from 'lucide-react';
+import { AlertTriangle, Flame, Trophy, XCircle } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
 import { Timer, ProgressBar, Button } from '../common';
 import { UserMenu } from '../common/UserMenu';
@@ -45,6 +45,7 @@ export function DailyChallenge() {
 
   const answerTimeRef = useRef(Date.now());
   const [milestoneStreak, setMilestoneStreak] = useState<number | null>(null);
+  const [saveError, setSaveError] = useState(false);
 
   // Timer
   const timer = useTimer({
@@ -201,7 +202,10 @@ export function DailyChallenge() {
           if (result.newAchievements && result.newAchievements.length > 0) {
             showAchievements(result.newAchievements);
           }
-        }).catch(err => console.error('Failed to save challenge results:', err));
+        }).catch(err => {
+          console.error('Failed to save challenge results:', err);
+          setSaveError(true);
+        });
 
         return { ...prev, status: 'complete', todayCompleted: true };
       }
@@ -316,6 +320,16 @@ export function DailyChallenge() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-challenge-light/30 to-gray-50 py-8">
         <main className="max-w-lg mx-auto px-4">
+          {saveError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-sm text-red-700"
+            >
+              <XCircle className="w-5 h-5 flex-shrink-0" />
+              <span>{t('challenge:saveError')}</span>
+            </motion.div>
+          )}
           <ChallengeResults state={state} onHome={handleHome} />
         </main>
       </div>

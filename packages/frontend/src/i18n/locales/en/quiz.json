@@ -17,5 +17,6 @@
   "tryAgain": "Try Again",
   "backToHome": "Back to Home",
   "synonym": "Synonym",
-  "definition": "Definition"
+  "definition": "Definition",
+  "saveError": "Oops! Your quiz results couldn't be saved. Don't worry, you can try the quiz again!"
 }

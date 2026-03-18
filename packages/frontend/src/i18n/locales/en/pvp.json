@@ -45,5 +45,8 @@
   "selectOpponent": "Select an opponent",
   "noOpponentsFound": "No opponents found",
   "challengeFrom": "Challenge from {{name}}",
-  "wordlist": "Wordlist: {{name}}"
+  "wordlist": "Wordlist: {{name}}",
+  "loadError": "Couldn't load challenges. Tap to try again!",
+  "acceptError": "Couldn't accept the challenge. Please try again!",
+  "declineError": "Couldn't decline the challenge. Please try again!"
 }

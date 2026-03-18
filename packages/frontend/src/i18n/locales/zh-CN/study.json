@@ -19,5 +19,6 @@
   "clickToFlip": "点击卡片翻转",
   "clickToFlipBack": "点击卡片翻回",
   "showWord": "显示单词",
-  "showDefinition": "显示释义"
+  "showDefinition": "显示释义",
+  "saveError": "这次学习进度没能保存成功。继续学习吧，下次会保存的！"
 }

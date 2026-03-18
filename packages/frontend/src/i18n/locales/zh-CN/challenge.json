@@ -32,5 +32,6 @@
   "synonym": "同义词",
   "definition": "释义",
   "typeTheWord": "输入单词...",
-  "correctAnswer": "正确答案："
+  "correctAnswer": "正确答案：",
+  "saveError": "哎呀！挑战结果没能保存成功。别担心，明天再试一次！"
 }

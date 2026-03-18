@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, XCircle } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
 import { Timer, ProgressBar, Button } from '../common';
 import { QuizSetup } from './QuizSetup';
@@ -29,6 +29,7 @@ export function QuizMode() {
     timePerQuestion: 30,
     autoAdvance: false,
   });
+  const [saveError, setSaveError] = useState(false);
 
   const {
     state,
@@ -105,6 +106,7 @@ export function QuizMode() {
           }
         } catch (error) {
           console.error('Failed to save quiz results:', error);
+          setSaveError(true);
         }
       };
 
@@ -284,11 +286,23 @@ export function QuizMode() {
 
         {/* Results screen */}
         {state.status === 'complete' && (
-          <QuizResults
-            state={state}
-            onRestart={handleRestart}
-            onHome={handleHome}
-          />
+          <>
+            {saveError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-sm text-red-700"
+              >
+                <XCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{t('quiz:saveError')}</span>
+              </motion.div>
+            )}
+            <QuizResults
+              state={state}
+              onRestart={handleRestart}
+              onHome={handleHome}
+            />
+          </>
         )}
       </main>
     </div>

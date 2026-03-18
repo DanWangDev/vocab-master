@@ -69,5 +69,6 @@
   "minutesPerDayValue": "{{count}} 分钟/天",
   "save": "保存",
   "onTrack": "达标",
-  "belowTarget": "未达标"
+  "belowTarget": "未达标",
+  "loadError": "加载学生数据失败，请重试。"
 }

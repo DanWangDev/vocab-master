@@ -45,5 +45,8 @@
   "selectOpponent": "选择对手",
   "noOpponentsFound": "未找到对手",
   "challengeFrom": "来自 {{name}} 的挑战",
-  "wordlist": "词表：{{name}}"
+  "wordlist": "词表：{{name}}",
+  "loadError": "无法加载挑战列表。点击重试！",
+  "acceptError": "无法接受挑战，请再试一次！",
+  "declineError": "无法拒绝挑战，请再试一次！"
 }

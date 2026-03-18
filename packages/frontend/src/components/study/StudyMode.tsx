@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, XCircle } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
 import { ProgressBar } from '../common';
 import { UserMenu } from '../common/UserMenu';
@@ -15,6 +15,7 @@ import { useAudio } from '../../hooks/useAudio';
 export function StudyMode() {
   const { t } = useTranslation('study');
   const { vocabulary, dispatch, state, loadUserData } = useApp();
+  const [saveError, setSaveError] = useState(false);
   const { playFlip, playClick } = useAudio();
   const navigate = useNavigate();
   const {
@@ -99,6 +100,8 @@ export function StudyMode() {
         await loadUserData();
       } catch (err) {
         console.error('Failed to save study session:', err);
+        setSaveError(true);
+        return;
       }
     }
 
@@ -134,6 +137,17 @@ export function StudyMode() {
       />
 
       <main className="max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto px-4 py-6 lg:py-8 xl:py-10">
+        {saveError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-sm text-red-700"
+          >
+            <XCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{t('saveError')}</span>
+          </motion.div>
+        )}
+
         {/* Progress bar */}
         <div className="mb-6">
           <ProgressBar
