@@ -151,6 +151,7 @@ export function QuizMode() {
   // Handle quiz start
   const handleStart = (newConfig: QuizConfig) => {
     setConfig(newConfig);
+    setSaveError(false);
     playClick();
     // Pass config directly to avoid stale closure issue
     startQuiz(newConfig);
@@ -158,6 +159,7 @@ export function QuizMode() {
 
   // Handle restart
   const handleRestart = () => {
+    setSaveError(false);
     playClick();
     resetQuiz();
   };
