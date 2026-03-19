@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { OptionButton } from './OptionButton';
+import { PronunciationButton } from '../common/PronunciationButton';
 import type { QuizQuestion } from '../../types';
 
 interface QuestionCardProps {
@@ -66,9 +67,14 @@ export function QuestionCard({
         <p className="text-xs font-bold text-primary-500 uppercase tracking-wider mb-2">
           {question.promptType === 'synonym' ? t('synonym') : t('definition')}
         </p>
-        <p className="text-lg sm:text-xl text-primary-900 font-semibold leading-relaxed">
-          {question.prompt}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-lg sm:text-xl text-primary-900 font-semibold leading-relaxed">
+            {question.prompt}
+          </p>
+          {showResult && (
+            <PronunciationButton word={question.word.targetWord} size="sm" />
+          )}
+        </div>
       </div>
 
       {/* Options */}

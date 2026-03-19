@@ -1,4 +1,5 @@
 import { Volume2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useSpeechSynthesis } from '../../hooks/useSpeechSynthesis';
 
 interface PronunciationButtonProps {
@@ -8,6 +9,7 @@ interface PronunciationButtonProps {
 }
 
 export function PronunciationButton({ word, lang = 'en-US', size = 'md' }: PronunciationButtonProps) {
+  const { t } = useTranslation('common');
   const { speak, speaking, supported } = useSpeechSynthesis();
 
   if (!supported) return null;
@@ -27,7 +29,7 @@ export function PronunciationButton({ word, lang = 'en-US', size = 'md' }: Pronu
           ? 'bg-blue-100 text-blue-600 animate-pulse'
           : 'bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-500'}
       `}
-      aria-label={`Pronounce ${word}`}
+      aria-label={t('pronounceWord', { word })}
       type="button"
     >
       <Volume2 className={iconSize} />

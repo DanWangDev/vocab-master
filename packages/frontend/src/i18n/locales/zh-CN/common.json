@@ -12,5 +12,6 @@
   "appName": "词汇大师",
   "wordsCount": "{{count}} 个单词",
   "muteSounds": "静音",
-  "unmuteSounds": "取消静音"
+  "unmuteSounds": "取消静音",
+  "pronounceWord": "朗读 {{word}}"
 }

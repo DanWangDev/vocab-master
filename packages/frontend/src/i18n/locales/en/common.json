@@ -12,5 +12,6 @@
   "appName": "Vocabulary Master",
   "wordsCount": "{{count}} words",
   "muteSounds": "Mute sounds",
-  "unmuteSounds": "Unmute sounds"
+  "unmuteSounds": "Unmute sounds",
+  "pronounceWord": "Pronounce {{word}}"
 }
