@@ -12,6 +12,13 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 - **Daily Challenges** — one scored challenge per day with streaks and leaderboards; achievement unlock toasts on completion
 - **Custom Wordlists** — create, import (CSV), and manage personal word collections; set an active wordlist per user
 - **Weak Word Tracking** — automatically identifies words the student gets wrong most often
+- **Achievements** — 15 achievements across 5 categories, unlock conditions, toast notifications on quiz/challenge completion
+- **Leaderboards** — weekly/monthly/alltime periods, scoring formula (`quizzes * avg_score * 0.5 + words * 2 + streak * 10`)
+- **Groups/Classes** — creation, 6-char join codes, member roles (owner/admin/member), group wordlists
+- **Analytics & Reports** — word mastery levels (new/learning/familiar/mastered), learning trends, CSV export
+- **SRS Flashcards** — SM-2 spaced repetition, review queue, pronunciation button, swipe gestures
+- **Sentence Building** — tap-to-place token exercises generated from example sentences
+- **PvP Challenges** — head-to-head quizzes, matchmaking, turn-based play, results comparison
 
 ### Accounts & Roles
 - **Student accounts** — simple signup (no email required)
@@ -45,7 +52,7 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 - **Startup checks** — app refuses to start without `JWT_SECRET` in any environment or without `CORS_ORIGIN` in production
 - **Audit logging** — all admin operations (role changes, user creation/deletion, password resets) logged to `audit_log` table with actor, target, and IP
 - **Structured logging** — JSON-formatted log output for all backend services (compatible with log aggregation tools)
-- **Database backups** — automated backup script with configurable retention (`scripts/backup.sh`)
+- **Database backups** — automated backup script with configurable retention (`packages/backend/scripts/backup.sh`)
 
 See [docs/security-hardening.md](docs/security-hardening.md) for the full security audit report.
 
@@ -81,6 +88,7 @@ WordCardShffle/                  # Repository root
 │   │   ├── src/
 │   │   │   ├── components/      # UI components by domain
 │   │   │   ├── contexts/        # AuthContext, NotificationContext, AchievementContext
+│   │   │   ├── hooks/           # Custom React hooks
 │   │   │   ├── i18n/            # i18next config and locale files (en, zh-CN)
 │   │   │   └── services/        # ApiService, StorageService
 │   │   └── package.json
@@ -190,6 +198,68 @@ See [docs/repo-structure.md](./repo-structure.md) for full details.
 |--------|------|------|-------------|
 | POST | `/api/push-tokens` | Yes | Register Expo push token |
 | DELETE | `/api/push-tokens` | Yes | Unregister push token |
+
+### Achievements (`/api/achievements`)
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/achievements` | Yes | Get all achievements with user's earned status |
+| GET | `/api/achievements/mine` | Yes | Get only earned achievements |
+| POST | `/api/achievements/check` | Yes | Manually trigger achievement check |
+
+### Leaderboards (`/api/leaderboards`)
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/leaderboards?period=` | Yes | Get rankings for a period (weekly/monthly/alltime) |
+| GET | `/api/leaderboards/me?period=` | Yes | Get current user's ranking |
+
+### Groups (`/api/groups`)
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/groups` | Yes | List groups the user belongs to or created |
+| POST | `/api/groups` | Parent/Admin | Create a new group |
+| GET | `/api/groups/:id` | Yes | Get group detail (must be member or admin) |
+| PATCH | `/api/groups/:id` | Owner/Admin | Update group name/description |
+| DELETE | `/api/groups/:id` | Owner | Delete a group |
+| POST | `/api/groups/join` | Yes | Join a group by 6-char code |
+| DELETE | `/api/groups/:id/members/:userId` | Yes | Remove member (or leave if self) |
+| PATCH | `/api/groups/:id/members/:userId/role` | Owner | Change a member's role |
+| POST | `/api/groups/:id/wordlists` | Owner/Admin | Assign a wordlist to the group |
+| DELETE | `/api/groups/:id/wordlists/:wordlistId` | Owner/Admin | Unassign a wordlist |
+
+### Reports (`/api/reports`)
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/reports/mastery` | Yes | Get current user's mastery breakdown and weak/strong words |
+| GET | `/api/reports/trend?days=` | Yes | Get learning trend data (7-90 days) |
+| GET | `/api/reports/student/:id/summary` | Parent/Admin | Get full student report |
+| GET | `/api/reports/student/:id/export` | Parent/Admin | Export student mastery as CSV |
+| GET | `/api/reports/my/export` | Yes | Export current user's mastery as CSV |
+
+### SRS (`/api/srs`)
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/srs/review-queue?limit=` | Yes | Get SRS review queue (max 50 items) |
+| POST | `/api/srs/review` | Yes | Submit review with SM-2 quality rating (0-5) |
+| GET | `/api/srs/count` | Yes | Get number of items due for review |
+
+### Exercises (`/api/exercises`)
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/exercises/sentence-build?wordlistId=&limit=` | Yes | Get sentence building exercises |
+
+### PvP (`/api/pvp`)
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/pvp/opponents?q=` | Yes | Search for opponents by username |
+| POST | `/api/pvp/challenge` | Yes | Create a new PvP challenge |
+| GET | `/api/pvp/pending` | Yes | Get pending challenges |
+| GET | `/api/pvp/active` | Yes | Get active challenges |
+| GET | `/api/pvp/history?limit=` | Yes | Get challenge history |
+| GET | `/api/pvp/:id` | Yes | Get challenge details |
+| GET | `/api/pvp/:id/questions` | Yes | Get questions for a challenge |
+| POST | `/api/pvp/:id/accept` | Yes | Accept a challenge |
+| POST | `/api/pvp/:id/decline` | Yes | Decline a challenge |
+| POST | `/api/pvp/:id/submit` | Yes | Submit answers for a challenge |
 
 ## Getting Started
 
