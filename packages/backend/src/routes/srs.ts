@@ -4,6 +4,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { srsService } from '../services/srsService.js';
 import { db } from '../config/database.js';
+import { xpService } from '../services/xpService.js';
 import type { AuthRequest } from '../types/index.js';
 import type { WordlistWordRow } from '../types/index.js';
 
@@ -98,7 +99,16 @@ router.post('/review', validate(reviewSchema), (req: AuthRequest, res: Response)
     }
 
     const result = srsService.processReview(userId, resolvedId, quality);
-    res.json({ success: true, ...result });
+
+    // Award XP for SRS review
+    let xpResult = null;
+    try {
+      const baseXp = 5;
+      const qualityBonus = quality >= 4 ? 3 : 0;
+      xpResult = xpService.awardXp(userId, baseXp + qualityBonus, 'study', resolvedId);
+    } catch { /* non-fatal */ }
+
+    res.json({ success: true, ...result, xp: xpResult ? { earned: xpResult.xpEarned, total: xpResult.totalXp, level: xpResult.level, leveledUp: xpResult.leveledUp } : undefined });
   } catch (error) {
     res.status(500).json({
       error: 'Internal Server Error',

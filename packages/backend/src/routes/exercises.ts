@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.js';
 import { exerciseService } from '../services/exerciseService.js';
 import { logger } from '../services/logger.js';
+import { xpService } from '../services/xpService.js';
+import { rewardService } from '../services/rewardService.js';
+import { calculateStreak } from '../services/dashboardService.js';
 import type { AuthRequest } from '../types/index.js';
 
 const router = Router();
@@ -99,11 +102,27 @@ router.post('/results', (req: AuthRequest, res: Response) => {
 
     const { resultId, newlyEarned } = exerciseService.submitResult(userId, parseResult.data);
 
+    // Award XP
+    let xpResult = null;
+    try {
+      const { correctAnswers, totalQuestions, score } = parseResult.data;
+      const correctXp = correctAnswers * 10;
+      const perfectBonus = score === 100 ? totalQuestions * 5 : 0;
+      xpResult = xpService.awardXp(userId, correctXp + perfectBonus, 'exercise', resultId);
+
+      const streak = calculateStreak(userId);
+      if (streak > 0) {
+        xpService.awardStreakBonus(userId, streak);
+        rewardService.checkAndAwardStreakRewards(userId, streak);
+      }
+    } catch { /* non-fatal */ }
+
     res.status(201).json({
       success: true,
       resultId,
       message: 'Exercise result saved successfully',
       newAchievements: newlyEarned.length > 0 ? newlyEarned : undefined,
+      xp: xpResult ? { earned: xpResult.xpEarned, total: xpResult.totalXp, level: xpResult.level, leveledUp: xpResult.leveledUp } : undefined,
     });
   } catch (error) {
     logger.error('Error saving exercise result', { error: String(error) });

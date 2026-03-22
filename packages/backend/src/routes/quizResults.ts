@@ -5,6 +5,9 @@ import { authMiddleware } from '../middleware/auth';
 import { logger } from '../services/logger.js';
 import { checkAndAwardAchievements } from '../services/achievementService.js';
 import { wordMasteryService } from '../services/wordMasteryService.js';
+import { xpService } from '../services/xpService.js';
+import { rewardService } from '../services/rewardService.js';
+import { calculateStreak } from '../services/dashboardService.js';
 import type { AuthRequest } from '../types';
 
 const router = Router();
@@ -77,11 +80,31 @@ router.post('/', authMiddleware, (req: AuthRequest, res: Response) => {
             quizTimeSeconds: totalTimeSpent,
         });
 
+        // Award XP
+        let xpResult = null;
+        try {
+          const correctXp = correctAnswers * 10;
+          const incorrectXp = (totalQuestions - correctAnswers) * 2;
+          const perfectBonus = score === 100 ? totalQuestions * 5 : 0;
+          const totalXpAmount = correctXp + incorrectXp + perfectBonus;
+          xpResult = xpService.awardXp(userId, totalXpAmount, quizType === 'timed' ? 'quiz' : quizType, resultId);
+
+          // Streak bonus
+          const streak = calculateStreak(userId);
+          if (streak > 0) {
+            xpService.awardStreakBonus(userId, streak);
+            rewardService.checkAndAwardStreakRewards(userId, streak);
+          }
+        } catch (xpError) {
+          logger.error('XP award failed (non-fatal)', { error: String(xpError) });
+        }
+
         res.status(201).json({
             success: true,
             resultId,
             message: 'Quiz result saved successfully',
             newAchievements: newlyEarned.length > 0 ? newlyEarned : undefined,
+            xp: xpResult ? { earned: xpResult.xpEarned, total: xpResult.totalXp, level: xpResult.level, leveledUp: xpResult.leveledUp, newLevel: xpResult.newLevel, newTitle: xpResult.newTitle } : undefined,
         });
     } catch (error) {
         logger.error('Error saving quiz result', { error: String(error) });

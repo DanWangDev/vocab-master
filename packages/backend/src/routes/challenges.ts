@@ -3,6 +3,8 @@ import { authMiddleware } from '../middleware/auth.js';
 import { validate, completeChallengeSchema } from '../middleware/validate.js';
 import { challengeRepository } from '../repositories/challengeRepository.js';
 import { checkAndAwardAchievements } from '../services/achievementService.js';
+import { xpService } from '../services/xpService.js';
+import { rewardService } from '../services/rewardService.js';
 import type { AuthRequest, DailyChallenge, CompleteChallengeRequest } from '../types/index.js';
 
 const router = Router();
@@ -66,6 +68,19 @@ router.post('/complete', validate(completeChallengeSchema), (req: AuthRequest, r
       streakDays: streak,
     });
 
+    // Award XP
+    let xpResult = null;
+    try {
+      const baseXp = 25;
+      const bonus = score > 80 ? 10 : 0;
+      xpResult = xpService.awardXp(userId, baseXp + bonus, 'challenge', challenge.id);
+
+      if (streak > 0) {
+        xpService.awardStreakBonus(userId, streak);
+        rewardService.checkAndAwardStreakRewards(userId, streak);
+      }
+    } catch { /* non-fatal */ }
+
     res.status(201).json({
       challenge: {
         id: challenge.id,
@@ -76,6 +91,7 @@ router.post('/complete', validate(completeChallengeSchema), (req: AuthRequest, r
       } as DailyChallenge,
       streak,
       newAchievements: newlyEarned.length > 0 ? newlyEarned : undefined,
+      xp: xpResult ? { earned: xpResult.xpEarned, total: xpResult.totalXp, level: xpResult.level, leveledUp: xpResult.leveledUp } : undefined,
     });
   } catch (error) {
     res.status(500).json({
