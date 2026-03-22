@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -35,7 +35,7 @@ describe('achievementApi', () => {
 
       const result = await achievementApi.getAll();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/achievements');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/achievements');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -51,7 +51,7 @@ describe('achievementApi', () => {
 
       const result = await achievementApi.getMine();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/achievements/mine');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/achievements/mine');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -67,7 +67,7 @@ describe('achievementApi', () => {
 
       const result = await achievementApi.check();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/achievements/check', { method: 'POST' });
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/achievements/check', { method: 'POST' });
       expect(result).toEqual(mockResponse);
     });
   });

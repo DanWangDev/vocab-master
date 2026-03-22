@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -51,7 +51,7 @@ describe('quizApi', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await quizApi.saveQuizResult(data as any);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/quiz-results', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/quiz-results', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -73,7 +73,7 @@ describe('quizApi', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await quizApi.saveStudySession(data as any);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/study-stats', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/study-stats', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -97,7 +97,7 @@ describe('quizApi', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await quizApi.importData(data as any);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/migrate/import', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/migrate/import', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -115,7 +115,7 @@ describe('quizApi', () => {
 
       const result = await quizApi.exportData();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/migrate/export');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/migrate/export');
       expect(result).toEqual(mockResponse);
     });
   });

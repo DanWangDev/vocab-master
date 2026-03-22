@@ -23,7 +23,7 @@ export interface SrsReviewResult {
 
 export const srsApi = {
   async getReviewQueue(limit = 20): Promise<{ items: SrsReviewItem[] }> {
-    return baseApi.fetchWithAuth(`/srs/review-queue?limit=${limit}`);
+    return baseApi.fetchWithAuth(`/api/srs/review-queue?limit=${limit}`);
   },
 
   async submitReview(
@@ -38,13 +38,13 @@ export const srsApi = {
         body.wordlistId = options.wordlistId;
       }
     }
-    return baseApi.fetchWithAuth('/srs/review', {
+    return baseApi.fetchWithAuth('/api/srs/review', {
       method: 'POST',
       body: JSON.stringify(body),
     });
   },
 
   async getReviewCount(): Promise<{ count: number }> {
-    return baseApi.fetchWithAuth('/srs/count');
+    return baseApi.fetchWithAuth('/api/srs/count');
   },
 };

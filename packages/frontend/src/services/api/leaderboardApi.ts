@@ -24,10 +24,10 @@ export interface UserRankingResponse {
 
 export const leaderboardApi = {
   async getLeaderboard(period: string = 'weekly', limit: number = 50): Promise<LeaderboardResponse> {
-    return baseApi.fetchWithAuth(`/leaderboards?period=${period}&limit=${limit}`);
+    return baseApi.fetchWithAuth(`/api/leaderboards?period=${period}&limit=${limit}`);
   },
 
   async getMyRanking(period: string = 'weekly'): Promise<UserRankingResponse> {
-    return baseApi.fetchWithAuth(`/leaderboards/me?period=${period}`);
+    return baseApi.fetchWithAuth(`/api/leaderboards/me?period=${period}`);
   },
 };

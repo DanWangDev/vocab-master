@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -32,7 +32,7 @@ describe('leaderboardApi', () => {
 
       const result = await leaderboardApi.getLeaderboard();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/leaderboards?period=weekly&limit=50');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/leaderboards?period=weekly&limit=50');
       expect(result).toEqual(mockResponse);
     });
 
@@ -41,7 +41,7 @@ describe('leaderboardApi', () => {
 
       await leaderboardApi.getLeaderboard('monthly', 10);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/leaderboards?period=monthly&limit=10');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/leaderboards?period=monthly&limit=10');
     });
   });
 
@@ -52,7 +52,7 @@ describe('leaderboardApi', () => {
 
       const result = await leaderboardApi.getMyRanking();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/leaderboards/me?period=weekly');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/leaderboards/me?period=weekly');
       expect(result).toEqual(mockResponse);
     });
 
@@ -61,7 +61,7 @@ describe('leaderboardApi', () => {
 
       await leaderboardApi.getMyRanking('alltime');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/leaderboards/me?period=alltime');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/leaderboards/me?period=alltime');
     });
   });
 });

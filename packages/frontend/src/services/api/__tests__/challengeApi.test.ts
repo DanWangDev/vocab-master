@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -28,7 +28,7 @@ describe('challengeApi', () => {
 
       const result = await challengeApi.getTodayChallenge();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/challenges/today');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/challenges/today');
       expect(result).toEqual(mockData);
     });
   });
@@ -40,7 +40,7 @@ describe('challengeApi', () => {
 
       const result = await challengeApi.completeChallenge(85);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/challenges/complete', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/challenges/complete', {
         method: 'POST',
         body: JSON.stringify({ score: 85 }),
       });
@@ -55,7 +55,7 @@ describe('challengeApi', () => {
 
       const result = await challengeApi.getChallengeHistory(10);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/challenges/history?limit=10');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/challenges/history?limit=10');
       expect(result).toEqual(mockData);
     });
 
@@ -65,7 +65,7 @@ describe('challengeApi', () => {
 
       const result = await challengeApi.getChallengeHistory();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/challenges/history');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/challenges/history');
       expect(result).toEqual(mockData);
     });
   });
@@ -77,7 +77,7 @@ describe('challengeApi', () => {
 
       const result = await challengeApi.getStreak();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/challenges/streak');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/challenges/streak');
       expect(result).toEqual(mockData);
     });
   });

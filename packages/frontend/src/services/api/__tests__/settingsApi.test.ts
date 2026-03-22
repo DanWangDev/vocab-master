@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -32,7 +32,7 @@ describe('settingsApi', () => {
 
       const result = await settingsApi.getSettings();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/settings');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/settings');
       expect(result).toEqual(mockSettings);
     });
   });
@@ -45,7 +45,7 @@ describe('settingsApi', () => {
 
       const result = await settingsApi.updateSettings(partial);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/settings', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/settings', {
         method: 'PUT',
         body: JSON.stringify(partial),
       });
@@ -58,7 +58,7 @@ describe('settingsApi', () => {
 
       const result = await settingsApi.updateSettings(partial);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/settings', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/settings', {
         method: 'PUT',
         body: JSON.stringify(partial),
       });

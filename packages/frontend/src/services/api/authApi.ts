@@ -17,7 +17,7 @@ export const authApi = {
     displayName?: string,
     turnstileToken?: string
   ): Promise<AuthResponse> {
-    const response = await fetch(`${baseApi.getBaseUrl()}/auth/register/student`, {
+    const response = await fetch(`${baseApi.getBaseUrl()}/api/auth/register/student`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -44,7 +44,7 @@ export const authApi = {
     displayName?: string,
     turnstileToken?: string
   ): Promise<AuthResponse> {
-    const response = await fetch(`${baseApi.getBaseUrl()}/auth/register/parent`, {
+    const response = await fetch(`${baseApi.getBaseUrl()}/api/auth/register/parent`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -69,7 +69,7 @@ export const authApi = {
     tokenType: 'id_token' | 'access_token' = 'id_token',
     username?: string
   ): Promise<AuthResponse & { isNewUser: boolean }> {
-    const response = await fetch(`${baseApi.getBaseUrl()}/auth/google`, {
+    const response = await fetch(`${baseApi.getBaseUrl()}/api/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -90,7 +90,7 @@ export const authApi = {
   },
 
   async updateProfile(data: { username?: string; displayName?: string }): Promise<{ user: User }> {
-    return baseApi.fetchWithAuth<{ user: User }>('/auth/profile', {
+    return baseApi.fetchWithAuth<{ user: User }>('/api/auth/profile', {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -101,14 +101,14 @@ export const authApi = {
     password: string,
     displayName?: string
   ): Promise<{ success: boolean; user: User }> {
-    return baseApi.fetchWithAuth<{ success: boolean; user: User }>('/auth/create-student', {
+    return baseApi.fetchWithAuth<{ success: boolean; user: User }>('/api/auth/create-student', {
       method: 'POST',
       body: JSON.stringify({ username, password, displayName }),
     });
   },
 
   async forgotPassword(email: string): Promise<{ message: string }> {
-    const response = await fetch(`${baseApi.getBaseUrl()}/auth/forgot-password`, {
+    const response = await fetch(`${baseApi.getBaseUrl()}/api/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -127,7 +127,7 @@ export const authApi = {
   },
 
   async resetPassword(token: string, password: string): Promise<{ message: string }> {
-    const response = await fetch(`${baseApi.getBaseUrl()}/auth/reset-password`, {
+    const response = await fetch(`${baseApi.getBaseUrl()}/api/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -146,7 +146,7 @@ export const authApi = {
   },
 
   async validateResetToken(token: string): Promise<{ valid: boolean }> {
-    const response = await fetch(`${baseApi.getBaseUrl()}/auth/validate-reset-token/${token}`);
+    const response = await fetch(`${baseApi.getBaseUrl()}/api/auth/validate-reset-token/${token}`);
 
     if (!response.ok) {
       return { valid: false };
@@ -156,14 +156,14 @@ export const authApi = {
   },
 
   async resetUserPassword(userId: number, password: string): Promise<{ success: boolean; message: string }> {
-    return baseApi.fetchWithAuth<{ success: boolean; message: string }>(`/admin/users/${userId}/password`, {
+    return baseApi.fetchWithAuth<{ success: boolean; message: string }>(`/api/admin/users/${userId}/password`, {
       method: 'PATCH',
       body: JSON.stringify({ password }),
     });
   },
 
   async login(username: string, password: string, turnstileToken?: string): Promise<AuthResponse> {
-    const response = await fetch(`${baseApi.getBaseUrl()}/auth/login`, {
+    const response = await fetch(`${baseApi.getBaseUrl()}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -185,7 +185,7 @@ export const authApi = {
 
   async logout(): Promise<void> {
     try {
-      await fetch(`${baseApi.getBaseUrl()}/auth/logout`, {
+      await fetch(`${baseApi.getBaseUrl()}/api/auth/logout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -202,7 +202,7 @@ export const authApi = {
     }
 
     try {
-      const data = await baseApi.fetchWithAuth<{ user: User }>('/auth/me');
+      const data = await baseApi.fetchWithAuth<{ user: User }>('/api/auth/me');
       return data.user;
     } catch {
       return null;

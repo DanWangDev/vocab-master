@@ -6,7 +6,7 @@ import type { StudentSearchResult, LinkRequest } from './types';
 export const linkRequestApi = {
   async searchStudents(query: string): Promise<{ results: StudentSearchResult[] }> {
     return baseApi.fetchWithAuth<{ results: StudentSearchResult[] }>(
-      `/link-requests/search?q=${encodeURIComponent(query)}`
+      `/api/link-requests/search?q=${encodeURIComponent(query)}`
     );
   },
 
@@ -14,28 +14,28 @@ export const linkRequestApi = {
     studentId: number,
     message?: string
   ): Promise<{ success: boolean; request: LinkRequest }> {
-    return baseApi.fetchWithAuth<{ success: boolean; request: LinkRequest }>('/link-requests', {
+    return baseApi.fetchWithAuth<{ success: boolean; request: LinkRequest }>('/api/link-requests', {
       method: 'POST',
       body: JSON.stringify({ studentId, message }),
     });
   },
 
   async getLinkRequests(): Promise<{ requests: LinkRequest[] }> {
-    return baseApi.fetchWithAuth<{ requests: LinkRequest[] }>('/link-requests');
+    return baseApi.fetchWithAuth<{ requests: LinkRequest[] }>('/api/link-requests');
   },
 
   async respondToLinkRequest(
     id: number,
     action: 'accept' | 'reject'
   ): Promise<{ success: boolean; message: string }> {
-    return baseApi.fetchWithAuth<{ success: boolean; message: string }>(`/link-requests/${id}`, {
+    return baseApi.fetchWithAuth<{ success: boolean; message: string }>(`/api/link-requests/${id}`, {
       method: 'PATCH',
       body: JSON.stringify({ action }),
     });
   },
 
   async cancelLinkRequest(id: number): Promise<{ success: boolean; message: string }> {
-    return baseApi.fetchWithAuth<{ success: boolean; message: string }>(`/link-requests/${id}`, {
+    return baseApi.fetchWithAuth<{ success: boolean; message: string }>(`/api/link-requests/${id}`, {
       method: 'DELETE',
     });
   },

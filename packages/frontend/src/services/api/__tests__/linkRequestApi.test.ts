@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -28,7 +28,7 @@ describe('linkRequestApi', () => {
 
       const result = await linkRequestApi.searchStudents('student');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/link-requests/search?q=student');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/link-requests/search?q=student');
       expect(result).toEqual(mockResponse);
     });
 
@@ -37,7 +37,7 @@ describe('linkRequestApi', () => {
 
       await linkRequestApi.searchStudents('test user&foo');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/link-requests/search?q=test%20user%26foo');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/link-requests/search?q=test%20user%26foo');
     });
   });
 
@@ -48,7 +48,7 @@ describe('linkRequestApi', () => {
 
       const result = await linkRequestApi.sendLinkRequest(5, 'Please link me');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/link-requests', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/link-requests', {
         method: 'POST',
         body: JSON.stringify({ studentId: 5, message: 'Please link me' }),
       });
@@ -60,7 +60,7 @@ describe('linkRequestApi', () => {
 
       await linkRequestApi.sendLinkRequest(3);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/link-requests', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/link-requests', {
         method: 'POST',
         body: JSON.stringify({ studentId: 3, message: undefined }),
       });
@@ -79,7 +79,7 @@ describe('linkRequestApi', () => {
 
       const result = await linkRequestApi.getLinkRequests();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/link-requests');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/link-requests');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -91,7 +91,7 @@ describe('linkRequestApi', () => {
 
       const result = await linkRequestApi.respondToLinkRequest(10, 'accept');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/link-requests/10', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/link-requests/10', {
         method: 'PATCH',
         body: JSON.stringify({ action: 'accept' }),
       });
@@ -104,7 +104,7 @@ describe('linkRequestApi', () => {
 
       const result = await linkRequestApi.respondToLinkRequest(10, 'reject');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/link-requests/10', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/link-requests/10', {
         method: 'PATCH',
         body: JSON.stringify({ action: 'reject' }),
       });
@@ -119,7 +119,7 @@ describe('linkRequestApi', () => {
 
       const result = await linkRequestApi.cancelLinkRequest(15);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/link-requests/15', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/link-requests/15', {
         method: 'DELETE',
       });
       expect(result).toEqual(mockResponse);

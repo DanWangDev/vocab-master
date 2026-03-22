@@ -43,53 +43,53 @@ export interface PvpOpponent {
 
 export const pvpApi = {
   async searchOpponents(query: string): Promise<{ opponents: PvpOpponent[] }> {
-    return baseApi.fetchWithAuth(`/pvp/opponents?q=${encodeURIComponent(query)}`);
+    return baseApi.fetchWithAuth(`/api/pvp/opponents?q=${encodeURIComponent(query)}`);
   },
 
   async createChallenge(opponentId: number, wordlistId: number, questionCount = 10): Promise<{ challenge: PvpChallenge }> {
-    return baseApi.fetchWithAuth('/pvp/challenge', {
+    return baseApi.fetchWithAuth('/api/pvp/challenge', {
       method: 'POST',
       body: JSON.stringify({ opponentId, wordlistId, questionCount }),
     });
   },
 
   async getPending(): Promise<{ challenges: PvpChallenge[] }> {
-    return baseApi.fetchWithAuth('/pvp/pending');
+    return baseApi.fetchWithAuth('/api/pvp/pending');
   },
 
   async getActive(): Promise<{ challenges: PvpChallenge[] }> {
-    return baseApi.fetchWithAuth('/pvp/active');
+    return baseApi.fetchWithAuth('/api/pvp/active');
   },
 
   async getHistory(limit = 20): Promise<{ challenges: PvpChallenge[] }> {
-    return baseApi.fetchWithAuth(`/pvp/history?limit=${limit}`);
+    return baseApi.fetchWithAuth(`/api/pvp/history?limit=${limit}`);
   },
 
   async getChallenge(id: number): Promise<{ challenge: PvpChallenge }> {
-    return baseApi.fetchWithAuth(`/pvp/${id}`);
+    return baseApi.fetchWithAuth(`/api/pvp/${id}`);
   },
 
   async getQuestions(challengeId: number): Promise<{ questions: PvpQuestion[] }> {
-    return baseApi.fetchWithAuth(`/pvp/${challengeId}/questions`);
+    return baseApi.fetchWithAuth(`/api/pvp/${challengeId}/questions`);
   },
 
   async acceptChallenge(id: number): Promise<{ challenge: PvpChallenge }> {
-    return baseApi.fetchWithAuth(`/pvp/${id}/accept`, { method: 'POST' });
+    return baseApi.fetchWithAuth(`/api/pvp/${id}/accept`, { method: 'POST' });
   },
 
   async declineChallenge(id: number): Promise<{ success: boolean }> {
-    return baseApi.fetchWithAuth(`/pvp/${id}/decline`, { method: 'POST' });
+    return baseApi.fetchWithAuth(`/api/pvp/${id}/decline`, { method: 'POST' });
   },
 
   async submitAnswers(challengeId: number, answers: PvpAnswer[]): Promise<{ score: number; waiting: boolean; challenge: PvpChallenge }> {
-    return baseApi.fetchWithAuth(`/pvp/${challengeId}/submit`, {
+    return baseApi.fetchWithAuth(`/api/pvp/${challengeId}/submit`, {
       method: 'POST',
       body: JSON.stringify({ answers }),
     });
   },
 
   async createRematch(challengeId: number): Promise<{ challenge: PvpChallenge }> {
-    return baseApi.fetchWithAuth(`/pvp/${challengeId}/rematch`, {
+    return baseApi.fetchWithAuth(`/api/pvp/${challengeId}/rematch`, {
       method: 'POST',
     });
   },
@@ -101,6 +101,6 @@ export const pvpApi = {
     challenger: { id: number; username: string; displayName: string | null; score: number | null };
     opponent: { id: number; username: string; displayName: string | null; score: number | null };
   }> {
-    return baseApi.fetchWithAuth(`/pvp/${challengeId}/comparison`);
+    return baseApi.fetchWithAuth(`/api/pvp/${challengeId}/comparison`);
   },
 };

@@ -18,7 +18,7 @@ describe('groupApi', () => {
     vi.mocked(baseApi.fetchWithAuth).mockResolvedValue(mockData);
 
     const result = await groupApi.getGroups();
-    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/groups');
+    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/api/groups');
     expect(result).toEqual(mockData);
   });
 
@@ -27,7 +27,7 @@ describe('groupApi', () => {
     vi.mocked(baseApi.fetchWithAuth).mockResolvedValue(mockData);
 
     const result = await groupApi.getGroup(1);
-    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/groups/1');
+    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/api/groups/1');
     expect(result).toEqual(mockData);
   });
 
@@ -35,7 +35,7 @@ describe('groupApi', () => {
     vi.mocked(baseApi.fetchWithAuth).mockResolvedValue({ id: 1 });
 
     await groupApi.createGroup('My Class', 'Desc', 30);
-    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/groups', {
+    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/api/groups', {
       method: 'POST',
       body: JSON.stringify({ name: 'My Class', description: 'Desc', maxMembers: 30 }),
     });
@@ -45,7 +45,7 @@ describe('groupApi', () => {
     vi.mocked(baseApi.fetchWithAuth).mockResolvedValue({ id: 1 });
 
     await groupApi.joinGroup('ABC123');
-    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/groups/join', {
+    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/api/groups/join', {
       method: 'POST',
       body: JSON.stringify({ joinCode: 'ABC123' }),
     });
@@ -55,14 +55,14 @@ describe('groupApi', () => {
     vi.mocked(baseApi.fetchWithAuth).mockResolvedValue(undefined);
 
     await groupApi.deleteGroup(5);
-    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/groups/5', { method: 'DELETE' });
+    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/api/groups/5', { method: 'DELETE' });
   });
 
   it('assignWordlist sends POST', async () => {
     vi.mocked(baseApi.fetchWithAuth).mockResolvedValue(undefined);
 
     await groupApi.assignWordlist(1, 42);
-    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/groups/1/wordlists', {
+    expect(baseApi.fetchWithAuth).toHaveBeenCalledWith('/api/groups/1/wordlists', {
       method: 'POST',
       body: JSON.stringify({ wordlistId: 42 }),
     });

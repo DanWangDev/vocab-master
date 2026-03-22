@@ -23,14 +23,14 @@ export interface NewlyEarnedAchievement {
 
 export const achievementApi = {
   async getAll(): Promise<{ achievements: Achievement[]; totalEarned: number; totalAvailable: number }> {
-    return baseApi.fetchWithAuth('/achievements');
+    return baseApi.fetchWithAuth('/api/achievements');
   },
 
   async getMine(): Promise<{ achievements: Achievement[]; totalEarned: number; totalAvailable: number }> {
-    return baseApi.fetchWithAuth('/achievements/mine');
+    return baseApi.fetchWithAuth('/api/achievements/mine');
   },
 
   async check(): Promise<{ newlyEarned: NewlyEarnedAchievement[]; totalEarned: number; totalAvailable: number }> {
-    return baseApi.fetchWithAuth('/achievements/check', { method: 'POST' });
+    return baseApi.fetchWithAuth('/api/achievements/check', { method: 'POST' });
   },
 };

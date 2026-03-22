@@ -36,7 +36,7 @@ export const exerciseApi = {
   async getSentenceBuild(wordlistId?: number, limit = 10): Promise<{ exercises: SentenceBuildExercise[]; wordlistId: number }> {
     const params = new URLSearchParams({ limit: String(limit) });
     if (wordlistId) params.set('wordlistId', String(wordlistId));
-    return baseApi.fetchWithAuth(`/exercises/sentence-build?${params.toString()}`);
+    return baseApi.fetchWithAuth(`/api/exercises/sentence-build?${params.toString()}`);
   },
 
   async getSpelling(
@@ -48,7 +48,7 @@ export const exerciseApi = {
     if (wordlistId) {
       params.set('wordlistId', String(wordlistId));
     }
-    return baseApi.fetchWithAuth(`/exercises/spelling?${params.toString()}`);
+    return baseApi.fetchWithAuth(`/api/exercises/spelling?${params.toString()}`);
   },
 
   async submitResult(data: ExerciseResultRequest): Promise<{
@@ -56,7 +56,7 @@ export const exerciseApi = {
     resultId: number;
     newAchievements?: NewlyEarnedAchievement[];
   }> {
-    return baseApi.fetchWithAuth('/exercises/results', {
+    return baseApi.fetchWithAuth('/api/exercises/results', {
       method: 'POST',
       body: JSON.stringify(data),
     });

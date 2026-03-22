@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -31,7 +31,7 @@ describe('adminApi', () => {
 
       const result = await adminApi.getAdminUsers();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users');
       expect(result).toEqual(mockUsers);
     });
   });
@@ -43,7 +43,7 @@ describe('adminApi', () => {
 
       const result = await adminApi.getAdminUserDetails(5);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users/5/details');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users/5/details');
       expect(result).toEqual(mockDetails);
     });
   });
@@ -54,7 +54,7 @@ describe('adminApi', () => {
 
       await adminApi.updateUserRole(3, 'parent');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users/3/role', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users/3/role', {
         method: 'PATCH',
         body: JSON.stringify({ role: 'parent' }),
       });
@@ -67,7 +67,7 @@ describe('adminApi', () => {
 
       await adminApi.updateUserParent(4, 2);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users/4/parent', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users/4/parent', {
         method: 'PATCH',
         body: JSON.stringify({ parentId: 2 }),
       });
@@ -78,7 +78,7 @@ describe('adminApi', () => {
 
       await adminApi.updateUserParent(4, null);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users/4/parent', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users/4/parent', {
         method: 'PATCH',
         body: JSON.stringify({ parentId: null }),
       });
@@ -98,7 +98,7 @@ describe('adminApi', () => {
 
       await adminApi.createUser(data);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -116,7 +116,7 @@ describe('adminApi', () => {
 
       await adminApi.createUser(data);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -129,7 +129,7 @@ describe('adminApi', () => {
 
       await adminApi.updateUserEmail(3, 'new@email.com');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users/3/email', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users/3/email', {
         method: 'PATCH',
         body: JSON.stringify({ email: 'new@email.com' }),
       });
@@ -140,7 +140,7 @@ describe('adminApi', () => {
 
       await adminApi.updateUserEmail(3, null);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users/3/email', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users/3/email', {
         method: 'PATCH',
         body: JSON.stringify({ email: null }),
       });
@@ -154,7 +154,7 @@ describe('adminApi', () => {
 
       const result = await adminApi.deleteUser(7);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users/7', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users/7', {
         method: 'DELETE',
       });
       expect(result).toEqual(mockResponse);
@@ -168,7 +168,7 @@ describe('adminApi', () => {
 
       const result = await adminApi.getThresholds();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/thresholds');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/thresholds');
       expect(result).toEqual(mockThresholds);
     });
   });
@@ -181,7 +181,7 @@ describe('adminApi', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await adminApi.updateThresholds(thresholds as any);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/thresholds', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/thresholds', {
         method: 'PUT',
         body: JSON.stringify(thresholds),
       });

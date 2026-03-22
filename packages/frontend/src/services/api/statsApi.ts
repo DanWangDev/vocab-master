@@ -5,11 +5,11 @@ import type { UserStats } from './types';
 
 export const statsApi = {
   async getStats(): Promise<UserStats> {
-    return baseApi.fetchWithAuth<UserStats>('/stats');
+    return baseApi.fetchWithAuth<UserStats>('/api/stats');
   },
 
   async updateStats(stats: Partial<UserStats>): Promise<UserStats> {
-    return baseApi.fetchWithAuth<UserStats>('/stats', {
+    return baseApi.fetchWithAuth<UserStats>('/api/stats', {
       method: 'PATCH',
       body: JSON.stringify(stats),
     });
@@ -20,7 +20,7 @@ export const statsApi = {
     quizzesTaken?: number;
     challengesCompleted?: number;
   }): Promise<UserStats> {
-    return baseApi.fetchWithAuth<UserStats>('/stats/increment', {
+    return baseApi.fetchWithAuth<UserStats>('/api/stats/increment', {
       method: 'POST',
       body: JSON.stringify(increments),
     });
@@ -35,7 +35,7 @@ export const statsApi = {
       accuracy: number;
     }>;
   }> {
-    return baseApi.fetchWithAuth('/stats/weak-words');
+    return baseApi.fetchWithAuth('/api/stats/weak-words');
   },
 
   async getActivityStats(): Promise<{
@@ -46,6 +46,6 @@ export const statsApi = {
     wordsReviewed: number;
     currentStreak: number;
   }> {
-    return baseApi.fetchWithAuth('/stats/activity');
+    return baseApi.fetchWithAuth('/api/stats/activity');
   },
 };

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -28,7 +28,7 @@ describe('statsApi', () => {
 
       const result = await statsApi.getStats();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/stats');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/stats');
       expect(result).toEqual(mockStats);
     });
   });
@@ -41,7 +41,7 @@ describe('statsApi', () => {
 
       const result = await statsApi.updateStats(partialStats);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/stats', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/stats', {
         method: 'PATCH',
         body: JSON.stringify(partialStats),
       });
@@ -57,7 +57,7 @@ describe('statsApi', () => {
 
       const result = await statsApi.incrementStats(increments);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/stats/increment', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/stats/increment', {
         method: 'POST',
         body: JSON.stringify(increments),
       });
@@ -74,7 +74,7 @@ describe('statsApi', () => {
 
       const result = await statsApi.getWeakWords();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/stats/weak-words');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/stats/weak-words');
       expect(result).toEqual(mockWeakWords);
     });
   });
@@ -93,7 +93,7 @@ describe('statsApi', () => {
 
       const result = await statsApi.getActivityStats();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/stats/activity');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/stats/activity');
       expect(result).toEqual(mockActivity);
     });
   });

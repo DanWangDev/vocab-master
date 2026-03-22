@@ -2,7 +2,7 @@
 
 import type { ApiError, TokenPair } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:9876/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:9876';
 const ACCESS_TOKEN_KEY = 'vocab_master_access_token';
 
 class BaseApi {
@@ -88,7 +88,7 @@ class BaseApi {
     }
 
     this.refreshPromise = (async () => {
-      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

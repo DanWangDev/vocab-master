@@ -6,7 +6,7 @@ vi.stubGlobal('fetch', mockFetch);
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn().mockReturnValue(true),
@@ -187,7 +187,7 @@ describe('authApi', () => {
 
       const result = await authApi.getCurrentUser();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/auth/me');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/auth/me');
       expect(result).toEqual(userData.user);
     });
 
@@ -323,7 +323,7 @@ describe('authApi', () => {
 
       const result = await authApi.updateProfile({ username: 'newname', displayName: 'New Name' });
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/auth/profile', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/auth/profile', {
         method: 'PATCH',
         body: JSON.stringify({ username: 'newname', displayName: 'New Name' }),
       });
@@ -338,7 +338,7 @@ describe('authApi', () => {
 
       const result = await authApi.createStudentForParent('child1', 'childpass', 'Child One');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/auth/create-student', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/auth/create-student', {
         method: 'POST',
         body: JSON.stringify({ username: 'child1', password: 'childpass', displayName: 'Child One' }),
       });
@@ -353,7 +353,7 @@ describe('authApi', () => {
 
       const result = await authApi.resetUserPassword(42, 'newpass123');
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/admin/users/42/password', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/admin/users/42/password', {
         method: 'PATCH',
         body: JSON.stringify({ password: 'newpass123' }),
       });

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -33,7 +33,7 @@ describe('notificationApi', () => {
 
       const result = await notificationApi.getNotifications();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/notifications');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/notifications');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -45,7 +45,7 @@ describe('notificationApi', () => {
 
       const result = await notificationApi.getNotificationCount();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/notifications/count');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/notifications/count');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -57,7 +57,7 @@ describe('notificationApi', () => {
 
       const result = await notificationApi.markNotificationRead(42);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/notifications/42/read', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/notifications/42/read', {
         method: 'PATCH',
       });
       expect(result).toEqual(mockResponse);
@@ -71,7 +71,7 @@ describe('notificationApi', () => {
 
       const result = await notificationApi.markAllNotificationsRead();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/notifications/read-all', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/notifications/read-all', {
         method: 'POST',
       });
       expect(result).toEqual(mockResponse);

@@ -6,7 +6,7 @@ vi.stubGlobal('fetch', mockFetch);
 vi.mock('../baseApi', () => ({
   baseApi: {
     fetchWithAuth: vi.fn(),
-    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876/api'),
+    getBaseUrl: vi.fn().mockReturnValue('http://localhost:9876'),
     setTokens: vi.fn(),
     clearTokens: vi.fn(),
     hasTokens: vi.fn(),
@@ -34,7 +34,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.getWordlists();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists');
       expect(result).toEqual(mockData);
     });
   });
@@ -46,7 +46,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.getWordlist(5);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists/5');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists/5');
       expect(result).toEqual(mockData);
     });
   });
@@ -58,7 +58,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.getWordlistWords(3);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists/3/words');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists/3/words');
       expect(result).toEqual(mockData);
     });
   });
@@ -70,7 +70,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.getActiveWordlist();
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists/active');
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists/active');
       expect(result).toEqual(mockData);
     });
   });
@@ -81,7 +81,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.setActiveWordlist(7);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists/active', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists/active', {
         method: 'PUT',
         body: JSON.stringify({ wordlistId: 7 }),
       });
@@ -97,7 +97,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.createWordlist(createData);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists', {
         method: 'POST',
         body: JSON.stringify(createData),
       });
@@ -190,7 +190,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.updateWordlist(5, updateData);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists/5', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists/5', {
         method: 'PUT',
         body: JSON.stringify(updateData),
       });
@@ -204,7 +204,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.deleteWordlist(5);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists/5', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists/5', {
         method: 'DELETE',
       });
       expect(result).toEqual({ success: true });
@@ -218,7 +218,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.addWordsToWordlist(3, words);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists/3/words', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists/3/words', {
         method: 'POST',
         body: JSON.stringify({ words }),
       });
@@ -233,7 +233,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.updateWordInWordlist(3, 10, updateData);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists/3/words/10', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists/3/words/10', {
         method: 'PUT',
         body: JSON.stringify(updateData),
       });
@@ -247,7 +247,7 @@ describe('wordlistApi', () => {
 
       const result = await wordlistApi.deleteWordFromWordlist(3, 10);
 
-      expect(mockFetchWithAuth).toHaveBeenCalledWith('/wordlists/3/words/10', {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith('/api/wordlists/3/words/10', {
         method: 'DELETE',
       });
       expect(result).toEqual({ success: true });

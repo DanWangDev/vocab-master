@@ -46,22 +46,22 @@ export interface MasteryResponse {
 
 export const reportApi = {
   async getMastery(): Promise<MasteryResponse> {
-    return baseApi.fetchWithAuth('/reports/mastery');
+    return baseApi.fetchWithAuth('/api/reports/mastery');
   },
 
   async getLearningTrend(days = 30): Promise<{ trend: LearningTrendPoint[] }> {
-    return baseApi.fetchWithAuth(`/reports/trend?days=${days}`);
+    return baseApi.fetchWithAuth(`/api/reports/trend?days=${days}`);
   },
 
   async getStudentSummary(studentId: number): Promise<StudentReportSummary> {
-    return baseApi.fetchWithAuth(`/reports/student/${studentId}/summary`);
+    return baseApi.fetchWithAuth(`/api/reports/student/${studentId}/summary`);
   },
 
   getStudentExportUrl(studentId: number): string {
-    return `${baseApi.getBaseUrl()}/reports/student/${studentId}/export`;
+    return `${baseApi.getBaseUrl()}/api/reports/student/${studentId}/export`;
   },
 
   getMyExportUrl(): string {
-    return `${baseApi.getBaseUrl()}/reports/my/export`;
+    return `${baseApi.getBaseUrl()}/api/reports/my/export`;
   },
 };
