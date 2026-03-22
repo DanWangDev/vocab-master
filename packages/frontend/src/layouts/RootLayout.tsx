@@ -3,8 +3,11 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AppProvider } from '../contexts/AppContext';
 import { AchievementProvider } from '../contexts/AchievementContext';
+import { XpProvider } from '../contexts/XpContext';
 import { useAuth } from '../contexts/AuthContext';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { XpPopup } from '../components/gamification/XpPopup';
+import { LevelUpCelebration } from '../components/gamification/LevelUpCelebration';
 
 export function RootLayout() {
   const { state: authState } = useAuth();
@@ -39,9 +42,13 @@ export function RootLayout() {
             transition={{ duration: 0.2 }}
           >
             <ErrorBoundary>
-              <AchievementProvider>
-                <Outlet />
-              </AchievementProvider>
+              <XpProvider>
+                <AchievementProvider>
+                  <Outlet />
+                </AchievementProvider>
+                <XpPopup />
+                <LevelUpCelebration />
+              </XpProvider>
             </ErrorBoundary>
           </motion.div>
         </AnimatePresence>

@@ -18,6 +18,7 @@ import type reportsEn from './locales/en/reports.json'
 import type flashcardEn from './locales/en/flashcard.json'
 import type exercisesEn from './locales/en/exercises.json'
 import type pvpEn from './locales/en/pvp.json'
+import type gamificationEn from './locales/en/gamification.json'
 
 declare module 'i18next' {
   interface CustomTypeOptions {
@@ -41,6 +42,7 @@ declare module 'i18next' {
       flashcard: typeof flashcardEn
       exercises: typeof exercisesEn
       pvp: typeof pvpEn
+      gamification: typeof gamificationEn
     }
   }
 }

@@ -17,3 +17,5 @@ export { default as reportsRoutes } from './reports';
 export { default as srsRoutes } from './srs';
 export { default as exercisesRoutes } from './exercises';
 export { default as pvpRoutes } from './pvp';
+export { default as xpRoutes } from './xp';
+export { default as rewardsRoutes } from './rewards';

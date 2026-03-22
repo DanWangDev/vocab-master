@@ -21,6 +21,7 @@ import { addPvpChallenges } from './020_add_pvp_challenges';
 import { addExerciseResults } from './021_add_exercise_results';
 import { addPvpQuestions } from './022_add_pvp_questions';
 import { addTimedQuizType } from './023_add_timed_quiz_type';
+import { addGamification } from './024_add_gamification';
 
 export const migrations = [
     initialSchema,
@@ -46,4 +47,5 @@ export const migrations = [
     addExerciseResults,
     addPvpQuestions,
     addTimedQuizType,
+    addGamification,
 ];

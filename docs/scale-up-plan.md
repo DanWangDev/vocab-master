@@ -389,6 +389,8 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 - Feature 5: Streak Animation + 90-Day Heatmap
 - Feature 6: Group Stats + Group Leaderboard
 
+See [gamification-design.md](../docs/gamification-design.md) for a comprehensive design covering streaks, XP/levels, and cosmetic streak rewards that extends Feature 5 into a full gamification loop.
+
 ### Phase 7c — Social & Engagement (NOT STARTED)
 
 - Feature 7: Word of the Day + Mini Quiz

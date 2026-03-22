@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { pvpService } from '../services/pvpService.js';
+import { xpService } from '../services/xpService.js';
 import type { AuthRequest } from '../types/index.js';
 
 const router = Router();
@@ -193,7 +194,20 @@ router.post('/:id/submit', validate(submitAnswersSchema), (req: AuthRequest, res
     }
 
     const result = pvpService.submitAnswers(challengeId, userId, req.body.answers);
-    res.json(result);
+
+    // Award XP for PvP
+    let xpResult = null;
+    try {
+      const correctCount = req.body.answers.filter((a: { isCorrect: boolean }) => a.isCorrect).length;
+      const totalCount = req.body.answers.length;
+      const score = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+      const isWin = result.waiting === false && result.challenge?.winner_id === userId;
+      const baseXp = isWin ? 30 : 10;
+      const bonus = isWin && score > 90 ? 15 : 0;
+      xpResult = xpService.awardXp(userId, baseXp + bonus, 'pvp', challengeId);
+    } catch { /* non-fatal */ }
+
+    res.json({ ...result, xp: xpResult ? { earned: xpResult.xpEarned, total: xpResult.totalXp, level: xpResult.level, leveledUp: xpResult.leveledUp } : undefined });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to submit answers';
     const status = message.includes('Already submitted') ? 409 : 400;

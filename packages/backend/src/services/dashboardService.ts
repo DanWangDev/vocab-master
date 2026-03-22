@@ -62,7 +62,7 @@ export interface UserDetailStats {
   };
 }
 
-function calculateStreak(userId: number): number {
+export function calculateStreak(userId: number): number {
   const activityDates = db.prepare(`
     SELECT DISTINCT activity_date FROM (
       SELECT date(start_time) as activity_date FROM study_sessions WHERE user_id = ?

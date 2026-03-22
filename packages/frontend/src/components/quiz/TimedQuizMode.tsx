@@ -112,7 +112,7 @@ export function TimedQuizMode() {
           if (result.newAchievements && result.newAchievements.length > 0) {
             showAchievements(result.newAchievements);
           }
-        } catch (error) {
+        } catch {
           setSaveError(true);
         }
       };

@@ -47,6 +47,7 @@ const TimedQuizMode = lazy(() => lazyWithRetry(() => import('../components/quiz/
 const ChallengeList = lazy(() => lazyWithRetry(() => import('../components/pvp/ChallengeList')).then(m => ({ default: m.ChallengeList })));
 const ChallengeQuiz = lazy(() => lazyWithRetry(() => import('../components/pvp/ChallengeQuiz')).then(m => ({ default: m.ChallengeQuiz })));
 const ChallengeResults = lazy(() => lazyWithRetry(() => import('../components/pvp/ChallengeResults')).then(m => ({ default: m.ChallengeResults })));
+const RewardsPage = lazy(() => lazyWithRetry(() => import('../components/gamification/RewardsPage')).then(m => ({ default: m.RewardsPage })));
 
 // Loading fallback component — not exported, used internally for Suspense
 // eslint-disable-next-line react-refresh/only-export-components
@@ -220,6 +221,10 @@ export const router = createBrowserRouter([
               {
                 path: 'pvp/:id/results',
                 element: withSuspense(ChallengeResults),
+              },
+              {
+                path: 'rewards',
+                element: withSuspense(RewardsPage),
               },
             ],
           },

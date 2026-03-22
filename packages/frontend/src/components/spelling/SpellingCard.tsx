@@ -26,7 +26,7 @@ export function SpellingCard({ exercise, mode, onResult }: SpellingCardProps) {
   const [isCorrect, setIsCorrect] = useState(false);
   const [retryMode, setRetryMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const startTimeRef = useRef(Date.now());
+  const startTimeRef = useRef(0);
   const { speak } = useSpeechSynthesis();
 
   useEffect(() => {

@@ -12,7 +12,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase, db } from './config/database.js';
-import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes, achievementsRoutes, leaderboardsRoutes, groupsRoutes, reportsRoutes, srsRoutes, exercisesRoutes, pvpRoutes } from './routes/index.js';
+import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes, achievementsRoutes, leaderboardsRoutes, groupsRoutes, reportsRoutes, srsRoutes, exercisesRoutes, pvpRoutes, xpRoutes, rewardsRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
 import { inactivityService } from './services/inactivityService.js';
 import { logger } from './services/logger.js';
@@ -171,6 +171,8 @@ app.use('/api/reports', reportsRoutes);
 app.use('/api/srs', srsRoutes);
 app.use('/api/exercises', exercisesRoutes);
 app.use('/api/pvp', pvpRoutes);
+app.use('/api/xp', xpRoutes);
+app.use('/api/rewards', rewardsRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

@@ -57,3 +57,4 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for NAS deployment guide.
 - [Repo Structure](docs/repo-structure.md) — detailed directory layout
 - [Security Hardening](docs/security-hardening.md) — audit report and fixes
 - [Scale-up Plan](docs/scale-up-plan.md) — phased feature roadmap
+- [Gamification Design](docs/gamification-design.md) — streaks, XP, levels, and cosmetic rewards system design
