@@ -4,7 +4,7 @@ services:
       context: ./packages/frontend
       dockerfile: frontend.Dockerfile
       args:
-        - VITE_API_URL=/api
+        - VITE_API_URL=
         - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID:-}
         - VITE_TURNSTILE_SITE_KEY=${VITE_TURNSTILE_SITE_KEY:-}
     container_name: vocab-master-frontend

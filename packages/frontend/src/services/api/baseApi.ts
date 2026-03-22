@@ -2,7 +2,17 @@
 
 import type { ApiError, TokenPair } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:9876';
+// Endpoints include /api prefix explicitly. VITE_API_URL is the server origin only.
+// - Development: defaults to 'http://localhost:9876' (direct to backend)
+// - Docker/Nginx: set to '' (empty) for relative URLs proxied by Nginx
+// Backwards compat: strips trailing /api from old configs that included it.
+function resolveBaseUrl(): string {
+  const env = import.meta.env.VITE_API_URL;
+  if (env == null) return 'http://localhost:9876';
+  const stripped = env.replace(/\/api\/?$/, '');
+  return stripped;
+}
+const API_BASE_URL = resolveBaseUrl();
 const ACCESS_TOKEN_KEY = 'vocab_master_access_token';
 
 class BaseApi {
