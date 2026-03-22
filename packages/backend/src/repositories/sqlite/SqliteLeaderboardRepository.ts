@@ -56,17 +56,13 @@ export class SqliteLeaderboardRepository implements ILeaderboardRepository {
     // Get date range for the period
     const { startDate, endDate } = this.getDateRange(period, periodKey);
 
-    // Get all students with activity in the period
+    // Get all students with XP earned in the period
     const students = this.db.prepare(`
       SELECT DISTINCT u.id as user_id
       FROM users u
       WHERE u.role = 'student'
-      AND (
-        EXISTS (SELECT 1 FROM quiz_results qr WHERE qr.user_id = u.id AND qr.completed_at >= ? AND qr.completed_at < ?)
-        OR EXISTS (SELECT 1 FROM daily_challenges dc WHERE dc.user_id = u.id AND dc.challenge_date >= ? AND dc.challenge_date < ?)
-        OR EXISTS (SELECT 1 FROM study_sessions ss WHERE ss.user_id = u.id AND ss.created_at >= ? AND ss.created_at < ?)
-      )
-    `).all(startDate, endDate, startDate, endDate, startDate, endDate) as Array<{ user_id: number }>;
+      AND EXISTS (SELECT 1 FROM user_xp xp WHERE xp.user_id = u.id AND xp.earned_at >= ? AND xp.earned_at < ?)
+    `).all(startDate, endDate) as Array<{ user_id: number }>;
 
     const upsertStmt = this.db.prepare(`
       INSERT INTO leaderboard_entries (user_id, period, period_key, score, quizzes_completed, words_mastered, streak_days, updated_at)
@@ -93,32 +89,42 @@ export class SqliteLeaderboardRepository implements ILeaderboardRepository {
   }
 
   private computeUserStats(userId: number, startDate: string, endDate: string) {
-    // Quizzes completed and average score
+    // Score = total XP earned in the period (server-side, consistent, not gameable)
+    const xpResult = this.db.prepare(`
+      SELECT COALESCE(SUM(amount), 0) as total_xp
+      FROM user_xp
+      WHERE user_id = ? AND earned_at >= ? AND earned_at < ?
+    `).get(userId, startDate, endDate) as { total_xp: number };
+
+    // Cosmetic stats for display alongside score
     const quizStats = this.db.prepare(`
-      SELECT COUNT(*) as count, COALESCE(AVG(score), 0) as avg_score
+      SELECT COUNT(*) as count
       FROM quiz_results
       WHERE user_id = ? AND completed_at >= ? AND completed_at < ?
-    `).get(userId, startDate, endDate) as { count: number; avg_score: number };
-
-    // Words studied (unique words from vocab)
-    const wordCount = this.db.prepare(`
-      SELECT COUNT(*) as count FROM user_vocabulary
-      WHERE user_id = ? AND first_seen_at >= ? AND first_seen_at < ?
     `).get(userId, startDate, endDate) as { count: number };
 
-    // Streak: count consecutive challenge days in the period
-    const challengeDays = this.db.prepare(`
-      SELECT DISTINCT challenge_date FROM daily_challenges
-      WHERE user_id = ? AND challenge_date >= ? AND challenge_date < ?
-      ORDER BY challenge_date ASC
-    `).all(userId, startDate, endDate) as Array<{ challenge_date: string }>;
+    const wordCount = this.db.prepare(`
+      SELECT COUNT(DISTINCT word) as count
+      FROM quiz_answers qa
+      JOIN quiz_results qr ON qr.id = qa.quiz_result_id
+      WHERE qr.user_id = ? AND qr.completed_at >= ? AND qr.completed_at < ?
+      AND qa.is_correct = 1
+    `).get(userId, startDate, endDate) as { count: number };
+
+    // Streak: consecutive days with any XP-earning activity
+    const activeDays = this.db.prepare(`
+      SELECT DISTINCT DATE(earned_at) as active_date
+      FROM user_xp
+      WHERE user_id = ? AND earned_at >= ? AND earned_at < ?
+      ORDER BY active_date ASC
+    `).all(userId, startDate, endDate) as Array<{ active_date: string }>;
 
     let maxStreak = 0;
     let currentStreak = 0;
     let prevDate: Date | null = null;
 
-    for (const { challenge_date } of challengeDays) {
-      const d = new Date(challenge_date);
+    for (const { active_date } of activeDays) {
+      const d = new Date(active_date);
       if (prevDate && (d.getTime() - prevDate.getTime()) === 86400000) {
         currentStreak++;
       } else {
@@ -128,15 +134,8 @@ export class SqliteLeaderboardRepository implements ILeaderboardRepository {
       prevDate = d;
     }
 
-    // Composite score: quizzes * avg_score * 0.5 + words * 2 + streak * 10
-    const score = Math.round(
-      quizStats.count * quizStats.avg_score * 0.5 +
-      wordCount.count * 2 +
-      maxStreak * 10
-    );
-
     return {
-      score,
+      score: xpResult.total_xp,
       quizzesCompleted: quizStats.count,
       wordsMastered: wordCount.count,
       streakDays: maxStreak,

@@ -132,11 +132,11 @@ describe('SqliteLeaderboardRepository', () => {
   })
 
   describe('recalculateAll', () => {
-    it('computes scores from quiz_results data', async () => {
+    it('computes scores from XP data', async () => {
       const student = await createTestStudent()
       const db = getTestDb()
 
-      // Seed quiz results in March 2026
+      // Seed quiz results in March 2026 (for cosmetic stats)
       db.prepare(`
         INSERT INTO quiz_results (user_id, quiz_type, total_questions, correct_answers, score, total_time_spent, completed_at)
         VALUES (?, 'quiz', 10, 8, 80, 60, '2026-03-10 10:00:00')
@@ -146,12 +146,22 @@ describe('SqliteLeaderboardRepository', () => {
         VALUES (?, 'quiz', 10, 10, 100, 45, '2026-03-12 10:00:00')
       `).run(student.id)
 
+      // Seed XP entries (score is now driven by XP)
+      db.prepare(`
+        INSERT INTO user_xp (user_id, amount, source, earned_at)
+        VALUES (?, 84, 'quiz', '2026-03-10 10:00:00')
+      `).run(student.id)
+      db.prepare(`
+        INSERT INTO user_xp (user_id, amount, source, earned_at)
+        VALUES (?, 150, 'quiz', '2026-03-12 10:00:00')
+      `).run(student.id)
+
       leaderboardRepository.recalculateAll('monthly', '2026-03')
 
       const entry = leaderboardRepository.getUserEntry(student.id, 'monthly', '2026-03')
       expect(entry).toBeDefined()
       expect(entry!.quizzes_completed).toBe(2)
-      expect(entry!.score).toBeGreaterThan(0)
+      expect(entry!.score).toBe(234) // 84 + 150 XP
     })
 
     it('does not create entries for users with no activity', async () => {
