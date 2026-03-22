@@ -159,9 +159,22 @@ export function ActivityHeatmap({ className = '' }: ActivityHeatmapProps) {
                     key={i}
                     className={`aspect-square rounded-sm ${getColorClass(count)} transition-colors cursor-pointer hover:ring-1 hover:ring-primary-400`}
                     onMouseEnter={(e) => cell.day && setTooltip({ day: cell.day, x: e.clientX, y: e.clientY })}
-                    onFocus={() => cell.day && setTooltip({ day: cell.day, x: 0, y: 0 })}
+                    onFocus={(e) => {
+                      if (!cell.day) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setTooltip({ day: cell.day, x: rect.left + rect.width / 2, y: rect.top });
+                    }}
                     onMouseLeave={() => setTooltip(null)}
                     onBlur={() => setTooltip(null)}
+                    onClick={(e) => {
+                      if (!cell.day) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setTooltip(prev =>
+                        prev?.day.date === cell.day!.date
+                          ? null
+                          : { day: cell.day!, x: rect.left + rect.width / 2, y: rect.top }
+                      );
+                    }}
                     aria-label={`${cell.date}: ${count} activities`}
                     tabIndex={0}
                   />
@@ -181,8 +194,8 @@ export function ActivityHeatmap({ className = '' }: ActivityHeatmapProps) {
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="fixed z-50 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 pointer-events-none shadow-lg"
-          style={{ left: tooltip.x + 10, top: tooltip.y - 40 }}
+          className="fixed z-50 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 pointer-events-none shadow-lg -translate-x-1/2"
+          style={{ left: tooltip.x, top: tooltip.y - 44 }}
         >
           <p className="font-bold">{tooltip.day.date}</p>
           <p>{tooltip.day.activityCount} activities ({tooltip.day.types.join(', ')})</p>
