@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useReducer } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gamificationApi, type HeatmapDay } from '../../services/api/gamificationApi';
 
@@ -20,26 +20,42 @@ function getColorClass(count: number): string {
   return CELL_COLORS[3];
 }
 
+type HeatmapState =
+  | { status: 'loading' }
+  | { status: 'error' }
+  | { status: 'loaded'; days: HeatmapDay[] };
+
+function heatmapReducer(_state: HeatmapState, action: { type: 'loading' } | { type: 'error' } | { type: 'loaded'; days: HeatmapDay[] }): HeatmapState {
+  switch (action.type) {
+    case 'loading': return { status: 'loading' };
+    case 'error': return { status: 'error' };
+    case 'loaded': return { status: 'loaded', days: action.days };
+  }
+}
+
 export function ActivityHeatmap({ className = '' }: ActivityHeatmapProps) {
   const { t } = useTranslation('gamification');
-  const [data, setData] = useState<HeatmapDay[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [state, dispatch] = useReducer(heatmapReducer, { status: 'loading' });
   const [tooltip, setTooltip] = useState<{ day: HeatmapDay; x: number; y: number } | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const fetchData = () => {
-    setLoading(true);
-    setError(false);
+  useEffect(() => {
+    let cancelled = false;
+    dispatch({ type: 'loading' });
     gamificationApi.getActivityHeatmap(90)
-      .then(res => { setData(res.days); setLoading(false); })
-      .catch(() => { setError(true); setLoading(false); });
-  };
+      .then(res => { if (!cancelled) dispatch({ type: 'loaded', days: res.days }); })
+      .catch(() => { if (!cancelled) dispatch({ type: 'error' }); });
+    return () => { cancelled = true; };
+  }, [retryCount]);
 
-  useEffect(() => { fetchData(); }, []);
+  const loading = state.status === 'loading';
+  const error = state.status === 'error';
+  const data = state.status === 'loaded' ? state.days : [];
 
   // Build 91-day grid (13 weeks × 7 days)
   const grid = useMemo(() => {
-    const dayMap = new Map(data.map(d => [d.date, d]));
+    const days = state.status === 'loaded' ? state.days : [];
+    const dayMap = new Map(days.map(d => [d.date, d]));
     const cells: Array<{ date: string; day: HeatmapDay | null; row: number; col: number }> = [];
 
     const today = new Date();
@@ -61,7 +77,7 @@ export function ActivityHeatmap({ className = '' }: ActivityHeatmapProps) {
       });
     }
     return cells;
-  }, [data]);
+  }, [state]);
 
   const monthLabels = useMemo(() => {
     const labels: Array<{ label: string; col: number }> = [];
@@ -82,7 +98,7 @@ export function ActivityHeatmap({ className = '' }: ActivityHeatmapProps) {
     return (
       <div className={`text-center py-4 ${className}`}>
         <p className="text-sm text-gray-500">{t('heatmapError')}</p>
-        <button onClick={fetchData} className="text-xs text-primary-600 font-bold mt-1">
+        <button onClick={() => setRetryCount(c => c + 1)} className="text-xs text-primary-600 font-bold mt-1">
           {t('retry')}
         </button>
       </div>

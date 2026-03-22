@@ -1,7 +1,15 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useXp } from '../../hooks/useXp';
+
+// Pre-computed random positions for confetti dots (stable across renders)
+const CONFETTI_SEEDS = Array.from({ length: 20 }, (_, i) => ({
+  left: 10 + ((i * 37 + 13) % 80),
+  top: 10 + ((i * 53 + 7) % 80),
+  yOffset: -50 - ((i * 41 + 19) % 100),
+  delay: ((i * 29 + 3) % 50) / 100,
+}));
 
 export function LevelUpCelebration() {
   const { t } = useTranslation('gamification');
@@ -22,6 +30,8 @@ export function LevelUpCelebration() {
     }
   }, [levelUpEvent, handleKeyDown, dismissLevelUp]);
 
+  const confettiDots = useMemo(() => CONFETTI_SEEDS, []);
+
   return (
     <AnimatePresence>
       {levelUpEvent && (
@@ -37,22 +47,22 @@ export function LevelUpCelebration() {
         >
           <div className="text-center">
             {/* Confetti dots */}
-            {[...Array(20)].map((_, i) => (
+            {confettiDots.map((seed, i) => (
               <motion.div
                 key={i}
                 className="absolute w-2 h-2 rounded-full"
                 style={{
                   backgroundColor: ['#14B8A6', '#FBBF24', '#FB7185'][i % 3],
-                  left: `${10 + Math.random() * 80}%`,
-                  top: `${10 + Math.random() * 80}%`,
+                  left: `${seed.left}%`,
+                  top: `${seed.top}%`,
                 }}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{
                   opacity: [0, 1, 0],
                   scale: [0, 1.5, 0],
-                  y: [0, -50 - Math.random() * 100],
+                  y: [0, seed.yOffset],
                 }}
-                transition={{ duration: 1.5, delay: Math.random() * 0.5 }}
+                transition={{ duration: 1.5, delay: seed.delay }}
               />
             ))}
 

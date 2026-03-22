@@ -1,27 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useReducer } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Lock, Flame, Check } from 'lucide-react';
 import { gamificationApi, type RewardItem } from '../../services/api/gamificationApi';
 
+type RewardState =
+  | { status: 'loading' }
+  | { status: 'error' }
+  | { status: 'loaded'; rewards: RewardItem[] };
+
+function rewardReducer(_state: RewardState, action: { type: 'loading' } | { type: 'error' } | { type: 'loaded'; rewards: RewardItem[] }): RewardState {
+  switch (action.type) {
+    case 'loading': return { status: 'loading' };
+    case 'error': return { status: 'error' };
+    case 'loaded': return { status: 'loaded', rewards: action.rewards };
+  }
+}
+
 export function RewardGallery() {
   const { t } = useTranslation('gamification');
-  const [rewards, setRewards] = useState<RewardItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [state, dispatch] = useReducer(rewardReducer, { status: 'loading' });
+  const [fetchCount, setFetchCount] = useState(0);
 
-  const fetchRewards = () => {
-    setLoading(true);
-    setError(false);
+  useEffect(() => {
+    let cancelled = false;
+    dispatch({ type: 'loading' });
     gamificationApi.getRewards()
-      .then(res => {
-        setRewards(res.rewards);
-        setLoading(false);
-      })
-      .catch(() => { setError(true); setLoading(false); });
-  };
+      .then(res => { if (!cancelled) dispatch({ type: 'loaded', rewards: res.rewards }); })
+      .catch(() => { if (!cancelled) dispatch({ type: 'error' }); });
+    return () => { cancelled = true; };
+  }, [fetchCount]);
 
-  useEffect(() => { fetchRewards(); }, []);
+  const rewards = state.status === 'loaded' ? state.rewards : [];
+  const loading = state.status === 'loading';
+  const error = state.status === 'error';
 
   const handleToggleActive = async (reward: RewardItem) => {
     if (reward.locked || !reward.earned) return;
@@ -31,7 +43,7 @@ export function RewardGallery() {
 
     try {
       await gamificationApi.setActiveReward(newSlug, rewardType);
-      fetchRewards();
+      setFetchCount(c => c + 1);
     } catch { /* silent */ }
   };
 
@@ -39,7 +51,7 @@ export function RewardGallery() {
     return (
       <div className="text-center py-8">
         <p className="text-sm text-gray-500">{t('rewardsError')}</p>
-        <button onClick={fetchRewards} className="text-xs text-primary-600 font-bold mt-1">
+        <button onClick={() => setFetchCount(c => c + 1)} className="text-xs text-primary-600 font-bold mt-1">
           {t('retry')}
         </button>
       </div>
