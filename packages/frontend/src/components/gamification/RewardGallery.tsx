@@ -7,7 +7,6 @@ import { gamificationApi, type RewardItem } from '../../services/api/gamificatio
 export function RewardGallery() {
   const { t } = useTranslation('gamification');
   const [rewards, setRewards] = useState<RewardItem[]>([]);
-  const [currentStreak, setCurrentStreak] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -17,7 +16,6 @@ export function RewardGallery() {
     gamificationApi.getRewards()
       .then(res => {
         setRewards(res.rewards);
-        setCurrentStreak(res.currentStreak);
         setLoading(false);
       })
       .catch(() => { setError(true); setLoading(false); });

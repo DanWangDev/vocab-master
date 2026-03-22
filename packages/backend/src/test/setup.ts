@@ -63,6 +63,8 @@ const TABLES_TO_TRUNCATE = [
   'group_wordlists',
   'group_members',
   'groups',
+  'user_xp',
+  'user_rewards',
   'user_settings',
   'user_stats',
   'users'
