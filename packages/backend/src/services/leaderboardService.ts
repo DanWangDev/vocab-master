@@ -10,10 +10,14 @@ export function getCurrentPeriodKey(period: LeaderboardPeriod): string {
   const now = new Date();
 
   if (period === 'weekly') {
-    const year = now.getFullYear();
-    const jan1 = new Date(year, 0, 1);
-    const dayOfYear = Math.floor((now.getTime() - jan1.getTime()) / 86400000) + 1;
-    const weekNum = Math.ceil((dayOfYear + jan1.getDay()) / 7);
+    // ISO 8601 week number: weeks start Monday, Sunday is the last day
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    // Set to nearest Thursday (ISO week-year pivot)
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+    const year = d.getFullYear();
+    const yearStart = new Date(year, 0, 1);
+    const weekNum = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
     return `${year}-W${String(weekNum).padStart(2, '0')}`;
   }
 
