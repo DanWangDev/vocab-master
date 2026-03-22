@@ -8,6 +8,7 @@ interface SpellingExercise {
   definition: string;
   sentence?: string;
   blankedSentence?: string;
+  hint?: string;
 }
 
 interface SpellingCardProps {
@@ -94,6 +95,16 @@ export function SpellingCard({ exercise, mode, onResult }: SpellingCardProps) {
             <p className="text-lg text-gray-800 font-medium leading-relaxed">
               {exercise.blankedSentence}
             </p>
+            {exercise.hint && (
+              <p className="mt-3 text-base text-emerald-700 font-mono tracking-widest">
+                {t('hintLabel')}: {exercise.hint}
+              </p>
+            )}
+            {exercise.definition && (
+              <p className="mt-2 text-sm text-gray-500 italic">
+                {t('definitionHint')}: {exercise.definition}
+              </p>
+            )}
           </>
         )}
       </div>

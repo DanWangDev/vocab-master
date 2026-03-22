@@ -26,6 +26,8 @@
   "startSpelling": "开始拼写",
   "spellTheWord": "根据定义拼写单词：",
   "fillInBlank": "填写缺失的单词：",
+  "hintLabel": "提示",
+  "definitionHint": "释义",
   "typeYourAnswer": "输入你的答案...",
   "typeCorrectWord": "现在输入正确的拼写...",
   "checkRetry": "检查",

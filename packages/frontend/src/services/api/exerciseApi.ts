@@ -12,6 +12,7 @@ export interface SpellingExercise {
   definition: string;
   sentence?: string;
   blankedSentence?: string;
+  hint?: string;
 }
 
 export interface ExerciseResultRequest {

@@ -15,6 +15,32 @@ export interface SpellingExercise {
   definition: string;
   sentence?: string;
   blankedSentence?: string;
+  hint?: string;
+}
+
+/**
+ * Generate a partial-reveal hint for a word.
+ * Always shows first and last letter; reveals ~30% of middle letters.
+ * e.g., "exemplary" → "e_e__l_ry"
+ */
+function generateWordHint(word: string): string {
+  if (word.length <= 2) return word;
+  if (word.length === 3) return `${word[0]}_${word[2]}`;
+
+  const chars = [...word];
+  const middle = chars.slice(1, -1);
+  const revealCount = Math.max(1, Math.floor(middle.length * 0.3));
+
+  // Pick random indices to reveal
+  const indices = Array.from({ length: middle.length }, (_, i) => i);
+  const shuffled = shuffleArray(indices);
+  const revealSet = new Set(shuffled.slice(0, revealCount));
+
+  const hinted = middle.map((ch, i) =>
+    revealSet.has(i) ? ch : '_'
+  );
+
+  return `${chars[0]}${hinted.join('')}${chars[chars.length - 1]}`;
 }
 
 export interface ExerciseSubmission {
@@ -158,6 +184,7 @@ export const exerciseService = {
           definition,
           sentence,
           blankedSentence,
+          hint: generateWordHint(row.target_word),
         });
       } else {
         exercises.push({

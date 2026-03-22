@@ -26,6 +26,8 @@
   "startSpelling": "Start Spelling",
   "spellTheWord": "Spell the word that matches this definition:",
   "fillInBlank": "Fill in the missing word:",
+  "hintLabel": "Hint",
+  "definitionHint": "Definition",
   "typeYourAnswer": "Type your answer...",
   "typeCorrectWord": "Now type the correct spelling...",
   "checkRetry": "Check",
