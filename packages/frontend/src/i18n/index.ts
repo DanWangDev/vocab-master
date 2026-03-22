@@ -20,6 +20,7 @@ import reportsEn from './locales/en/reports.json'
 import flashcardEn from './locales/en/flashcard.json'
 import exercisesEn from './locales/en/exercises.json'
 import pvpEn from './locales/en/pvp.json'
+import gamificationEn from './locales/en/gamification.json'
 
 import commonZh from './locales/zh-CN/common.json'
 import authZh from './locales/zh-CN/auth.json'
@@ -39,6 +40,7 @@ import reportsZh from './locales/zh-CN/reports.json'
 import flashcardZh from './locales/zh-CN/flashcard.json'
 import exercisesZh from './locales/zh-CN/exercises.json'
 import pvpZh from './locales/zh-CN/pvp.json'
+import gamificationZh from './locales/zh-CN/gamification.json'
 
 i18n
   .use(LanguageDetector)
@@ -64,6 +66,7 @@ i18n
         flashcard: flashcardEn,
         exercises: exercisesEn,
         pvp: pvpEn,
+        gamification: gamificationEn,
       },
       'zh-CN': {
         common: commonZh,
@@ -84,6 +87,7 @@ i18n
         flashcard: flashcardZh,
         exercises: exercisesZh,
         pvp: pvpZh,
+        gamification: gamificationZh,
       },
     },
     fallbackLng: 'en',
@@ -107,6 +111,7 @@ i18n
       'flashcard',
       'exercises',
       'pvp',
+      'gamification',
     ],
     interpolation: {
       escapeValue: false,

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp, Layers, PenTool, Swords, Type, Clock } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp, Layers, PenTool, Swords, Type, Clock, Gift } from 'lucide-react';
 import { ModeCard } from './ModeCard';
 import { CompactCard } from './CompactCard';
 import { UserMenu } from '../common/UserMenu';
@@ -10,6 +10,10 @@ import { NotificationBell } from '../notifications/NotificationBell';
 import { LinkRequestCard } from '../linking/LinkRequestCard';
 import { WordlistBadge } from '../wordlists/WordlistBadge';
 import { WordlistSelector } from '../wordlists/WordlistSelector';
+import { StreakFlame } from '../gamification/StreakFlame';
+import { ActivityHeatmap } from '../gamification/ActivityHeatmap';
+import { LevelBadge } from '../gamification/LevelBadge';
+import { XpProgressBar } from '../gamification/XpProgressBar';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -115,16 +119,31 @@ export function Dashboard() {
           transition={{ delay: 0.1 }}
           className="space-y-5"
         >
-          {/* Greeting */}
+          {/* Greeting + Gamification Header */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-primary-100 relative overflow-hidden">
             <div className="relative z-10">
-              <h2 className="text-2xl font-black text-primary-900 mb-1">
-                {t('greeting', { name: authState.user?.displayName || authState.user?.username })} 👋
-              </h2>
-              {userRole === 'student' ? (
-                <p className="text-primary-600 font-medium">{t('readyToLearn')}</p>
-              ) : (
-                <p className="text-primary-600 font-medium">{t('welcomeDashboard')}</p>
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h2 className="text-2xl font-black text-primary-900 mb-1">
+                    {t('greeting', { name: authState.user?.displayName || authState.user?.username })} 👋
+                  </h2>
+                  {userRole === 'student' ? (
+                    <p className="text-primary-600 font-medium">{t('readyToLearn')}</p>
+                  ) : (
+                    <p className="text-primary-600 font-medium">{t('welcomeDashboard')}</p>
+                  )}
+                </div>
+                {userRole === 'student' && activityStats && (
+                  <StreakFlame streak={activityStats.currentStreak} />
+                )}
+              </div>
+              {userRole === 'student' && (
+                <div className="mt-3 pt-3 border-t border-primary-50">
+                  <div className="flex items-center gap-3 mb-2">
+                    <LevelBadge />
+                  </div>
+                  <XpProgressBar />
+                </div>
               )}
             </div>
             <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary-100 rounded-full opacity-50 blur-xl"></div>
@@ -231,6 +250,9 @@ export function Dashboard() {
                 </div>
               )}
 
+              {/* Activity Heatmap */}
+              <ActivityHeatmap />
+
               {/* Primary actions - Full-width cards */}
               <ModeCard
                 title={t('studyMode')}
@@ -308,6 +330,12 @@ export function Dashboard() {
                     icon={TrendingUp}
                     color="bg-gradient-to-br from-indigo-500 to-blue-600 shadow-[rgba(99,102,241,0.25)_0px_6px_16px]"
                     onClick={() => navigate('/reports')}
+                  />
+                  <CompactCard
+                    title={t('rewards')}
+                    icon={Gift}
+                    color="bg-gradient-to-br from-amber-500 to-yellow-600 shadow-[rgba(245,158,11,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/rewards')}
                   />
                   <CompactCard
                     title={t('groups')}
