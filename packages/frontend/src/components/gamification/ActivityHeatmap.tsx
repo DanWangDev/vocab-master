@@ -113,32 +113,35 @@ export function ActivityHeatmap({ className = '' }: ActivityHeatmapProps) {
       role="img"
       aria-label={t('heatmapLabel')}
     >
-      {/* Month labels */}
-      <div className="flex ml-6 mb-1 overflow-x-auto">
+      {/* Month labels — aligned to grid columns */}
+      <div
+        className="grid mb-1 ml-5"
+        style={{ gridTemplateColumns: `repeat(${maxCol + 1}, 1fr)`, gap: '2px' }}
+      >
         {monthLabels.map((m, i) => (
           <span
             key={i}
             className="text-[9px] text-gray-400 font-medium"
-            style={{ position: 'relative', left: `${m.col * 15}px` }}
+            style={{ gridColumn: m.col + 1 }}
           >
             {m.label}
           </span>
         ))}
       </div>
 
-      <div className="flex overflow-x-auto pb-1">
+      <div className="flex pb-1">
         {/* Day labels */}
-        <div className="flex flex-col gap-[2px] sm:gap-[3px] mr-1 flex-shrink-0">
+        <div className="flex flex-col gap-[2px] sm:gap-[3px] mr-1 flex-shrink-0 justify-between">
           {['', 'M', '', 'W', '', 'F', ''].map((label, i) => (
-            <div key={i} className="h-[10px] sm:h-[12px] flex items-center">
+            <div key={i} className="flex items-center flex-1">
               <span className="text-[8px] text-gray-400 w-4 text-right">{label}</span>
             </div>
           ))}
         </div>
 
-        {/* Grid */}
+        {/* Grid — cells stretch to fill width */}
         <div
-          className="grid gap-[2px] sm:gap-[3px]"
+          className="grid gap-[2px] sm:gap-[3px] flex-1"
           style={{
             gridTemplateRows: 'repeat(7, 1fr)',
             gridTemplateColumns: `repeat(${maxCol + 1}, 1fr)`,
@@ -147,14 +150,14 @@ export function ActivityHeatmap({ className = '' }: ActivityHeatmapProps) {
         >
           {loading
             ? [...Array(91)].map((_, i) => (
-                <div key={i} className="w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] rounded-sm bg-gray-200 animate-pulse" />
+                <div key={i} className="aspect-square rounded-sm bg-gray-200 animate-pulse" />
               ))
             : grid.map((cell, i) => {
                 const count = cell.day?.activityCount ?? 0;
                 return (
                   <button
                     key={i}
-                    className={`w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] rounded-sm ${getColorClass(count)} transition-colors cursor-pointer hover:ring-1 hover:ring-primary-400`}
+                    className={`aspect-square rounded-sm ${getColorClass(count)} transition-colors cursor-pointer hover:ring-1 hover:ring-primary-400`}
                     onMouseEnter={(e) => cell.day && setTooltip({ day: cell.day, x: e.clientX, y: e.clientY })}
                     onFocus={() => cell.day && setTooltip({ day: cell.day, x: 0, y: 0 })}
                     onMouseLeave={() => setTooltip(null)}
