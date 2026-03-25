@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
-import { authService } from '../services/authService.js';
 import { db } from '../config/database.js';
-import type { AuthRequest } from '../types/index.js';
+import { verifyAndSyncHubUser } from './hubAuth.js';
+import type { AuthRequest, JWTPayload } from '../types/index.js';
 
 // Throttle cache: userId -> last update timestamp (ms)
 const lastSeenCache = new Map<number, number>();
@@ -24,6 +24,13 @@ function updateLastSeen(userId: number): void {
   }
 }
 
+/**
+ * Verify hub OIDC token (RS256) and sync user to local database.
+ */
+async function verifyToken(token: string): Promise<JWTPayload> {
+  return verifyAndSyncHubUser(token);
+}
+
 export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
 
@@ -37,17 +44,18 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
 
   const token = authHeader.substring(7);
 
-  try {
-    const payload = authService.verifyAccessToken(token);
-    req.user = payload;
-    updateLastSeen(payload.userId);
-    next();
-  } catch (error) {
-    res.status(401).json({
-      error: 'Unauthorized',
-      message: error instanceof Error ? error.message : 'Invalid token'
+  verifyToken(token)
+    .then(payload => {
+      req.user = payload;
+      updateLastSeen(payload.userId);
+      next();
+    })
+    .catch(error => {
+      res.status(401).json({
+        error: 'Unauthorized',
+        message: error instanceof Error ? error.message : 'Invalid token'
+      });
     });
-  }
 }
 
 export function optionalAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
@@ -60,14 +68,15 @@ export function optionalAuthMiddleware(req: AuthRequest, res: Response, next: Ne
 
   const token = authHeader.substring(7);
 
-  try {
-    const payload = authService.verifyAccessToken(token);
-    req.user = payload;
-  } catch {
-    // Token invalid but that's okay for optional auth
-  }
-
-  next();
+  verifyToken(token)
+    .then(payload => {
+      req.user = payload;
+      next();
+    })
+    .catch(() => {
+      // Token invalid but that's okay for optional auth
+      next();
+    });
 }
 
 /**

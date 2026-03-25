@@ -11,7 +11,8 @@ export interface UserRow {
   email: string | null;
   email_verified: number; // SQLite stores booleans as integers
   google_id: string | null;
-  auth_provider: 'local' | 'google';
+  auth_provider: 'local' | 'google' | 'hub';
+  hub_user_id: string | null;
   last_seen_at: string | null;
   created_at: string;
 }
@@ -106,7 +107,7 @@ export interface User {
   role: 'student' | 'parent' | 'admin';
   email: string | null;
   emailVerified: boolean;
-  authProvider: 'local' | 'google';
+  authProvider: 'local' | 'google' | 'hub';
   createdAt: string;
 }
 
@@ -143,60 +144,11 @@ export interface AuthRequest extends Request {
   user?: JWTPayload;
 }
 
-export interface TokenPair {
-  accessToken: string;
-  refreshToken: string;
-}
-
 // API Request/Response types
-export interface RegisterRequest {
-  username: string;
-  password: string;
-  displayName?: string;
-}
-
-export interface RegisterStudentRequest {
-  username: string;
-  password: string;
-  displayName?: string;
-}
-
-export interface RegisterParentRequest {
-  username: string;
-  password: string;
-  email: string;
-  displayName?: string;
-}
-
-export interface ForgotPasswordRequest {
-  email: string;
-}
-
-export interface ResetPasswordRequest {
-  token: string;
-  password: string;
-}
-
 export interface CreateStudentByParentRequest {
   username: string;
   password: string;
   displayName?: string;
-}
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface GoogleAuthRequest {
-  token: string;
-  tokenType: 'id_token' | 'access_token';
-  username?: string;
-}
-
-export interface AuthResponse {
-  user: User;
-  tokens: TokenPair;
 }
 
 export interface UpdateProfileRequest {

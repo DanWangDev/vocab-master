@@ -1,10 +1,7 @@
-import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { getTestDb } from './setup'
 export { getTestDb } from './setup'
-import type { JWTPayload } from '../types'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key-for-testing-only-not-production'
 const FAST_HASH_ROUNDS = 4 // Low rounds for fast tests
 
 export interface TestUser {
@@ -107,38 +104,6 @@ export async function createTestAdmin(
     email: `admin_${Date.now()}@test.com`,
     ...overrides
   })
-}
-
-/**
- * Generates a valid JWT access token for the given user.
- */
-export function generateTestToken(user: {
-  id: number
-  username: string
-  role: 'student' | 'parent' | 'admin'
-}): string {
-  const payload: JWTPayload = {
-    userId: user.id,
-    username: user.username,
-    role: user.role
-  }
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '15m' })
-}
-
-/**
- * Generates an expired JWT token for testing token expiry.
- */
-export function generateExpiredToken(user: {
-  id: number
-  username: string
-  role: 'student' | 'parent' | 'admin'
-}): string {
-  const payload: JWTPayload = {
-    userId: user.id,
-    username: user.username,
-    role: user.role
-  }
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '-1s' })
 }
 
 /**

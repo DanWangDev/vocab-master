@@ -13,7 +13,6 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase, db } from './config/database.js';
 import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes, achievementsRoutes, leaderboardsRoutes, groupsRoutes, reportsRoutes, srsRoutes, exercisesRoutes, pvpRoutes, xpRoutes, rewardsRoutes } from './routes/index.js';
-import { authService } from './services/authService.js';
 import { inactivityService } from './services/inactivityService.js';
 import { logger } from './services/logger.js';
 import { AppError } from './errors/AppError.js';
@@ -29,10 +28,6 @@ const PORT = process.env.PORT || 9876;
 initializeDatabase();
 
 // Register background jobs
-jobQueue.register('token-cleanup', () => {
-  authService.cleanupExpiredTokens();
-}, 60 * 60 * 1000); // Every hour
-
 jobQueue.register('inactivity-check', async () => {
   await inactivityService.checkInactivityAndNotify();
 }, 6 * 60 * 60 * 1000); // Every 6 hours
@@ -75,24 +70,6 @@ const authLimiter = rateLimit({
   legacyHeaders: false
 });
 
-// Stricter rate limiting for registration
-const registrationLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // 5 registrations per hour per IP
-  message: { error: 'Too Many Requests', message: 'Too many registration attempts, please try again later' },
-  standardHeaders: true,
-  legacyHeaders: false
-});
-
-// Stricter rate limiting for password reset
-const passwordResetLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // 5 requests per hour
-  message: { error: 'Too Many Requests', message: 'Too many password reset attempts, please try again later' },
-  standardHeaders: true,
-  legacyHeaders: false
-});
-
 // General rate limiter
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
@@ -120,15 +97,6 @@ const linkRequestLimiter = rateLimit({
   legacyHeaders: false
 });
 
-// Token validation rate limiter
-const tokenValidationLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { error: 'Too Many Requests', message: 'Too many token validation attempts' },
-  standardHeaders: true,
-  legacyHeaders: false
-});
-
 // Wordlist import rate limiter
 const importLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -139,14 +107,7 @@ const importLimiter = rateLimit({
 });
 
 app.use('/api/wordlists/import', importLimiter);
-app.use('/api/auth/register', registrationLimiter);
-app.use('/api/auth/register/student', registrationLimiter);
-app.use('/api/auth/register/parent', registrationLimiter);
-app.use('/api/auth/google', registrationLimiter);
 app.use('/api/auth', authLimiter);
-app.use('/api/auth/forgot-password', passwordResetLimiter);
-app.use('/api/auth/reset-password', passwordResetLimiter);
-app.use('/api/auth/validate-reset-token', tokenValidationLimiter);
 app.use('/api/link-requests/search', studentSearchLimiter);
 app.use('/api/link-requests', linkRequestLimiter);
 app.use('/api', generalLimiter);
