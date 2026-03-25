@@ -84,14 +84,14 @@ export async function exchangeCodeForTokens(code: string, state: string): Promis
   sessionStorage.removeItem(STATE_KEY);
   sessionStorage.removeItem(CODE_VERIFIER_KEY);
 
-  const response = await fetch(`${OIDC_ISSUER}/oidc/token`, {
+  // Exchange via backend BFF (which injects client_secret for confidential client)
+  const response = await fetch('/api/auth/oidc/token', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       grant_type: 'authorization_code',
       code,
       redirect_uri: getRedirectUri(),
-      client_id: OIDC_CLIENT_ID,
       code_verifier: codeVerifier,
     }),
   });
@@ -136,7 +136,7 @@ export function startOidcLogout(): void {
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 
   const params = new URLSearchParams({
-    post_logout_redirect_uri: window.location.origin + '/login',
+    post_logout_redirect_uri: window.location.origin,
   });
   if (idToken) {
     params.set('id_token_hint', idToken);
@@ -155,13 +155,13 @@ export async function refreshOidcToken(): Promise<string> {
     throw new Error('No refresh token available');
   }
 
-  const response = await fetch(`${OIDC_ISSUER}/oidc/token`, {
+  // Refresh via backend BFF (which injects client_secret for confidential client)
+  const response = await fetch('/api/auth/oidc/token', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
-      client_id: OIDC_CLIENT_ID,
     }),
   });
 

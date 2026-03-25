@@ -42,6 +42,7 @@ export async function verifyHubToken(token: string): Promise<HubTokenClaims> {
     plan: user.plan,
     features: [...user.features],
     apps: [...user.apps],
+    expiresAt: user.expires_at ?? null,
     iat: 0,
     exp: 0,
   };

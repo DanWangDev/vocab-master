@@ -51,7 +51,17 @@ export function syncHubUser(claims: HubTokenClaims): UserRow {
     }
   }
 
-  // 3. Create new user
+  // 3. Match by username (migration path: existing local user with same username but no email match)
+  const byUsername = userRepository.findByUsername(claims.username);
+  if (byUsername && !byUsername.hub_user_id) {
+    db.prepare(`
+      UPDATE users SET hub_user_id = ?, auth_provider = 'hub', display_name = ?, email = ?, email_verified = 1, role = ?
+      WHERE id = ?
+    `).run(hubUserId, claims.displayName, claims.email, mapHubRole(claims.role, byUsername.role), byUsername.id);
+    return userRepository.findById(byUsername.id)!;
+  }
+
+  // 4. Create new user
   const result = db.prepare(`
     INSERT INTO users (username, password_hash, display_name, role, email, email_verified, auth_provider, hub_user_id)
     VALUES (?, NULL, ?, ?, ?, 1, 'hub', ?)
