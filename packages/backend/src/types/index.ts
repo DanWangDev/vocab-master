@@ -138,6 +138,7 @@ export interface JWTPayload {
   userId: number;
   username: string;
   role: 'student' | 'parent' | 'admin';
+  hubUserId?: string;
 }
 
 export interface AuthRequest extends Request {

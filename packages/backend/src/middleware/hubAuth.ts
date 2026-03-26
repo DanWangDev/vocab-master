@@ -1,4 +1,4 @@
-import { discoverOidc, verifyIdToken } from '@danwangdev/auth-client/server';
+import { discoverOidc, verifyIdToken, unrevokeSubject } from '@danwangdev/auth-client/server';
 import type { HubTokenClaims } from '@danwangdev/auth-client/server';
 import { env } from '../config/env.js';
 import { syncHubUser } from '../services/hubUserSync.js';
@@ -10,7 +10,7 @@ let cachedJwksUri: string | null = null;
  * Discover OIDC metadata and cache the jwks_uri.
  * Handles the Docker internal issuer rewrite (gotcha #8 from migration guide).
  */
-async function getJwksUri(): Promise<string> {
+export async function getJwksUri(): Promise<string> {
   if (cachedJwksUri) return cachedJwksUri;
 
   const metadata = await discoverOidc(env.OIDC_INTERNAL_ISSUER);
@@ -55,11 +55,13 @@ export async function verifyHubToken(token: string): Promise<HubTokenClaims> {
 export async function verifyAndSyncHubUser(token: string): Promise<JWTPayload> {
   const claims = await verifyHubToken(token);
   const localUser = syncHubUser(claims);
+  unrevokeSubject(claims.sub);
 
   return {
     userId: localUser.id,
     username: localUser.username,
     role: localUser.role,
+    hubUserId: claims.sub,
   };
 }
 

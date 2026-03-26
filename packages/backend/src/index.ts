@@ -107,6 +107,17 @@ const importLimiter = rateLimit({
 });
 
 app.use('/api/wordlists/import', importLimiter);
+
+// BCL endpoint: server-to-server from hub, needs its own generous limit
+// Must be registered BEFORE the restrictive authLimiter to take precedence
+const bclLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/auth/backchannel-logout', bclLimiter);
+
 app.use('/api/auth', authLimiter);
 app.use('/api/link-requests/search', studentSearchLimiter);
 app.use('/api/link-requests', linkRequestLimiter);

@@ -1,5 +1,8 @@
 import { Router, Request, Response } from 'express';
+import express from 'express';
+import { verifyLogoutToken, revokeSubject } from '@danwangdev/auth-client/server';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { getJwksUri } from '../middleware/hubAuth.js';
 import {
   validate,
   createStudentByParentSchema,
@@ -16,6 +19,35 @@ import type {
 } from '../types/index.js';
 
 const router = Router();
+
+/**
+ * POST /api/auth/backchannel-logout — receive back-channel logout from the hub.
+ * The hub's OIDC provider sends a logout_token JWT when a user logs out.
+ * We verify the token and revoke the subject so the auth middleware rejects
+ * subsequent requests from that user until they re-authenticate.
+ */
+router.post('/backchannel-logout',
+  express.urlencoded({ extended: false }),
+  async (req: Request, res: Response) => {
+    const logoutToken = req.body?.logout_token;
+    if (!logoutToken || typeof logoutToken !== 'string') {
+      res.status(400).json({ error: 'missing_logout_token' });
+      return;
+    }
+    try {
+      const jwksUri = await getJwksUri();
+      const { sub } = await verifyLogoutToken(logoutToken, jwksUri, env.OIDC_ISSUER, env.OIDC_CLIENT_ID);
+      revokeSubject(sub);
+      logger.info('BCL: user session revoked', { sub });
+      res.status(200).end();
+    } catch (error) {
+      logger.error('BCL: verification failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      res.status(400).json({ error: 'invalid_token' });
+    }
+  }
+);
 
 /**
  * POST /api/auth/oidc/token — BFF token exchange.

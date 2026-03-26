@@ -1,4 +1,5 @@
 import { Response, NextFunction } from 'express';
+import { isRevoked } from '@danwangdev/auth-client/server';
 import { db } from '../config/database.js';
 import { verifyAndSyncHubUser } from './hubAuth.js';
 import type { AuthRequest, JWTPayload } from '../types/index.js';
@@ -28,7 +29,11 @@ function updateLastSeen(userId: number): void {
  * Verify hub OIDC token (RS256) and sync user to local database.
  */
 async function verifyToken(token: string): Promise<JWTPayload> {
-  return verifyAndSyncHubUser(token);
+  const payload = await verifyAndSyncHubUser(token);
+  if (payload.hubUserId && isRevoked(payload.hubUserId)) {
+    throw new Error('Session revoked via back-channel logout');
+  }
+  return payload;
 }
 
 export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
