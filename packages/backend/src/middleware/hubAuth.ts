@@ -8,21 +8,16 @@ let cachedJwksUri: string | null = null;
 
 /**
  * Discover OIDC metadata and cache the jwks_uri.
- * Handles the Docker internal issuer rewrite (gotcha #8 from migration guide).
+ * auth-client v0.3.1+ handles internal/public issuer rewriting automatically:
+ *   - jwks_uri, token_endpoint → internal issuer (server-to-server)
+ *   - authorization_endpoint, end_session_endpoint → public issuer (browser-facing)
  */
 export async function getJwksUri(): Promise<string> {
   if (cachedJwksUri) return cachedJwksUri;
 
-  const metadata = await discoverOidc(env.OIDC_INTERNAL_ISSUER);
-  let jwksUri = metadata.jwks_uri;
-
-  // Rewrite jwks_uri if internal issuer differs from public issuer
-  if (env.OIDC_INTERNAL_ISSUER !== env.OIDC_ISSUER) {
-    jwksUri = jwksUri.replace(env.OIDC_ISSUER, env.OIDC_INTERNAL_ISSUER);
-  }
-
-  cachedJwksUri = jwksUri;
-  return jwksUri;
+  const metadata = await discoverOidc(env.OIDC_ISSUER, env.OIDC_INTERNAL_ISSUER);
+  cachedJwksUri = metadata.jwks_uri;
+  return cachedJwksUri;
 }
 
 /**
