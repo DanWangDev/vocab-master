@@ -4,7 +4,7 @@
 
 This document describes a comprehensive security audit and hardening effort conducted in March 2026. A 3-agent parallel security review covered authentication & access control, API & data layer, and infrastructure & deployment. Findings were categorised by severity and addressed in prioritised phases.
 
-**Context:** Vocab Master is a vocabulary learning app (React + Express/SQLite + React Native) deployed on a NAS with real users. It handles authentication, RBAC (admin/parent/student), Google OAuth, password reset, quiz results, wordlist management, and parent-child linking.
+**Context:** Vocab Master is a vocabulary learning app (React + Express/SQLite + React Native) deployed on a NAS with real users. Authentication is delegated to the 11plus-hub via OIDC (PKCE + BFF pattern). The app handles RBAC (admin/parent/student), quiz results, wordlist management, and parent-child linking. Google OAuth, password reset, and Turnstile are now handled by the hub — not the app itself.
 
 ---
 

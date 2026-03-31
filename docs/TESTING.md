@@ -53,7 +53,7 @@ Coverage is tracked via `@vitest/coverage-v8` in both packages.
 
 ## CI Pipeline
 
-The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and pull request to `master`. It consists of 5 jobs:
+The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and pull request to `main`. It consists of 5 jobs:
 
 | Job | Name | What it does |
 |-----|------|-------------|

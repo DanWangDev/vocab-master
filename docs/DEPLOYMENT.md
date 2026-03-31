@@ -6,6 +6,7 @@ This guide explains how to deploy the **11+ Vocabulary Master** application to a
 1.  **Docker Support**: Your NAS must have Docker (often called "Container Manager" on Synology) installed.
 2.  **SSH Access**: Recommended for running commands, though some steps can be done via the NAS web UI.
 3.  **Port Availability**: Ensure ports `8080` (Frontend) and `9876` (Backend) are free on your NAS.
+4.  **11plus-hub**: The hub must be running and accessible from the backend container (via Docker network). Vocab Master delegates authentication to the hub via OIDC.
 
 ## Step 1: Prepare the Application
 Before moving files, ensure you have the latest production build configuration.

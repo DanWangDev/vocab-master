@@ -6,7 +6,7 @@
 
 ```
 packages/frontend/   — React SPA (Vite, Tailwind, i18n)
-packages/backend/    — Express API (SQLite, JWT auth)
+packages/backend/    — Express API (SQLite, OIDC auth via 11plus-hub)
 packages/shared/     — Shared TypeScript types
 packages/mobile/     — React Native (Expo)
 docs/                — Architecture, security, deployment docs
@@ -22,11 +22,11 @@ cd packages/frontend
 npm ci
 npm run dev            # http://localhost:5173
 
-# Backend
+# Backend (requires 11plus-hub running on localhost:3009)
 cd packages/backend
-cp ../../.env.example .env   # edit with your secrets
+cp ../../.env.example .env   # edit with your secrets (OIDC_* vars required)
 npm ci
-npm run dev            # http://localhost:9876
+npm run dev            # http://localhost:4567
 ```
 
 ## Deployment (Docker)
@@ -46,7 +46,7 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for NAS deployment guide.
 ## Tech Stack
 
 - **Frontend**: React 19, Vite, Tailwind CSS, Framer Motion, i18next
-- **Backend**: Express, SQLite (better-sqlite3), JWT auth, Zod validation
+- **Backend**: Express, SQLite (better-sqlite3), OIDC auth (11plus-hub), Zod validation
 - **Mobile**: React Native, Expo, NativeWind
 - **Infrastructure**: Docker Compose, nginx reverse proxy, GitHub Actions CI/CD
 
@@ -54,6 +54,7 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for NAS deployment guide.
 
 - [App Features](docs/APP-README.md) — feature overview and screenshots
 - [Deployment Guide](docs/DEPLOYMENT.md) — Docker and NAS setup
+- [Hub Auth Migration](docs/hub-auth-migration-guide.md) — OIDC migration guide and gotchas
 - [Repo Structure](docs/repo-structure.md) — detailed directory layout
 - [Security Hardening](docs/security-hardening.md) — audit report and fixes
 - [Scale-up Plan](docs/scale-up-plan.md) — phased feature roadmap

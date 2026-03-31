@@ -2,6 +2,42 @@
 
 All notable changes to the Vocab Master project are documented here.
 
+## 2026-03-31
+
+### Hub Auth Migration — OIDC with PKCE (PR #35)
+
+Authentication now goes through the 11plus-hub instead of standalone JWT. Sign in once at the hub, access all Lab F apps.
+
+**What's new:**
+- **Single sign-on via 11+ Hub** — click "Sign in with 11+ Hub" and authenticate at the central hub; no more app-specific passwords
+- **Hub link in user menu** — jump to the hub dashboard from the user profile dropdown
+- **Back-channel logout** — signing out of the hub automatically signs you out of Vocab Master
+- **Automatic user sync** — your hub profile (name, role, email) syncs to Vocab Master on each login
+
+**What's removed:**
+- Standalone registration, login, password reset, and Google sign-in forms (all handled by the hub now)
+- Turnstile bot protection and brute-force lockout (hub-side responsibility)
+- Email service and password reset tokens
+
+**Technical details:**
+- OIDC Authorization Code flow with PKCE (S256)
+- BFF pattern: backend proxies token exchange, injects `client_secret` (confidential client)
+- Hub user sync with 4-level matching: `hub_user_id` → email → username → create new
+- 78 new unit tests across auth middleware, user sync, OIDC helpers, and AuthCallback
+- Docker compose updated with OIDC env vars and hub network
+
+**Schema changes (migrations 026–027):**
+- `hub_user_id` column added to users table for hub identity linking
+- Legacy auth columns cleaned up (password reset tokens, brute force tracking)
+
+**Key commits:**
+- `3728969` feat: migrate auth from standalone JWT to 11plus-hub OIDC
+- `53d2140` fix: confidential client BFF, auth-client v0.2.0, user sync improvements
+- `a67bd35` feat: add back-channel logout support using auth-client v0.3.0
+- `aed61d0` fix: use auth-client v0.3.1 two-arg discoverOidc
+- `e1da9ab` fix: OIDC token exchange bugs and add auth test coverage
+- `3cbd560` feat: add 11+ Hub link to user profile dropdown
+
 ## 2026-03-22
 
 ### Phase 7a — Enhanced Learning & Exam Prep (PR #24)
