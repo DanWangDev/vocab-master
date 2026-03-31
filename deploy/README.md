@@ -111,7 +111,7 @@ To reset: `docker volume rm vocab-master-data` (WARNING: deletes all data)
 Create a `.env` file alongside `docker-compose.prod.yml`:
 
 ```env
-DOCKERHUB_USERNAME=your-dockerhub-username
+GITHUB_OWNER=danwangdev
 JWT_SECRET=your-secure-random-string-here
 CORS_ORIGIN=http://your-nas-ip:8080
 
