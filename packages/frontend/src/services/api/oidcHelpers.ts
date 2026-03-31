@@ -2,6 +2,14 @@ const OIDC_ISSUER = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3009';
 const OIDC_CLIENT_ID = import.meta.env.VITE_OIDC_CLIENT_ID || 'vocab-master-client';
 const OIDC_SCOPES = 'openid profile email hub';
 
+// Resolve API base URL (same logic as baseApi — avoids circular import)
+function resolveApiBaseUrl(): string {
+  const env = import.meta.env.VITE_API_URL;
+  if (env == null) return 'http://localhost:9876';
+  return env.replace(/\/api\/?$/, '');
+}
+const API_BASE_URL = resolveApiBaseUrl();
+
 // Storage keys
 const CODE_VERIFIER_KEY = 'labf_oidc_code_verifier';
 const STATE_KEY = 'labf_oidc_state';
@@ -85,7 +93,7 @@ export async function exchangeCodeForTokens(code: string, state: string): Promis
   sessionStorage.removeItem(CODE_VERIFIER_KEY);
 
   // Exchange via backend BFF (which injects client_secret for confidential client)
-  const response = await fetch('/api/auth/oidc/token', {
+  const response = await fetch(`${API_BASE_URL}/api/auth/oidc/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -156,7 +164,7 @@ export async function refreshOidcToken(): Promise<string> {
   }
 
   // Refresh via backend BFF (which injects client_secret for confidential client)
-  const response = await fetch('/api/auth/oidc/token', {
+  const response = await fetch(`${API_BASE_URL}/api/auth/oidc/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
