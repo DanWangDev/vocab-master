@@ -24,10 +24,10 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - DATABASE_PATH=/data/vocab-master.db
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:8080}
-      - OIDC_ISSUER=${OIDC_ISSUER}
+      - OIDC_ISSUER=${OIDC_ISSUER:-https://hub.labf.app}
       - OIDC_INTERNAL_ISSUER=${OIDC_INTERNAL_ISSUER:-http://hub-app:3009}
       - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-vocab-master-client}
-      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:?OIDC_CLIENT_SECRET is required}
     volumes:
       - vocab-data:/data
     restart: unless-stopped
