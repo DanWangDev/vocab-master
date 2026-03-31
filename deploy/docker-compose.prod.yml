@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   frontend:
-    image: vocab-master-frontend:latest
+    image: ${DOCKERHUB_USERNAME:-vocab-master}-frontend:latest
     container_name: vocab-master-frontend
     ports:
-      - "8080:80"
+      - "${FRONTEND_PORT:-8080}:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -13,17 +13,21 @@ services:
       - vocab-network
 
   backend:
-    image: vocab-master-backend:latest
+    image: ${DOCKERHUB_USERNAME:-vocab-master}-backend:latest
     container_name: vocab-master-backend
     ports:
-      - "9876:9876"
+      - "${BACKEND_PORT:-9876}:9876"
     environment:
       - NODE_ENV=production
       - PORT=9876
       - HOST=0.0.0.0
       - JWT_SECRET=${JWT_SECRET}
       - DATABASE_PATH=/data/vocab-master.db
-      - CORS_ORIGIN=http://192.168.50.35:8080
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:8080}
+      - OIDC_ISSUER=${OIDC_ISSUER}
+      - OIDC_INTERNAL_ISSUER=${OIDC_INTERNAL_ISSUER:-http://hub-app:3009}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-vocab-master-client}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
     volumes:
       - vocab-data:/data
     restart: unless-stopped
@@ -35,6 +39,7 @@ services:
       start_period: 10s
     networks:
       - vocab-network
+      - hub
 
 volumes:
   vocab-data:
@@ -43,3 +48,6 @@ volumes:
 networks:
   vocab-network:
     name: vocab-master-network
+  hub:
+    external: true
+    name: 11plus-hub_default
