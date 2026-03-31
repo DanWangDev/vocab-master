@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, LogOut, ChevronDown, Cloud } from 'lucide-react';
+import { User, LogOut, ChevronDown, Cloud, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { getOidcConfig } from '../../services/api/oidcHelpers';
 
 export function UserMenu() {
   const { t } = useTranslation('common');
@@ -96,6 +97,16 @@ export function UserMenu() {
 
             {/* Menu items */}
             <div className="py-1">
+              <a
+                href={getOidcConfig().issuer}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-4 py-2.5 text-left text-primary-700 hover:bg-primary-50 flex items-center gap-2 transition-colors font-semibold"
+                onClick={() => setIsOpen(false)}
+              >
+                <ExternalLink size={16} />
+                {t('hubDashboard', '11+ Hub')}
+              </a>
               <button
                 onClick={handleLogout}
                 className="w-full px-4 py-2.5 text-left text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer font-semibold"
