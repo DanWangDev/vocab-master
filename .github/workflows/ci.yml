@@ -123,12 +123,52 @@ jobs:
         run: npm run build
 
   docker:
-    name: Docker Build
+    name: Docker Build & Push
     runs-on: ubuntu-latest
     needs: [build]
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v5
-      - name: Build Docker images
-        run: docker compose build
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGE_TOKEN }}
+
+      - name: Set registry owner (lowercase)
+        run: echo "REGISTRY_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./packages/backend
+          file: ./packages/backend/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ghcr.io/${{ env.REGISTRY_OWNER }}/vocab-master-backend:latest
+          build-args: |
+            NODE_AUTH_TOKEN=${{ secrets.GH_PACKAGE_TOKEN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./packages/frontend
+          file: ./packages/frontend/frontend.Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          build-args: |
+            NODE_AUTH_TOKEN=${{ secrets.GH_PACKAGE_TOKEN }}
+            VITE_API_URL=/api
+            VITE_OIDC_ISSUER=${{ vars.VITE_OIDC_ISSUER }}
+            VITE_OIDC_CLIENT_ID=${{ vars.VITE_OIDC_CLIENT_ID }}
+          tags: ghcr.io/${{ env.REGISTRY_OWNER }}/vocab-master-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
