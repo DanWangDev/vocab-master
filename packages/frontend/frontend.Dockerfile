@@ -3,10 +3,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and registry config
 COPY package*.json ./
+COPY .npmrc ./
 
-# Install dependencies
+# Install dependencies (NODE_AUTH_TOKEN needed for @danwangdev packages)
+ARG NODE_AUTH_TOKEN
 RUN npm ci
 
 # Copy source code
@@ -14,13 +16,13 @@ COPY . .
 
 # Build arguments
 ARG VITE_API_URL=http://localhost:3001/api
-ARG VITE_GOOGLE_CLIENT_ID=
-ARG VITE_TURNSTILE_SITE_KEY=
+ARG VITE_OIDC_ISSUER=
+ARG VITE_OIDC_CLIENT_ID=vocab-master-client
 
 # Set environment variables for build
 ENV VITE_API_URL=$VITE_API_URL
-ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
-ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
+ENV VITE_OIDC_ISSUER=$VITE_OIDC_ISSUER
+ENV VITE_OIDC_CLIENT_ID=$VITE_OIDC_CLIENT_ID
 
 # Build the application
 RUN npm run build

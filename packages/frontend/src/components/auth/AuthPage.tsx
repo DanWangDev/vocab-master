@@ -1,47 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { BookOpen, LogIn } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
-import { LoginForm } from './LoginForm';
-import { RoleSelection } from './RoleSelection';
-import { StudentRegisterForm } from './StudentRegisterForm';
-import { ParentRegisterForm } from './ParentRegisterForm';
-import { ForgotPasswordForm } from './ForgotPasswordForm';
-
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-
-type AuthMode = 'login' | 'register-select-role' | 'register-student' | 'register-parent' | 'forgot-password';
-
-interface LocationState {
-  from?: {
-    pathname: string;
-  };
-}
 
 export function AuthPage() {
   const { t } = useTranslation('auth');
-  const [mode, setMode] = useState<AuthMode>('login');
-  const { state, login, googleLogin, registerStudent, registerParent, forgotPassword, clearError } = useAuth();
+  const { state, login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Get the intended destination from location state
-  const locationState = location.state as LocationState | null;
-  const from = locationState?.from?.pathname;
 
   // Redirect after successful authentication
   useEffect(() => {
     if (state.isAuthenticated && state.user) {
-      // If there's a saved destination, go there
-      if (from && from !== '/login') {
-        navigate(from, { replace: true });
-        return;
-      }
-
-      // Otherwise, redirect based on user role
       const role = state.user.role;
       switch (role) {
         case 'parent':
@@ -54,53 +26,10 @@ export function AuthPage() {
           navigate('/', { replace: true });
       }
     }
-  }, [state.isAuthenticated, state.user, from, navigate]);
+  }, [state.isAuthenticated, state.user, navigate]);
 
-  const handleLogin = async (username: string, password: string, turnstileToken?: string) => {
-    await login(username, password, turnstileToken);
-  };
-
-  const handleGoogleLogin = async (credential: string) => {
-    try {
-      await googleLogin(credential);
-    } catch {
-      // Error handled by context
-    }
-  };
-
-  const handleRegisterStudent = async (username: string, password: string, displayName?: string, turnstileToken?: string) => {
-    await registerStudent(username, password, displayName, turnstileToken);
-  };
-
-  const handleRegisterParent = async (username: string, password: string, email: string, displayName?: string, turnstileToken?: string) => {
-    await registerParent(username, password, email, displayName, turnstileToken);
-  };
-
-  const handleForgotPassword = async (email: string) => {
-    await forgotPassword(email);
-  };
-
-  const switchMode = (newMode: AuthMode) => {
-    clearError();
-    setMode(newMode);
-  };
-
-  // Get subtitle based on mode
-  const getSubtitle = () => {
-    switch (mode) {
-      case 'login':
-        return t('subtitle.login');
-      case 'register-select-role':
-        return t('subtitle.registerSelectRole');
-      case 'register-student':
-        return t('subtitle.registerStudent');
-      case 'register-parent':
-        return t('subtitle.registerParent');
-      case 'forgot-password':
-        return t('subtitle.forgotPassword');
-      default:
-        return '';
-    }
+  const handleLogin = async () => {
+    await login();
   };
 
   return (
@@ -129,7 +58,7 @@ export function AuthPage() {
             {t('appName')}
           </h1>
           <p className="text-indigo-100 font-medium text-lg">
-            {getSubtitle()}
+            {t('subtitle.login')}
           </p>
         </div>
 
@@ -140,61 +69,24 @@ export function AuthPage() {
           <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
 
           <div className="relative z-10">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={mode}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                {mode === 'login' && (
-                  <LoginForm
-                    onSubmit={handleLogin}
-                    onGoogleLogin={GOOGLE_CLIENT_ID ? handleGoogleLogin : undefined}
-                    onSwitchToRegister={() => switchMode('register-select-role')}
-                    onForgotPassword={() => switchMode('forgot-password')}
-                    isLoading={state.isLoading}
-                    error={state.error}
-                  />
-                )}
+            {state.error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                {state.error}
+              </div>
+            )}
 
-                {mode === 'register-select-role' && (
-                  <RoleSelection
-                    onSelectStudent={() => switchMode('register-student')}
-                    onSelectParent={() => switchMode('register-parent')}
-                    onBack={() => switchMode('login')}
-                  />
-                )}
+            <button
+              onClick={handleLogin}
+              disabled={state.isLoading}
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <LogIn size={22} />
+              Sign in with 11+ Hub
+            </button>
 
-                {mode === 'register-student' && (
-                  <StudentRegisterForm
-                    onSubmit={handleRegisterStudent}
-                    onBack={() => switchMode('register-select-role')}
-                    isLoading={state.isLoading}
-                    error={state.error}
-                  />
-                )}
-
-                {mode === 'register-parent' && (
-                  <ParentRegisterForm
-                    onSubmit={handleRegisterParent}
-                    onBack={() => switchMode('register-select-role')}
-                    isLoading={state.isLoading}
-                    error={state.error}
-                  />
-                )}
-
-                {mode === 'forgot-password' && (
-                  <ForgotPasswordForm
-                    onSubmit={handleForgotPassword}
-                    onBack={() => switchMode('login')}
-                    isLoading={state.isLoading}
-                    error={state.error}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
+            <p className="text-center text-gray-400 text-xs mt-6">
+              You'll be redirected to the 11+ Hub to sign in
+            </p>
           </div>
         </div>
 

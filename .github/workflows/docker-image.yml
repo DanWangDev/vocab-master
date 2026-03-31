@@ -2,9 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "master", "main" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master", "main" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -37,6 +37,8 @@ jobs:
         file: ./packages/backend/Dockerfile
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/vocab-master-backend:latest
+        build-args: |
+          NODE_AUTH_TOKEN=${{ secrets.NODE_AUTH_TOKEN }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -47,7 +49,10 @@ jobs:
         file: ./packages/frontend/frontend.Dockerfile
         push: ${{ github.event_name != 'pull_request' }}
         build-args: |
+          NODE_AUTH_TOKEN=${{ secrets.NODE_AUTH_TOKEN }}
           VITE_API_URL=/api
+          VITE_OIDC_ISSUER=${{ vars.VITE_OIDC_ISSUER }}
+          VITE_OIDC_CLIENT_ID=${{ vars.VITE_OIDC_CLIENT_ID }}
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/vocab-master-frontend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max

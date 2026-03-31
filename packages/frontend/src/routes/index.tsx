@@ -25,7 +25,7 @@ function lazyWithRetry<T extends Record<string, unknown>>(
 
 // Lazy load route components (using named exports, with stale-chunk retry)
 const AuthPage = lazy(() => lazyWithRetry(() => import('../components/auth/AuthPage')).then(m => ({ default: m.AuthPage })));
-const ResetPasswordPage = lazy(() => lazyWithRetry(() => import('../components/auth/ResetPasswordPage')).then(m => ({ default: m.ResetPasswordPage })));
+const AuthCallback = lazy(() => lazyWithRetry(() => import('../pages/AuthCallback')).then(m => ({ default: m.AuthCallback })));
 const Dashboard = lazy(() => lazyWithRetry(() => import('../components/dashboard/Dashboard')).then(m => ({ default: m.Dashboard })));
 const StudyLanding = lazy(() => lazyWithRetry(() => import('../components/study/StudyLanding')).then(m => ({ default: m.StudyLanding })));
 const StudyMode = lazy(() => lazyWithRetry(() => import('../components/study/StudyMode')).then(m => ({ default: m.StudyMode })));
@@ -141,8 +141,8 @@ export const router = createBrowserRouter([
     element: withSuspense(AuthPage),
   },
   {
-    path: '/reset-password',
-    element: withSuspense(ResetPasswordPage),
+    path: '/auth/callback',
+    element: withSuspense(AuthCallback),
   },
   {
     path: '/',

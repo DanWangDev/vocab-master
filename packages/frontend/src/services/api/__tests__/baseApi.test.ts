@@ -4,12 +4,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
+// Mock OIDC token refresh
+const mockRefreshOidcToken = vi.fn();
+vi.mock('../oidcHelpers', () => ({
+  refreshOidcToken: (...args: unknown[]) => mockRefreshOidcToken(...args),
+}));
+
 // Must import after stubbing fetch since constructor reads localStorage
 const { baseApi } = await import('../baseApi');
 
 describe('baseApi', () => {
   beforeEach(() => {
     mockFetch.mockReset();
+    mockRefreshOidcToken.mockReset();
     localStorage.clear();
     baseApi.clearTokens();
   });
@@ -151,7 +158,7 @@ describe('baseApi', () => {
       );
     });
 
-    it('retries on 401 by refreshing the token', async () => {
+    it('retries on 401 by refreshing the token via OIDC', async () => {
       baseApi.setTokens({ accessToken: 'expired-token' });
 
       // First call: 401
@@ -161,12 +168,8 @@ describe('baseApi', () => {
         json: () => Promise.resolve({ error: 'Unauthorized', message: 'Token expired' }),
       });
 
-      // Refresh call: success
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ tokens: { accessToken: 'new-token' } }),
-      });
+      // OIDC refresh returns new token
+      mockRefreshOidcToken.mockResolvedValueOnce('new-oidc-token');
 
       // Retry call: success
       mockFetch.mockResolvedValueOnce({
@@ -178,8 +181,8 @@ describe('baseApi', () => {
       const result = await baseApi.fetchWithAuth('/protected');
 
       expect(result).toEqual({ result: 'success' });
-      expect(mockFetch).toHaveBeenCalledTimes(3);
-      expect(baseApi.getAccessToken()).toBe('new-token');
+      expect(mockRefreshOidcToken).toHaveBeenCalledTimes(1);
+      expect(baseApi.getAccessToken()).toBe('new-oidc-token');
     });
 
     it('clears tokens and throws on failed refresh', async () => {
@@ -192,12 +195,8 @@ describe('baseApi', () => {
         json: () => Promise.resolve({ error: 'Unauthorized', message: 'Token expired' }),
       });
 
-      // Refresh call: failure
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        json: () => Promise.resolve({ message: 'Refresh failed' }),
-      });
+      // OIDC refresh fails
+      mockRefreshOidcToken.mockRejectedValueOnce(new Error('No refresh token'));
 
       await expect(baseApi.fetchWithAuth('/protected')).rejects.toThrow(
         'Session expired. Please login again.'
@@ -238,12 +237,8 @@ describe('baseApi', () => {
       mockFetch.mockResolvedValueOnce(make401());
       mockFetch.mockResolvedValueOnce(make401());
 
-      // Single refresh response (shared by both)
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ tokens: { accessToken: 'refreshed-token' } }),
-      });
+      // OIDC refresh returns new token (shared by both concurrent requests)
+      mockRefreshOidcToken.mockResolvedValueOnce('refreshed-oidc-token');
 
       // Two retry responses
       mockFetch.mockResolvedValueOnce(makeSuccess());
@@ -257,12 +252,9 @@ describe('baseApi', () => {
       expect(result1).toEqual({ data: 'ok' });
       expect(result2).toEqual({ data: 'ok' });
 
-      // 2 initial + 1 refresh + 2 retries = 5
-      // (the refresh is deduplicated, so only 1 refresh call)
-      const refreshCalls = mockFetch.mock.calls.filter(
-        ([url]) => typeof url === 'string' && url.includes('/auth/refresh')
-      );
-      expect(refreshCalls.length).toBe(1);
+      // OIDC refresh should be deduplicated — only 1 call even though 2 requests got 401
+      expect(mockRefreshOidcToken).toHaveBeenCalledTimes(1);
+      expect(baseApi.getAccessToken()).toBe('refreshed-oidc-token');
     });
 
     it('sets Content-Type to application/json by default', async () => {

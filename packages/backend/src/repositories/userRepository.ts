@@ -40,6 +40,16 @@ export const userRepository = {
     return stmt.get(email) as UserRow | undefined;
   },
 
+  findByHubUserId(hubUserId: string): UserRow | undefined {
+    const stmt = db.prepare('SELECT * FROM users WHERE hub_user_id = ?');
+    return stmt.get(hubUserId) as UserRow | undefined;
+  },
+
+  linkHubAccount(userId: number, hubUserId: string): void {
+    const stmt = db.prepare("UPDATE users SET hub_user_id = ?, auth_provider = 'hub' WHERE id = ?");
+    stmt.run(hubUserId, userId);
+  },
+
   /**
    * Create a student account (no email required)
    */

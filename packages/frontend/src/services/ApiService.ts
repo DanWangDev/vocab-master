@@ -22,17 +22,9 @@ class ApiServiceClass {
   hasTokens = baseApi.hasTokens.bind(baseApi);
 
   // Auth
-  register = authApi.register;
-  registerStudent = authApi.registerStudent;
-  registerParent = authApi.registerParent;
-  googleAuth = authApi.googleAuth;
   updateProfile = authApi.updateProfile;
   createStudentForParent = authApi.createStudentForParent;
-  forgotPassword = authApi.forgotPassword;
-  resetPassword = authApi.resetPassword;
-  validateResetToken = authApi.validateResetToken;
   resetUserPassword = authApi.resetUserPassword;
-  login = authApi.login;
   logout = authApi.logout;
   getCurrentUser = authApi.getCurrentUser;
 

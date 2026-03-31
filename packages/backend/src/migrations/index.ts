@@ -23,6 +23,8 @@ import { addPvpQuestions } from './022_add_pvp_questions';
 import { addTimedQuizType } from './023_add_timed_quiz_type';
 import { addGamification } from './024_add_gamification';
 import { backfillXp } from './025_backfill_xp';
+import { addHubUserId } from './026_add_hub_user_id';
+import { cleanupLegacyAuth } from './027_cleanup_legacy_auth';
 
 export const migrations = [
     initialSchema,
@@ -50,4 +52,6 @@ export const migrations = [
     addTimedQuizType,
     addGamification,
     backfillXp,
+    addHubUserId,
+    cleanupLegacyAuth,
 ];

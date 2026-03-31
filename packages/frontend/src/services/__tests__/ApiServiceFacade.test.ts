@@ -14,17 +14,9 @@ vi.mock('../api/baseApi', () => ({
 
 vi.mock('../api/authApi', () => ({
   authApi: {
-    register: vi.fn(),
-    registerStudent: vi.fn(),
-    registerParent: vi.fn(),
-    googleAuth: vi.fn(),
     updateProfile: vi.fn(),
     createStudentForParent: vi.fn(),
-    forgotPassword: vi.fn(),
-    resetPassword: vi.fn(),
-    validateResetToken: vi.fn(),
     resetUserPassword: vi.fn(),
-    login: vi.fn(),
     logout: vi.fn(),
     getCurrentUser: vi.fn(),
   },
@@ -152,40 +144,24 @@ describe('ApiService Facade', () => {
   });
 
   describe('auth methods delegate to authApi', () => {
-    it('login delegates', () => {
-      expect(ApiService.login).toBe(authApi.login);
-    });
-
     it('logout delegates', () => {
       expect(ApiService.logout).toBe(authApi.logout);
-    });
-
-    it('register delegates', () => {
-      expect(ApiService.register).toBe(authApi.register);
-    });
-
-    it('registerStudent delegates', () => {
-      expect(ApiService.registerStudent).toBe(authApi.registerStudent);
-    });
-
-    it('registerParent delegates', () => {
-      expect(ApiService.registerParent).toBe(authApi.registerParent);
-    });
-
-    it('googleAuth delegates', () => {
-      expect(ApiService.googleAuth).toBe(authApi.googleAuth);
     });
 
     it('getCurrentUser delegates', () => {
       expect(ApiService.getCurrentUser).toBe(authApi.getCurrentUser);
     });
 
-    it('forgotPassword delegates', () => {
-      expect(ApiService.forgotPassword).toBe(authApi.forgotPassword);
+    it('updateProfile delegates', () => {
+      expect(ApiService.updateProfile).toBe(authApi.updateProfile);
     });
 
-    it('resetPassword delegates', () => {
-      expect(ApiService.resetPassword).toBe(authApi.resetPassword);
+    it('createStudentForParent delegates', () => {
+      expect(ApiService.createStudentForParent).toBe(authApi.createStudentForParent);
+    });
+
+    it('resetUserPassword delegates', () => {
+      expect(ApiService.resetUserPassword).toBe(authApi.resetUserPassword);
     });
   });
 

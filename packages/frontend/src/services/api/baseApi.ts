@@ -1,6 +1,7 @@
 // Base API with token management and authenticated fetch wrapper
 
-import type { ApiError, TokenPair } from './types';
+import type { ApiError } from './types';
+import { refreshOidcToken } from './oidcHelpers';
 
 // Endpoints include /api prefix explicitly. VITE_API_URL is the server origin only.
 // - Development: defaults to 'http://localhost:9876' (direct to backend)
@@ -17,19 +18,17 @@ const ACCESS_TOKEN_KEY = 'vocab_master_access_token';
 
 class BaseApi {
   private accessToken: string | null = null;
-  private refreshPromise: Promise<{ accessToken: string }> | null = null;
+  private refreshPromise: Promise<string> | null = null;
 
   constructor() {
     this.accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-    // Refresh token is now stored as httpOnly cookie (managed by browser)
     // Clear any legacy refresh token from localStorage
     localStorage.removeItem('vocab_master_refresh_token');
   }
 
-  setTokens(tokens: TokenPair | { accessToken: string }): void {
+  setTokens(tokens: { accessToken: string }): void {
     this.accessToken = tokens.accessToken;
     localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-    // Refresh token is set as httpOnly cookie by the backend
   }
 
   clearTokens(): void {
@@ -91,26 +90,16 @@ class BaseApi {
     return response.json();
   }
 
-  private async refreshAccessToken(): Promise<{ accessToken: string }> {
+  private async refreshAccessToken(): Promise<string> {
     // Prevent multiple simultaneous refresh attempts
     if (this.refreshPromise) {
       return this.refreshPromise;
     }
 
     this.refreshPromise = (async () => {
-      const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Token refresh failed');
-      }
-
-      const data = await response.json();
-      this.setTokens(data.tokens);
-      return data.tokens;
+      const newIdToken = await refreshOidcToken();
+      this.accessToken = newIdToken;
+      return newIdToken;
     })();
 
     try {

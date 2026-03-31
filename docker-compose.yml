@@ -4,9 +4,10 @@ services:
       context: ./packages/frontend
       dockerfile: frontend.Dockerfile
       args:
+        - NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN:-}
         - VITE_API_URL=
-        - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID:-}
-        - VITE_TURNSTILE_SITE_KEY=${VITE_TURNSTILE_SITE_KEY:-}
+        - VITE_OIDC_ISSUER=${VITE_OIDC_ISSUER:-http://localhost:3009}
+        - VITE_OIDC_CLIENT_ID=${VITE_OIDC_CLIENT_ID:-vocab-master-client}
     container_name: vocab-master-frontend
     ports:
       - "${FRONTEND_PORT:-8080}:80"
@@ -20,6 +21,8 @@ services:
     build:
       context: ./packages/backend
       dockerfile: Dockerfile
+      args:
+        - NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN:-}
     container_name: vocab-master-backend
     ports:
       - "${BACKEND_PORT:-9876}:9876"
@@ -30,10 +33,10 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - DATABASE_PATH=/data/vocab-master.db
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:8080}
-      - GOOGLE_CLIENT_ID_WEB=${GOOGLE_CLIENT_ID_WEB:-}
-      - GOOGLE_CLIENT_ID_IOS=${GOOGLE_CLIENT_ID_IOS:-}
-      - GOOGLE_CLIENT_ID_ANDROID=${GOOGLE_CLIENT_ID_ANDROID:-}
-      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-}
+      - OIDC_ISSUER=${OIDC_ISSUER:-http://localhost:3009}
+      - OIDC_INTERNAL_ISSUER=${OIDC_INTERNAL_ISSUER:-http://hub-app:3009}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-vocab-master-client}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-}
     volumes:
       - vocab-data:/data
     restart: unless-stopped
@@ -45,6 +48,7 @@ services:
       start_period: 10s
     networks:
       - vocab-network
+      - hub
 
   db-viewer:
     image: coleifer/sqlite-web
@@ -65,3 +69,6 @@ volumes:
 networks:
   vocab-network:
     name: vocab-master-network
+  hub:
+    external: true
+    name: 11plus-hub_default

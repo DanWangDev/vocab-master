@@ -3,10 +3,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and registry config
 COPY package*.json ./
+COPY .npmrc ./
 
-# Install dependencies
+# Install dependencies (NODE_AUTH_TOKEN needed for @danwangdev packages)
+ARG NODE_AUTH_TOKEN
 RUN npm ci
 
 # Copy source code
@@ -22,6 +24,8 @@ WORKDIR /app
 
 # Install production dependencies only
 COPY package*.json ./
+COPY .npmrc ./
+ARG NODE_AUTH_TOKEN
 RUN npm ci --only=production
 
 # Copy built files and seed data

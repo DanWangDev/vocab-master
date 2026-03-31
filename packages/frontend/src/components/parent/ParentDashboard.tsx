@@ -11,14 +11,15 @@ import { ResetStudentPasswordModal } from '../admin/ResetStudentPasswordModal';
 import { StudentSearchModal } from '../linking/StudentSearchModal';
 import { CreateStudentModal } from './CreateStudentModal';
 import { NotificationBell } from '../notifications/NotificationBell';
-import { CompleteProfileModal } from '../auth/CompleteProfileModal';
+import { CompleteProfileModal } from '../common/EditProfileModal';
 import { ApiService, type AdminUserStats, type ParentThresholds } from '../../services/ApiService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 
+
 export function ParentDashboard() {
     const { t } = useTranslation('parent');
-    const { state, logout, updateProfile, clearNewGoogleUser } = useAuth();
+    const { state, logout, updateProfile } = useAuth();
     const navigate = useNavigate();
     const { linkRequests, cancelLinkRequest, refreshAll } = useNotifications();
     const [users, setUsers] = useState<AdminUserStats[]>([]);
@@ -82,9 +83,6 @@ export function ParentDashboard() {
     };
 
     const handleProfileModalClose = () => {
-        if (state.isNewGoogleUser) {
-            clearNewGoogleUser();
-        }
         setShowEditProfile(false);
     };
 
@@ -253,9 +251,9 @@ export function ParentDashboard() {
 
             {/* Profile Completion / Edit Modal */}
             <AnimatePresence>
-                {(state.isNewGoogleUser || showEditProfile) && state.user && (
+                {showEditProfile && state.user && (
                     <CompleteProfileModal
-                        mode={state.isNewGoogleUser ? 'complete' : 'edit'}
+                        mode={'edit'}
                         currentUsername={state.user.username}
                         currentDisplayName={state.user.displayName}
                         onSave={handleProfileSave}

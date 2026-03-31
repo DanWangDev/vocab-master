@@ -24,6 +24,9 @@ dist
 dist-ssr
 *.local
 
+# Test coverage
+coverage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -37,3 +40,4 @@ dist-ssr
 
 # Database
 packages/backend/data/
+.gstack/
