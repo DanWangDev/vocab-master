@@ -31,11 +31,11 @@ WordCardShffle/
 │   │   ├── src/
 │   │   │   ├── config/      # Database connection, migration runner
 │   │   │   ├── jobs/        # Background job queue
-│   │   │   ├── middleware/  # Auth, validation, rate limiting, cache, turnstile
-│   │   │   ├── migrations/  # Sequential DB migrations (001–023)
+│   │   │   ├── middleware/  # Auth (OIDC/hub), validation, rate limiting, cache
+│   │   │   ├── migrations/  # Sequential DB migrations (001–027)
 │   │   │   ├── repositories/# Data access layer (interfaces + SQLite implementations)
 │   │   │   ├── routes/      # Express route handlers
-│   │   │   ├── services/    # Business logic (auth, email, audit, SRS, PvP, etc.)
+│   │   │   ├── services/    # Business logic (hub user sync, audit, SRS, PvP, etc.)
 │   │   │   ├── types/       # Backend TypeScript interfaces
 │   │   │   └── index.ts     # Server entry point
 │   │   ├── data/            # SQLite database file (gitignored)
@@ -75,7 +75,7 @@ The Vite + React 19 web application. Tailwind CSS for styling, Framer Motion for
 
 ### `packages/backend/`
 
-The Express + TypeScript API server. Uses better-sqlite3 for the database, Zod for input validation, JWT for authentication (access + refresh tokens), and bcrypt for password hashing. The repository pattern separates data access behind interfaces with SQLite implementations.
+The Express + TypeScript API server. Uses better-sqlite3 for the database, Zod for input validation, and OIDC authentication via the 11plus-hub (token verification with `@danwangdev/auth-client`, BFF token exchange pattern). The repository pattern separates data access behind interfaces with SQLite implementations.
 
 ### `packages/shared/`
 
