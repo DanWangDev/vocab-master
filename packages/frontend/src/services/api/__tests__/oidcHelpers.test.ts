@@ -8,7 +8,7 @@ const mockGetRandomValues = vi.fn((array: Uint8Array) => {
   return array;
 });
 
-const mockDigest = vi.fn(async (_algo: string, _data: BufferSource) => {
+const mockDigest = vi.fn(async () => {
   // Return a deterministic 32-byte ArrayBuffer for testing
   const result = new Uint8Array(32);
   for (let i = 0; i < 32; i++) {
