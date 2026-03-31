@@ -132,6 +132,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Set registry owner (lowercase)
+        run: echo "REGISTRY_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -149,7 +152,7 @@ jobs:
           context: ./packages/backend
           file: ./packages/backend/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/${{ github.repository_owner }}/vocab-master-backend:latest
+          tags: ghcr.io/${{ env.REGISTRY_OWNER }}/vocab-master-backend:latest
           build-args: |
             NODE_AUTH_TOKEN=${{ secrets.GH_PACKAGE_TOKEN }}
           cache-from: type=gha
@@ -166,6 +169,6 @@ jobs:
             VITE_API_URL=/api
             VITE_OIDC_ISSUER=${{ vars.VITE_OIDC_ISSUER }}
             VITE_OIDC_CLIENT_ID=${{ vars.VITE_OIDC_CLIENT_ID }}
-          tags: ghcr.io/${{ github.repository_owner }}/vocab-master-frontend:latest
+          tags: ghcr.io/${{ env.REGISTRY_OWNER }}/vocab-master-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
