@@ -48,8 +48,12 @@ export function getRedirectUri(): string {
 
 /**
  * Redirect to the hub's OIDC authorization endpoint with PKCE.
+ *
+ * @param options.prompt - OIDC prompt parameter. Use 'none' for silent auth
+ *   (auto-login): the hub will either return an auth code silently or an
+ *   error=login_required without showing any UI.
  */
-export async function startOidcLogin(): Promise<void> {
+export async function startOidcLogin(options?: { prompt?: string }): Promise<void> {
   const codeVerifier = generateRandomHex(32);
   const codeChallenge = base64url(await sha256(codeVerifier));
   const state = generateRandomHex(16);
@@ -66,6 +70,9 @@ export async function startOidcLogin(): Promise<void> {
     code_challenge_method: 'S256',
     state,
   });
+  if (options?.prompt) {
+    params.set('prompt', options.prompt);
+  }
 
   window.location.href = `${OIDC_ISSUER}/oidc/auth?${params.toString()}`;
 }
@@ -171,6 +178,7 @@ export function startOidcLogout(): void {
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 
   const params = new URLSearchParams({
+    client_id: OIDC_CLIENT_ID,
     post_logout_redirect_uri: window.location.origin,
   });
   if (idToken) {

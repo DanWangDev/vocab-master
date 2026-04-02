@@ -42,10 +42,10 @@ export function AuthPage() {
 
     autoLoginStarted.current = true;
     markAutoLoginAttempted();
-    // login() is async but rejection is non-fatal here — the circuit breaker is
-    // already set, so the user can retry manually via the button if this fails
-    // (e.g. crypto.subtle unavailable on non-HTTPS).
-    login().catch(() => {});
+    // Use prompt=none for silent auth: if the hub has an active session the user
+    // is transparently authenticated; if not, the hub returns login_required and
+    // the user can click the manual login button.
+    login({ prompt: 'none' }).catch(() => {});
     // login is a stable function created in AuthProvider; omitting it from deps
     // avoids re-firing the effect on every render since it is not wrapped in useCallback.
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -29,6 +29,13 @@ export function AuthCallback() {
       const errorParam = params.get('error');
 
       if (errorParam) {
+        // login_required / interaction_required are expected when auto-login
+        // used prompt=none and the hub has no active session — silently redirect
+        // back to the login page so the user can sign in manually.
+        if (errorParam === 'login_required' || errorParam === 'interaction_required') {
+          window.location.href = '/login';
+          return;
+        }
         setError(params.get('error_description') || errorParam);
         return;
       }
