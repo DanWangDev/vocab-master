@@ -16,6 +16,7 @@ const STATE_KEY = 'labf_oidc_state';
 const HUB_TOKEN_KEY = 'labf_oidc_hub_token';
 const ID_TOKEN_KEY = 'labf_oidc_id_token';
 const REFRESH_TOKEN_KEY = 'labf_oidc_refresh_token';
+const AUTO_LOGIN_ATTEMPTED_KEY = 'labf_oidc_auto_login_attempted';
 
 function generateRandomHex(bytes: number): string {
   const array = new Uint8Array(bytes);
@@ -132,10 +133,36 @@ export function storeOidcTokens(tokens: {
 }
 
 /**
+ * Check whether an automatic OIDC login has already been attempted this session.
+ * Used as a circuit breaker to prevent redirect loops when the hub cannot
+ * authenticate the user (e.g. no hub session, or after explicit logout).
+ */
+export function wasAutoLoginAttempted(): boolean {
+  return sessionStorage.getItem(AUTO_LOGIN_ATTEMPTED_KEY) === 'true';
+}
+
+/**
+ * Mark that an automatic OIDC login redirect is about to happen.
+ */
+export function markAutoLoginAttempted(): void {
+  sessionStorage.setItem(AUTO_LOGIN_ATTEMPTED_KEY, 'true');
+}
+
+/**
+ * Clear the auto-login circuit breaker (called after successful authentication).
+ */
+export function clearAutoLoginAttempted(): void {
+  sessionStorage.removeItem(AUTO_LOGIN_ATTEMPTED_KEY);
+}
+
+/**
  * Redirect to the hub's logout endpoint.
  */
 export function startOidcLogout(): void {
   const idToken = localStorage.getItem(ID_TOKEN_KEY);
+
+  // Prevent auto-login from immediately re-authenticating after explicit logout
+  markAutoLoginAttempted();
 
   // Clear all OIDC tokens
   localStorage.removeItem('vocab_master_access_token');

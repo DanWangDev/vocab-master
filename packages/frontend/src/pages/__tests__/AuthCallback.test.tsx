@@ -8,10 +8,12 @@ vi.mock('lucide-react', () => ({
 
 const mockExchangeCodeForTokens = vi.fn()
 const mockStoreOidcTokens = vi.fn()
+const mockClearAutoLoginAttempted = vi.fn()
 
 vi.mock('../../services/api/oidcHelpers', () => ({
   exchangeCodeForTokens: (...args: unknown[]) => mockExchangeCodeForTokens(...args),
   storeOidcTokens: (...args: unknown[]) => mockStoreOidcTokens(...args),
+  clearAutoLoginAttempted: (...args: unknown[]) => mockClearAutoLoginAttempted(...args),
 }))
 
 describe('AuthCallback', () => {
@@ -108,6 +110,7 @@ describe('AuthCallback', () => {
         )
       })
       expect(mockStoreOidcTokens).toHaveBeenCalledWith(tokens)
+      expect(mockClearAutoLoginAttempted).toHaveBeenCalled()
       expect(window.location.href).toBe('/')
     })
   })

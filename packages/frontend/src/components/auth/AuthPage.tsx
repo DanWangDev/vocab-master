@@ -1,15 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { BookOpen, LogIn } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
+import { wasAutoLoginAttempted, markAutoLoginAttempted } from '../../services/api/oidcHelpers';
 
 export function AuthPage() {
   const { t } = useTranslation('auth');
   const { state, login } = useAuth();
   const navigate = useNavigate();
+
+  const autoLoginStarted = useRef(false);
 
   // Redirect after successful authentication
   useEffect(() => {
@@ -27,6 +30,26 @@ export function AuthPage() {
       }
     }
   }, [state.isAuthenticated, state.user, navigate]);
+
+  // Auto-start OIDC flow for users arriving from the hub without a local session.
+  // The circuit breaker (sessionStorage flag) prevents infinite redirects when:
+  //   - the hub has no active session (user not logged in)
+  //   - the user explicitly logged out (flag set during logout)
+  useEffect(() => {
+    if (autoLoginStarted.current) return;
+    if (state.isLoading || state.isAuthenticated || state.error) return;
+    if (wasAutoLoginAttempted()) return;
+
+    autoLoginStarted.current = true;
+    markAutoLoginAttempted();
+    // login() is async but rejection is non-fatal here — the circuit breaker is
+    // already set, so the user can retry manually via the button if this fails
+    // (e.g. crypto.subtle unavailable on non-HTTPS).
+    login().catch(() => {});
+    // login is a stable function created in AuthProvider; omitting it from deps
+    // avoids re-firing the effect on every render since it is not wrapped in useCallback.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.isLoading, state.isAuthenticated, state.error]);
 
   const handleLogin = async () => {
     await login();

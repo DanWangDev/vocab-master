@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { exchangeCodeForTokens, storeOidcTokens } from '../services/api/oidcHelpers';
+import { exchangeCodeForTokens, storeOidcTokens, clearAutoLoginAttempted } from '../services/api/oidcHelpers';
 
 /**
  * OIDC callback handler.
@@ -41,6 +41,7 @@ export function AuthCallback() {
       try {
         const tokens = await exchangeCodeForTokens(code, state);
         storeOidcTokens(tokens);
+        clearAutoLoginAttempted();
         // Full page reload so AuthProvider picks up the new token
         window.location.href = '/';
       } catch (err) {
