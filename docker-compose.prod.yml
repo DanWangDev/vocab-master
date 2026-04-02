@@ -25,7 +25,7 @@ services:
       - DATABASE_PATH=/data/vocab-master.db
       - CORS_ORIGIN=http://192.168.50.35:8080
       - OIDC_ISSUER=https://hub.labf.app
-      - OIDC_INTERNAL_ISSUER=http://hub-app:3009
+      - OIDC_INTERNAL_ISSUER=https://hub.labf.app
       - OIDC_CLIENT_ID=vocab-master-client
       - OIDC_CLIENT_SECRET=REPLACE_ME
     volumes:
