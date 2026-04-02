@@ -84,14 +84,14 @@ describe('AuthPage auto-login', () => {
     vi.restoreAllMocks()
   })
 
-  it('auto-starts OIDC login when no tokens and circuit breaker is clear', async () => {
+  it('auto-starts OIDC login with prompt=none when no tokens and circuit breaker is clear', async () => {
     mockWasAutoLoginAttempted.mockReturnValue(false)
 
     renderAuthPage()
 
     await waitFor(() => {
       expect(mockMarkAutoLoginAttempted).toHaveBeenCalledTimes(1)
-      expect(mockLogin).toHaveBeenCalledTimes(1)
+      expect(mockLogin).toHaveBeenCalledWith({ prompt: 'none' })
     })
   })
 

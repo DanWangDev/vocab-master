@@ -53,6 +53,26 @@ describe('AuthCallback', () => {
   })
 
   describe('Error from hub', () => {
+    it('silently redirects to /login on login_required (prompt=none fallback)', async () => {
+      window.location.search = '?error=login_required'
+
+      render(<AuthCallback />)
+
+      await waitFor(() => {
+        expect(window.location.href).toBe('/login')
+      })
+    })
+
+    it('silently redirects to /login on interaction_required (prompt=none fallback)', async () => {
+      window.location.search = '?error=interaction_required'
+
+      render(<AuthCallback />)
+
+      await waitFor(() => {
+        expect(window.location.href).toBe('/login')
+      })
+    })
+
     it('shows "Authentication Failed" when URL has ?error=access_denied', async () => {
       window.location.search = '?error=access_denied'
 

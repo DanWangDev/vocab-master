@@ -124,6 +124,22 @@ describe('oidcHelpers', () => {
       expect(url.searchParams.get('state')).toBeTruthy();
     });
 
+    it('includes prompt param when provided', async () => {
+      await startOidcLogin({ prompt: 'none' });
+
+      expect(lastAssignedHref).toBeDefined();
+      const url = new URL(lastAssignedHref!);
+      expect(url.searchParams.get('prompt')).toBe('none');
+    });
+
+    it('omits prompt param when not provided', async () => {
+      await startOidcLogin();
+
+      expect(lastAssignedHref).toBeDefined();
+      const url = new URL(lastAssignedHref!);
+      expect(url.searchParams.has('prompt')).toBe(false);
+    });
+
     it('generates a code_challenge from the code_verifier via S256', async () => {
       await startOidcLogin();
 
@@ -331,7 +347,7 @@ describe('oidcHelpers', () => {
       expect(localStorage.getItem('labf_oidc_refresh_token')).toBeNull();
     });
 
-    it('redirects to hub logout endpoint with post_logout_redirect_uri', () => {
+    it('redirects to hub logout endpoint with client_id and post_logout_redirect_uri', () => {
       startOidcLogout();
 
       expect(lastAssignedHref).toBeDefined();
@@ -340,6 +356,7 @@ describe('oidcHelpers', () => {
       );
 
       const url = new URL(lastAssignedHref!);
+      expect(url.searchParams.get('client_id')).toBe('vocab-master-client');
       expect(url.searchParams.get('post_logout_redirect_uri')).toBe(
         window.location.origin
       );

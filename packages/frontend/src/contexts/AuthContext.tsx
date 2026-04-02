@@ -23,7 +23,7 @@ type AuthAction =
 
 interface AuthContextType {
   state: AuthState;
-  login: () => Promise<void>;
+  login: (options?: { prompt?: string }) => Promise<void>;
   logout: () => void;
   clearError: () => void;
   migrateLocalData: () => Promise<void>;
@@ -107,8 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async () => {
-    await startOidcLogin();
+  const login = async (options?: { prompt?: string }) => {
+    await startOidcLogin(options);
   };
 
   const logout = () => {
