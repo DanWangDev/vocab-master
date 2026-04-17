@@ -39,7 +39,7 @@ services:
       start_period: 10s
     networks:
       - vocab-network
-      - hub
+      - labf-net
 
 volumes:
   vocab-data:
@@ -48,6 +48,9 @@ volumes:
 networks:
   vocab-network:
     name: vocab-master-network
-  hub:
+  # Shared cross-app network — owned by nobody, created once per host
+  # via the suite's bootstrap.sh (in story-sleuth). Backend joins it to
+  # reach hub-backend for OIDC discovery + JWKS.
+  labf-net:
     external: true
-    name: 11plus-hub_default
+    name: labf-net

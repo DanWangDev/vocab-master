@@ -34,7 +34,7 @@ services:
       - DATABASE_PATH=/data/vocab-master.db
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:8080}
       - OIDC_ISSUER=${OIDC_ISSUER:-http://localhost:3009}
-      - OIDC_INTERNAL_ISSUER=${OIDC_INTERNAL_ISSUER:-http://hub-app:3009}
+      - OIDC_INTERNAL_ISSUER=${OIDC_INTERNAL_ISSUER:-http://hub-backend:3009}
       - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-vocab-master-client}
       - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-}
     volumes:
@@ -48,7 +48,7 @@ services:
       start_period: 10s
     networks:
       - vocab-network
-      - hub
+      - labf-net
 
   db-viewer:
     image: coleifer/sqlite-web
@@ -69,6 +69,9 @@ volumes:
 networks:
   vocab-network:
     name: vocab-master-network
-  hub:
+  # Shared cross-app network — owned by nobody, created once per host
+  # via the suite's bootstrap.sh (in story-sleuth). Backend joins it to
+  # reach hub-backend for OIDC discovery + JWKS.
+  labf-net:
     external: true
-    name: 11plus-hub_default
+    name: labf-net
