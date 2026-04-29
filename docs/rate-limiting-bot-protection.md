@@ -1,7 +1,9 @@
 # Rate Limiting & Bot Protection
 
 > **Date:** 2026-03-05
-> **Status:** Implemented
+> **Status:** Superseded (April 2026) — auth delegated to 11+ Hub
+>
+> Since the hub OIDC migration (March 2026), standalone registration/login forms, Cloudflare Turnstile, and brute-force protection have been removed from vocab-master. These concerns are now handled by the 11+ Hub. Rate limiting on non-auth endpoints remains active. This document is retained for historical reference.
 
 ## Overview
 

@@ -6,7 +6,8 @@ This guide explains how to deploy the **11+ Vocabulary Master** application to a
 1.  **Docker Support**: Your NAS must have Docker (often called "Container Manager" on Synology) installed.
 2.  **SSH Access**: Recommended for running commands, though some steps can be done via the NAS web UI.
 3.  **Port Availability**: Ensure ports `8080` (Frontend) and `9876` (Backend) are free on your NAS.
-4.  **11plus-hub**: The hub must be running and accessible from the backend container (via Docker network). Vocab Master delegates authentication to the hub via OIDC.
+4.  **11plus-hub**: The hub must be running on the same Docker host. Vocab Master delegates authentication to the hub via OIDC. Both backends must join the shared `labf-net` Docker network so `hub-backend:3009` is resolvable.
+5.  **Shared network**: Run `bootstrap.sh` (from story-sleuth repo) once to create the `labf-net` Docker network before starting any app compose files.
 
 ## Step 1: Prepare the Application
 Before moving files, ensure you have the latest production build configuration.
@@ -19,8 +20,22 @@ Before moving files, ensure you have the latest production build configuration.
     ```
     *Note: You may need to update `VITE_API_URL` if you plan to access the app from other devices (see [Configuration checks](#configuration-checks)).*
 
-2.  **Verify Data**:
-    Ensure `packages/frontend/src/assets/words.json` is present and populated.
+2.  **Verify Database**:
+    Word data is seeded automatically by the migration system (migration 009). No manual file preparation is needed.
+
+## Production Deploy (GHCR Images)
+
+For production deployments, use the pre-built GHCR images and compose file in `deploy/`:
+
+```bash
+cd /volume1/docker/vocab-master
+docker compose -f deploy/docker-compose.prod.yml pull
+docker compose -f deploy/docker-compose.prod.yml up -d
+```
+
+The prod compose file has OIDC and network defaults baked in. Only `OIDC_CLIENT_SECRET` must be replaced from the placeholder value.
+
+Use `deploy/pull-and-deploy.sh` for a one-command update that pulls the latest images and restarts containers.
 
 ## Step 2: Transfer Files to NAS
 You need to copy the repository to your NAS.
@@ -77,7 +92,7 @@ By default, the frontend tries to call the API at `http://localhost:9876`.
 3.  Rebuild: `docker-compose up -d --build`
 
 **Option 2: Nginx Reverse Proxy (Advanced)**
-If you want to access it via a domain (e.g., `vocab.mynas.com`), configure your NAS's Reverse Proxy settings to point to `localhost:8080` and `localhost:9876`.
+If you want to access it via a domain (e.g., `vocab-master.labf.app`), configure your NAS's Reverse Proxy settings to point to `localhost:8080` and `localhost:9876`.
 
 ## Troubleshooting
 
@@ -89,4 +104,5 @@ If you want to access it via a domain (e.g., `vocab.mynas.com`), configure your 
   ```bash
   docker logs vocab-master-backend
   ```
+- **Hub Auth Fails**: Verify the backend can reach the hub via `labf-net` and `OIDC_CLIENT_SECRET` is correctly set. Check that `bootstrap.sh` was run to create the shared network.
 - **Permission Errors**: Ensure the user running docker has permission to read the files in the directory.

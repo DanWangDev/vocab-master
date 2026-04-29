@@ -1,6 +1,6 @@
 # 11+ Vocabulary Master
 
-> **Note:** For the current repository layout, see the root [README](../README.md) and [docs/repo-structure.md](./repo-structure.md). This document describes the application features and API surface.
+> **Note:** For the current repository layout, see [docs/repo-structure.md](./repo-structure.md). This document describes the application features and API surface.
 
 A full-stack vocabulary learning application for children preparing for the 11+ exam (and beyond). Features flashcard study, quizzes, daily challenges, parent dashboards, and custom wordlists — with web and mobile clients backed by a shared API.
 
@@ -23,9 +23,9 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 - **PvP Challenges** — head-to-head quizzes, matchmaking, turn-based play, persisted questions for fairness, results comparison, rematch support
 
 ### Accounts & Roles
-- **Student accounts** — simple signup (no email required)
-- **Parent accounts** — email-based registration with password recovery
-- **Google OAuth** — one-click Google sign-in for parents, with post-signup profile completion modal
+- **Hub SSO** — all authentication delegated to the 11+ Hub via OIDC (PKCE + BFF pattern); sign in once at the hub, access all Lab F apps
+- **Student accounts** — auto-created on first hub login
+- **Parent accounts** — hub-managed; parent-child linking handled in-app
 - **Self-service profile editing** — parents can update their username and display name from the dashboard
 - **Admin panel** — full user management (create, delete, role changes, password resets, email updates)
 
@@ -41,14 +41,10 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 - Push notifications on mobile via Expo push tokens
 
 ### Security
-- **Rate limiting** — tiered IP-based limits (registration: 5/hr, auth: 20/15min, password reset: 5/hr, token validation: 10/15min)
-- **Cloudflare Turnstile** — invisible bot challenge on web login and registration forms (zero user friction)
-- **Brute-force protection** — progressive per-username lockout on login (5 fails: 30s, 10: 5min, 15: 30min)
-- **Mobile auth** — mobile clients authenticate via signed app token (`MOBILE_APP_SECRET`) instead of Turnstile
-- **Token security** — refresh tokens hashed with SHA-256 in database; served as `httpOnly`, `secure`, `sameSite=strict` cookies (XSS-safe)
-- **Password policy** — 8-character minimum enforced on registration, password reset, and admin reset paths
+- **Hub OIDC** — authentication delegated to the 11+ Hub (PKCE + BFF pattern with confidential client); hub handles bot protection, brute-force, and password policy
+- **Token security** — OIDC id_tokens used as Bearer tokens for API calls; refresh tokens proxied through backend BFF with `client_secret`
+- **Back-channel logout** — hub-initiated session revocation via `/backchannel-logout` endpoint
 - **IDOR protection** — private wordlists return 403 for non-owners; parent endpoints verify parent-child relationship
-- **Google linking consent** — linking a Google account to an existing email requires explicit user confirmation
 - **Security headers** — HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
 - **Input validation** — Zod schemas on auth endpoints and quiz results; file type validation on wordlist imports
 - **Startup checks** — app refuses to start without `JWT_SECRET` in any environment or without `CORS_ORIGIN` in production
@@ -75,8 +71,8 @@ See [docs/security-hardening.md](docs/security-hardening.md) for the full securi
 | Frontend (mobile) | React Native (Expo), Expo Router, expo-secure-store |
 | Backend | Node.js, Express, TypeScript, Zod validation |
 | Database | SQLite (via better-sqlite3), auto-migrating schema |
-| Auth | JWT (access + refresh tokens), bcrypt, Google OAuth (google-auth-library), Cloudflare Turnstile |
-| Email | Resend (password reset, welcome emails) |
+| Auth | OIDC via 11+ Hub (PKCE + BFF pattern, `@danwangdev/auth-client`) |
+| Container Registry | GitHub Container Registry (GHCR) |
 | Icons | Lucide React |
 | i18n | i18next, react-i18next |
 | Containerisation | Docker, Docker Compose, Nginx reverse proxy |
@@ -126,19 +122,12 @@ See [docs/repo-structure.md](./repo-structure.md) for full details.
 ### Authentication (`/api/auth`)
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/register` | No | Legacy student registration |
-| POST | `/register/student` | No | Student registration (no email) |
-| POST | `/register/parent` | No | Parent registration (email required) |
-| POST | `/login` | No | Username + password login |
-| POST | `/google` | No | Google OAuth login/register |
+| POST | `/oidc/token` | No | BFF token exchange (authorization_code or refresh_token grant) |
+| POST | `/backchannel-logout` | No | Hub-initiated session revocation |
 | POST | `/logout` | No | Invalidate refresh token |
-| POST | `/refresh` | No | Refresh access token |
 | GET | `/me` | Yes | Get current user |
 | PATCH | `/profile` | Yes | Update own username/display name |
 | POST | `/create-student` | Parent | Create student linked to parent |
-| POST | `/forgot-password` | No | Request password reset email |
-| POST | `/reset-password` | No | Reset password with token |
-| GET | `/validate-reset-token/:token` | No | Check if reset token is valid |
 
 ### User Data
 | Method | Path | Auth | Description |
@@ -302,7 +291,7 @@ npx expo start
 ```bash
 # Copy and configure environment
 cp .env.example .env
-# Edit .env with your JWT_SECRET, Google OAuth client IDs, etc.
+# Edit .env with your JWT_SECRET, OIDC credentials, etc.
 
 # Build and start all services
 docker-compose up --build -d
@@ -311,35 +300,32 @@ docker-compose up --build -d
 Services:
 - **Frontend:** http://localhost:8080
 - **Backend API:** http://localhost:9876/api/health
-- **DB Viewer:** http://localhost:8090 (SQLite web UI, localhost only)
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for NAS deployment instructions.
+For production NAS deployment, use the compose files in `deploy/`. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `JWT_SECRET` | Yes | Secret key for JWT signing (app won't start without it) |
-| `NODE_ENV` | No | Environment (`development` or `production`). Controls startup checks and Turnstile behaviour |
+| `NODE_ENV` | No | Environment (`development` or `production`) |
 | `DATABASE_PATH` | No | SQLite database file path (default: `./data/vocab-master.db`) |
 | `PORT` | No | Backend port (default: `9876`) |
 | `CORS_ORIGIN` | Prod | Allowed CORS origin. **Required in production** (default in dev: `http://localhost:5173`) |
-| `VITE_API_URL` | No | Frontend API base URL (default: `http://localhost:9876/api`) |
-| `VITE_GOOGLE_CLIENT_ID` | No | Google OAuth client ID for web |
-| `GOOGLE_CLIENT_ID_WEB` | No | Google OAuth client ID (backend validation) |
-| `GOOGLE_CLIENT_ID_IOS` | No | Google OAuth client ID for iOS |
-| `GOOGLE_CLIENT_ID_ANDROID` | No | Google OAuth client ID for Android |
-| `RESEND_API_KEY` | No | Resend API key for transactional emails |
-| `EMAIL_FROM` | No | Sender email address |
-| `TURNSTILE_SECRET_KEY` | Prod | Cloudflare Turnstile secret key. In dev, verification is skipped if unset. In production, returns 503 if unset |
-| `TURNSTILE_SITE_KEY` | No | Cloudflare Turnstile site key (passed as `VITE_TURNSTILE_SITE_KEY` build arg). If unset, widget is not rendered |
-| `MOBILE_APP_SECRET` | No | Shared secret for mobile app Turnstile bypass. Generate with `openssl rand -hex 32` |
+| `OIDC_ISSUER` | Yes | Hub OIDC public issuer URL (browser-facing, must match `iss` claim in JWT) |
+| `OIDC_INTERNAL_ISSUER` | No | Internal issuer URL for server-to-server calls (falls back to `OIDC_ISSUER`) |
+| `OIDC_CLIENT_ID` | Yes | OIDC client identifier registered in the hub |
+| `OIDC_CLIENT_SECRET` | Yes | OIDC client secret for confidential client BFF token exchange |
+| `VITE_API_URL` | No | Frontend API base URL (default: `http://localhost:9876`) |
+| `VITE_OIDC_ISSUER` | No | Hub OIDC issuer URL for frontend redirect |
+| `VITE_OIDC_CLIENT_ID` | No | OIDC client ID for frontend PKCE flow |
+| `NODE_AUTH_TOKEN` | CI | GitHub Packages classic PAT with `read:packages` scope (for `@danwangdev/auth-client`) |
 
 ## Database
 
-SQLite with auto-running migrations on server start. Migrations are numbered sequentially (`001` through `023`) and tracked in a `migrations` table.
+SQLite with auto-running migrations on server start. Migrations are numbered sequentially (`001` through `027`) and tracked in a `migrations` table.
 
-Key tables: `users`, `user_settings`, `user_stats`, `refresh_tokens`, `password_reset_tokens`, `daily_challenges`, `quiz_results`, `quiz_answers`, `study_sessions`, `user_vocabulary`, `notifications`, `link_requests`, `wordlists`, `wordlist_words`, `user_active_wordlist`, `push_tokens`, `audit_log`, `achievements`, `user_achievements`, `leaderboard_entries`, `groups`, `group_members`, `group_wordlists`, `word_mastery`, `pvp_challenges`, `pvp_answers`, `pvp_questions`, `exercise_results`, `exercise_answers`.
+Key tables: `users`, `user_settings`, `user_stats`, `refresh_tokens`, `daily_challenges`, `quiz_results`, `quiz_answers`, `study_sessions`, `user_vocabulary`, `notifications`, `link_requests`, `wordlists`, `wordlist_words`, `user_active_wordlist`, `push_tokens`, `audit_log`, `achievements`, `user_achievements`, `leaderboard_entries`, `groups`, `group_members`, `group_wordlists`, `word_mastery`, `pvp_challenges`, `pvp_answers`, `pvp_questions`, `exercise_results`, `exercise_answers`, `user_xp`, `streak_rewards`, `user_rewards`.
 
 ## License
 

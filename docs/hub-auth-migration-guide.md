@@ -1,5 +1,7 @@
 # Migrating to Hub OIDC Auth (@danwangdev/auth-client)
 
+> **Status:** Completed (March 2026). This guide documents the migration process and lessons learned. All 5 phases are done. See [auth-flows.md](./auth-flows.md) for the current auth architecture.
+
 Guide for migrating vocab-master from standalone JWT auth to the 11plus-hub OIDC identity provider, based on lessons learned from writing-buddy's migration.
 
 ## Overview
@@ -158,7 +160,7 @@ const user = await verifyIdToken(token, metadata.jwks_uri, env.OIDC_ISSUER, env.
 
 Inside a Docker container, `localhost` refers to the container itself, not the host. The backend needs to reach the hub for OIDC discovery and JWKS fetching.
 
-**Solution:** Use two env vars — one for JWT validation (public issuer), one for network discovery (internal):
+**Solution:** Use two env vars — one for JWT validation (public issuer), one for network discovery (internal). All app backends join the shared `labf-net` Docker network where `hub-backend` is reachable by container name.
 
 ```typescript
 // config/env.ts
@@ -176,23 +178,25 @@ const jwksUri = env.OIDC_INTERNAL_ISSUER !== env.OIDC_ISSUER
 const user = await verifyIdToken(token, jwksUri, env.OIDC_ISSUER, env.OIDC_CLIENT_ID)
 ```
 
-The discovered `jwks_uri` contains the public hostname (e.g., `http://localhost:3009/oidc/jwks`) which is unreachable from Docker. The rewrite swaps it to the internal hostname.
+The discovered `jwks_uri` contains the public hostname (e.g., `https://hub.labf.app/oidc/jwks`) which is unreachable from Docker. The rewrite swaps it to the internal container name.
 
 **docker-compose.yml:**
 ```yaml
 backend:
   environment:
-    - OIDC_ISSUER=http://localhost:3009           # public (matches JWT iss claim)
-    - OIDC_INTERNAL_ISSUER=http://hub-app:3009    # internal (Docker network)
+    - OIDC_ISSUER=https://hub.labf.app            # public (matches JWT iss claim)
+    - OIDC_INTERNAL_ISSUER=http://hub-backend:3009 # internal (labf-net)
   networks:
     - default
-    - hub
+    - labf-net
 
 networks:
-  hub:
+  labf-net:
     external: true
-    name: 11plus-hub_default
+    name: labf-net
 ```
+
+The shared `labf-net` network is created once per host via `bootstrap.sh` (kept in story-sleuth). All four apps (hub, vocab-master, writing-buddy, story-sleuth) join it.
 
 ### 9. Helmet CSP Blocks OIDC Redirects (Hub-Side, Already Fixed)
 

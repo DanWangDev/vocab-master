@@ -53,7 +53,7 @@ Coverage is tracked via `@vitest/coverage-v8` in both packages.
 
 ## CI Pipeline
 
-The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and pull request to `main`. It consists of 5 jobs:
+The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and pull request to `main`. It also supports `workflow_dispatch` for manual rebuilds. It consists of 5 jobs:
 
 | Job | Name | What it does |
 |-----|------|-------------|
@@ -61,8 +61,6 @@ The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and 
 | `test-backend` | Backend Tests | Installs backend, runs `npm test` and `npm run test:coverage` |
 | `test-frontend` | Frontend Tests | Installs frontend, runs `npm test` and `npm run test:coverage` |
 | `build` | Build | Builds both frontend and backend (depends on lint + tests passing) |
-| `docker` | Docker Build | Runs `docker compose build` (depends on build passing) |
+| `docker` | Docker Build & Push | Builds Docker images and pushes to GHCR (depends on build passing) |
 
-All jobs use Node.js 22 on `ubuntu-latest`. The `build` job depends on `lint`, `test-backend`, and `test-frontend`. The `docker` job depends on `build`.
-
-A separate workflow (`.github/workflows/docker-image.yml`) handles Docker image builds.
+All jobs use Node.js 22 on `ubuntu-latest`. The `build` job depends on `lint`, `test-backend`, and `test-frontend`. The `docker` job depends on `build`. On push to `main`, the docker job pushes tagged images to `ghcr.io/danwangdev/vocab-master-frontend` and `ghcr.io/danwangdev/vocab-master-backend`.

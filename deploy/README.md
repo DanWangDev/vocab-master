@@ -33,12 +33,10 @@ chmod +x load-and-run.sh
 
 ```
 deploy/
-├── images/
-│   ├── vocab-master-backend.tar    # Backend Docker image
-│   └── vocab-master-frontend.tar   # Frontend Docker image
-├── docker-compose.prod.yml         # Production compose file
-├── load-and-run.sh                 # NAS deployment script
-├── build-images.ps1                # Windows build script
+├── docker-compose.prod.yml         # Production compose file (GHCR images)
+├── pull-and-deploy.sh              # Pull latest GHCR images and restart
+├── build-images.ps1                # Windows build script (tar-based deploy)
+├── load-and-run.sh                 # NAS deployment script (tar-based deploy)
 └── README.md                       # This file
 ```
 
@@ -117,7 +115,7 @@ CORS_ORIGIN=http://your-nas-ip:8080
 
 # OIDC — required for authentication (delegates to 11plus-hub)
 OIDC_ISSUER=https://hub.labf.app
-OIDC_INTERNAL_ISSUER=http://hub-app:3009
+OIDC_INTERNAL_ISSUER=http://hub-backend:3009
 OIDC_CLIENT_ID=vocab-master-client
 OIDC_CLIENT_SECRET=your-client-secret
 ```
@@ -127,4 +125,4 @@ Generate a secure JWT secret:
 openssl rand -hex 32
 ```
 
-**Note:** The backend must be on the same Docker network as the hub (`11plus-hub_default`) for OIDC token exchange to work. The compose file configures this automatically.
+**Note:** The backend must be on the shared `labf-net` Docker network (alongside hub-backend) for OIDC token exchange to work. Run `bootstrap.sh` once to create it, then the compose file attaches automatically.

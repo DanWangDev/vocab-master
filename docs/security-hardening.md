@@ -1,10 +1,12 @@
 # Security Hardening — Vocab Master
 
+> **Update (2026-04-29):** Since the hub auth migration (March 2026), authentication, brute-force protection, password policy, bot protection (Turnstile), and email services are handled by the 11+ Hub — not by vocab-master itself. This document is retained as a historical audit record. Findings related to standalone auth (password hashing, brute force, password reset tokens, Turnstile, Google OAuth) are superseded by hub-side controls. Infrastructure findings (IDOR, CORS, security headers, audit logging, backups, SQL injection prevention) remain applicable.
+
 ## Overview
 
 This document describes a comprehensive security audit and hardening effort conducted in March 2026. A 3-agent parallel security review covered authentication & access control, API & data layer, and infrastructure & deployment. Findings were categorised by severity and addressed in prioritised phases.
 
-**Context:** Vocab Master is a vocabulary learning app (React + Express/SQLite + React Native) deployed on a NAS with real users. Authentication is delegated to the 11plus-hub via OIDC (PKCE + BFF pattern). The app handles RBAC (admin/parent/student), quiz results, wordlist management, and parent-child linking. Google OAuth, password reset, and Turnstile are now handled by the hub — not the app itself.
+**Context:** Vocab Master is a vocabulary learning app (React + Express/SQLite + React Native) deployed on a NAS with real users. Authentication is delegated to the 11plus-hub via OIDC (PKCE + BFF pattern). The app handles RBAC (admin/parent/student), quiz results, wordlist management, and parent-child linking.
 
 ---
 
@@ -21,22 +23,22 @@ This document describes a comprehensive security audit and hardening effort cond
 
 ## What Was Already Solid
 
-These controls were in place before the audit and required no changes:
+These controls were in place before the audit. Items marked ~~struck~~ are now hub-side responsibilities after the OIDC migration.
 
-| Control | Details |
-|---------|---------|
-| Password hashing | bcrypt with 12 rounds |
-| Parameterised SQL | All repositories use `?` placeholders — no injection vectors |
-| JWT access tokens | 15-minute expiry, signed with configurable secret |
-| Refresh tokens | 7-day expiry, tracked in DB, single-use rotation |
-| Rate limiting | Per-endpoint, per-IP limits on all sensitive endpoints |
-| Brute force lockout | Progressive per-username lockout (30s → 5min → 30min) |
-| Password reset tokens | Selector+validator pattern with hashed validator (bcrypt) |
-| Zod input validation | Applied to all auth endpoints |
-| Foreign key constraints | Enabled on SQLite connection |
-| Token cleanup | Hourly purge of expired tokens |
-| Session invalidation | All refresh tokens revoked on password change |
-| Role-based middleware | `requireRole()` pattern for RBAC |
+| Control | Details | Status |
+|---------|---------|--------|
+| Password hashing | bcrypt with 12 rounds | ~~Superseded (hub)~~ |
+| Parameterised SQL | All repositories use `?` placeholders — no injection vectors | Active |
+| JWT access tokens | 15-minute expiry, signed with configurable secret | ~~Superseded (hub OIDC)~~ |
+| Refresh tokens | 7-day expiry, tracked in DB, single-use rotation | ~~Superseded (hub OIDC)~~ |
+| Rate limiting | Per-endpoint, per-IP limits on all sensitive endpoints | Active |
+| Brute force lockout | Progressive per-username lockout (30s → 5min → 30min) | ~~Superseded (hub)~~ |
+| Password reset tokens | Selector+validator pattern with hashed validator (bcrypt) | ~~Superseded (hub)~~ |
+| Zod input validation | Applied to all auth endpoints | Active |
+| Foreign key constraints | Enabled on SQLite connection | Active |
+| Token cleanup | Hourly purge of expired tokens | ~~Superseded (hub OIDC)~~ |
+| Session invalidation | All refresh tokens revoked on password change | ~~Superseded (hub BCL)~~ |
+| Role-based middleware | `requireRole()` pattern for RBAC | Active |
 
 ---
 
@@ -204,10 +206,9 @@ These controls were in place before the audit and required no changes:
 4. ~~Document security deployment checklist~~ ✓
 
 ### Manual Steps Required (C1 completion)
-1. **Rotate all secrets:** JWT_SECRET, RESEND_API_KEY, Google OAuth client secret, Turnstile keys
+1. **Rotate all secrets:** JWT_SECRET, OIDC_CLIENT_SECRET
 2. **Scrub git history:** `bfg --delete-files '*.env' --delete-files '*.db'` then `git reflog expire && git gc`
-3. **Change admin password** from default `BigDaddy`
-4. **Set `MOBILE_APP_SECRET`** in production `.env` — generate with `openssl rand -hex 32`
+3. **Change admin password** from default (now managed via hub)
 
 ---
 
@@ -216,10 +217,9 @@ These controls were in place before the audit and required no changes:
 | Decision | Reasoning |
 |----------|-----------|
 | **SQLite kept** | Fine for <50 users on NAS. Migration to PostgreSQL adds operational complexity without proportional benefit. |
-| **8-char password minimum** | Balanced for a kids' vocabulary app. Parents set passwords; complex rules would frustrate without meaningful gain. |
-| **In-memory brute force** | Sufficient for single-instance NAS. Server restarts clear state but are rare. Documented limitation. |
+| **OIDC via hub** | Delegates auth complexity (password policy, brute force, bot protection, email) to the 11+ Hub. App only verifies id_tokens and syncs user profiles. |
+| **In-memory BCL revocation** | Sufficient for single-instance NAS. Server restarts clear state but are rare. Documented limitation. |
 | **HSTS without preload** | Preload is irreversible. Start with basic HSTS, add preload after confirming HTTPS works perfectly. |
-| **Shared secret for mobile** | Turnstile doesn't work natively in React Native. `MOBILE_APP_SECRET` is better than a spoofable header, backed by rate limiting + auth tokens. |
 
 ---
 
@@ -286,28 +286,24 @@ Before deploying to production, verify all items:
 - [ ] `JWT_SECRET` set to a strong random value (min 64 chars): `openssl rand -hex 32`
 - [ ] `JWT_SECRET` does NOT equal `dev-secret-change-in-production`
 - [ ] `CORS_ORIGIN` set to exact production domain(s)
-- [ ] `MOBILE_APP_SECRET` set: `openssl rand -hex 32`
-- [ ] `TURNSTILE_SECRET_KEY` set (required in production)
-- [ ] `RESEND_API_KEY` set for email functionality
-- [ ] Google OAuth client IDs configured (`GOOGLE_CLIENT_ID_WEB`, etc.)
-- [ ] Default admin password changed from initial value
+- [ ] `OIDC_ISSUER` set to hub public URL (e.g., `https://hub.labf.app`)
+- [ ] `OIDC_INTERNAL_ISSUER` set correctly for Docker networking
+- [ ] `OIDC_CLIENT_SECRET` set (not the placeholder value)
 - [ ] No `.env` files committed to git
 - [ ] Git history scrubbed of any previously committed secrets
 
 ### Infrastructure
 - [ ] TLS/HTTPS termination configured (reverse proxy or load balancer)
 - [ ] nginx security headers present (HSTS, CSP, Referrer-Policy, Permissions-Policy)
-- [ ] SQLite web viewer disabled or bound to localhost only
 - [ ] Docker ports not exposed to `0.0.0.0` unnecessarily
+- [ ] `labf-net` Docker network created (via `bootstrap.sh`)
 - [ ] Database backup cron job configured and tested
 - [ ] Backup retention policy active (default: 7 days)
 
 ### Application
 - [ ] App starts successfully with `NODE_ENV=production`
 - [ ] App fails to start without required env vars (JWT_SECRET, CORS_ORIGIN)
-- [ ] Rate limiting active on all auth endpoints
-- [ ] Brute force protection active on login
-- [ ] Turnstile bot protection active (503 if misconfigured)
+- [ ] OIDC authentication works (login, token refresh, back-channel logout)
 - [ ] Audit logging writing to `audit_log` table
 - [ ] Structured JSON logs visible in Docker logs
 
@@ -315,8 +311,7 @@ Before deploying to production, verify all items:
 - [ ] Admin endpoints require `requireRole(['admin'])`
 - [ ] Parent endpoints verify parent-child relationship
 - [ ] Private wordlists return 403 for non-owners
-- [ ] Password minimum is 8 characters
-- [ ] Google account linking requires explicit consent
+- [ ] Auth middleware applied to all protected backend routes
 
 ### Monitoring
 - [ ] Health check endpoint responding: `GET /api/health`
