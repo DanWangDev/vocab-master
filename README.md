@@ -31,8 +31,13 @@ npm run dev            # http://localhost:4567
 
 ## Deployment (Docker)
 
+The backend joins the shared `labf-net` Docker bridge to reach hub-backend for OIDC authentication. The network must exist before starting any app. Create it once per host:
+
 ```bash
-# From repo root
+# First time only (idempotent — safe to re-run)
+./bootstrap.sh
+
+# Then start the app
 cp .env.example .env   # configure secrets
 docker compose up -d --build
 ```
