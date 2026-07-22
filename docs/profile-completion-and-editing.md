@@ -1,11 +1,13 @@
 # Profile Completion & Self-Service Editing
 
-> **Status:** Implemented
-> **Date:** 2026-03-05
+> **Status:** Partially superseded (April 2026) — Google OAuth flow replaced by hub OIDC
+> **Date:** 2026-03-05 (implemented), 2026-03-31 (Google OAuth deprecated)
+>
+> The `PATCH /api/auth/profile` endpoint and profile editing modal remain active. The Google-specific profile completion flow (new user modal after first Google sign-in) is superseded — the hub now handles initial user creation and profile sync. See [auth-flows.md](./auth-flows.md) for the current auth architecture.
 
 ## Context
 
-Google OAuth auto-creates parent accounts with a username derived from email (e.g. `john_doe` from `john.doe@gmail.com`) and a display name from the Google profile. Users previously had no way to customize these values. This feature adds:
+Originally, Google OAuth auto-created parent accounts with a username derived from email (e.g. `john_doe` from `john.doe@gmail.com`) and a display name from the Google profile. Users previously had no way to customize these values. This feature adds:
 
 1. A **profile completion modal** shown to new Google users after their first sign-in
 2. **Ongoing self-service profile editing** from the parent dashboard
@@ -112,19 +114,20 @@ Mobile `ApiService` and `AuthContext` were updated with the same `updateProfile(
 
 ## User Flows
 
-### New Google user
-1. Click "Continue with Google" on auth page
+### New user (hub OIDC — current)
+1. Click "Sign in with 11+ Hub" on auth page
+2. Authenticate at hub; account synced to vocab-master on first API call
+3. Redirected to dashboard based on role
+4. Profile fields (username, display_name, email) set from hub claims
+
+### New Google user (superseded)
+~~1. Click "Continue with Google" on auth page
 2. Account created with derived username and Google display name
 3. Redirected to parent dashboard
 4. `CompleteProfileModal` appears automatically (complete mode)
 5. User edits username and/or display name
 6. Click "Save" → API updates profile → modal closes
-7. (Or click "Skip" → modal closes, defaults kept)
-
-### Returning Google user
-1. Click "Continue with Google"
-2. Logs in normally (`isNewUser: false`)
-3. No modal shown
+7. (Or click "Skip" → modal closes, defaults kept)~~
 
 ### Edit profile later
 1. On parent dashboard, click pencil icon next to name in header

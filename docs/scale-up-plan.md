@@ -332,7 +332,7 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 
 ---
 
-## Phase 7: Enhanced Learning & Exam Prep (IN PROGRESS)
+## Phase 7: Enhanced Learning & Exam Prep (7a DONE, 7b–7c not started)
 
 **Branch:** `feat/phase-7-enhanced-learning`
 **Tests:** 387 backend (all passing), frontend TypeScript clean

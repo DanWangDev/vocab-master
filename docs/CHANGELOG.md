@@ -2,6 +2,44 @@
 
 All notable changes to the Vocab Master project are documented here.
 
+## 2026-04-29
+
+### Hub Network Switch (branch `chore/labf-net-network`)
+
+- **Shared labf-net network** — hub coupling switched from per-app Docker network (`11plus-hub_default`) to shared `labf-net` network for cross-app container communication
+- `c4b4845` chore: switch hub coupling to shared labf-net network
+
+### Hub Auto-Login Fixes (PRs #42, #43)
+
+- **Silent auto-login** — users arriving from the 11+ Hub now auto-start OIDC login without manual button click; circuit breaker in sessionStorage prevents redirect loops after explicit logout
+- **`client_id` in logout** — `client_id` parameter included in hub logout redirect for proper session termination
+- `24ad5eb` fix: use silent auth for auto-login and include client_id in logout (#43)
+- `0f90f1d` fix: use public hub URL for OIDC_INTERNAL_ISSUER in production
+- `0031f79` fix: auto-start OIDC login for users arriving from 11+ Hub
+
+### Deploy Defaults Baked In (PRs #39, #40)
+
+- **Prod compose files** — all OIDC and deploy defaults baked into `deploy/docker-compose.prod.yml`; no manual env var configuration needed for standard NAS deployment (only `OIDC_CLIENT_SECRET` must be replaced)
+- `d4c3442` chore: bake all deploy defaults into prod compose files
+- `7071b3c` chore: bake OIDC defaults into prod compose files
+
+### GHCR Migration (PRs #37, #38)
+
+- **Container registry** — images migrated from DockerHub to GitHub Container Registry (GHCR)
+- **Pull-and-deploy script** — `deploy/pull-and-deploy.sh` for one-command NAS updates
+- **CI integration** — GHCR push moved into main CI workflow; orphaned `docker-image.yml` workflow removed
+- **Manual rebuilds** — `workflow_dispatch` trigger added to CI for on-demand image rebuilds
+- `9da5b7a` chore: add GHCR pull-and-deploy script for NAS
+- `016ef58` ci: add workflow_dispatch trigger for manual rebuilds
+- `9a4ff30` fix: lowercase registry owner for GHCR image tags
+- `c3fbd29` fix: move GHCR push into CI workflow and remove orphaned docker-image.yml
+- `ba4565f` chore: migrate container images from DockerHub to GHCR
+
+### Documentation
+
+- `459c4cd` docs: update project documentation for hub auth migration
+- `3b0fdd8` fix: remove unused params in oidcHelpers test mock to clear lint warnings
+
 ## 2026-03-31
 
 ### Hub Auth Migration — OIDC with PKCE (PR #35)
