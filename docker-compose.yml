@@ -69,9 +69,9 @@ volumes:
 networks:
   vocab-network:
     name: vocab-master-network
-  # Shared cross-app network — owned by nobody, created once per host
-  # via the suite's bootstrap.sh (in story-sleuth). Backend joins it to
-  # reach hub-backend for OIDC discovery + JWKS.
+  # Shared cross-app network. Hub owns the canonical bootstrap;
+  # run ./bootstrap.sh once per host. Backend joins it to reach
+  # hub-backend for OIDC discovery + JWKS.
   labf-net:
     external: true
     name: labf-net
