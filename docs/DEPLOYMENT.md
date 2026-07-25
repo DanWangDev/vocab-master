@@ -7,7 +7,7 @@ This guide explains how to deploy the **11+ Vocabulary Master** application to a
 2.  **SSH Access**: Recommended for running commands, though some steps can be done via the NAS web UI.
 3.  **Port Availability**: Ensure ports `8080` (Frontend) and `9876` (Backend) are free on your NAS.
 4.  **11plus-hub**: The hub must be running on the same Docker host. Vocab Master delegates authentication to the hub via OIDC. Both backends must join the shared `labf-net` Docker network so `hub-backend:3009` is resolvable.
-5.  **Shared network**: Run `bootstrap.sh` (from story-sleuth repo) once to create the `labf-net` Docker network before starting any app compose files.
+5.  **Shared network**: Run `bootstrap.sh` once to create the `labf-net` Docker network before starting any app compose files. Hub owns the canonical bootstrap; see [11plus-hub](https://github.com/DanWangDev/11plus-hub).
 
 ## Step 1: Prepare the Application
 Before moving files, ensure you have the latest production build configuration.
@@ -36,6 +36,18 @@ docker compose -f deploy/docker-compose.prod.yml up -d
 The prod compose file has OIDC and network defaults baked in. Only `OIDC_CLIENT_SECRET` must be replaced from the placeholder value.
 
 Use `deploy/pull-and-deploy.sh` for a one-command update that pulls the latest images and restarts containers.
+
+### Continuous Delivery
+
+Deployment is automated via a self-hosted GitHub Actions runner on the NAS. When CI completes on `main` and pushes a new image to GHCR, the deploy workflow triggers automatically:
+
+```
+GitHub CI → push to GHCR → deploy workflow (.github/workflows/deploy.yml) → NAS runner → docker compose pull && up -d
+```
+
+- **Runner:** Docker container (`ghcr.io/actions/actions-runner`) registered at org level with `nas` label
+- **Networking:** Outbound HTTPS only — no inbound ports
+- **Manual deploy:** `./deploy.sh --ghcr` still works for ad-hoc deploys
 
 ## Step 2: Transfer Files to NAS
 You need to copy the repository to your NAS.
