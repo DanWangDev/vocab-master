@@ -39,10 +39,30 @@ Use `deploy/pull-and-deploy.sh` for a one-command update that pulls the latest i
 
 ### Continuous Delivery
 
-Deployment is automated via a self-hosted GitHub Actions runner on the NAS. When CI completes on `main` and pushes a new image to GHCR, the deploy workflow triggers automatically:
+Deployment is automated via a self-hosted GitHub Actions runner on the NAS.
 
 ```
-GitHub CI → push to GHCR → deploy workflow (.github/workflows/deploy.yml) → NAS runner → docker compose pull && up -d
+┌─ GitHub ────────────────────┐
+│ CI completes                │
+│ deploy workflow triggers    │
+│ runs-on: self-hosted        │
+└────────────┬────────────────┘
+             │ outbound HTTPS only
+             ▼
+┌─ Synology NAS ─────────────────────────┐
+│                                         │
+│  ┌─ Docker: actions-runner ──────────┐ │
+│  │  Ubuntu container (official)      │ │
+│  │  Connects outbound to GitHub      │ │
+│  │  Has Docker socket mounted        │ │
+│  │  Runs: docker compose pull &&     │ │
+│  │         docker compose up -d      │ │
+│  └───────────────────────────────────┘ │
+│                                         │
+│  ┌─ Docker: vocab-master ────────────┐ │
+│  │  backend + frontend + db-viewer   │ │
+│  └───────────────────────────────────┘ │
+└─────────────────────────────────────────┘
 ```
 
 - **Runner:** Docker container (`ghcr.io/actions/actions-runner`) registered at org level with `nas` label
